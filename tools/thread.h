@@ -25,7 +25,16 @@ public:
   typedef void (T::*CBFunc)(void);
   Thread(CBFunc, T*, const char* name = NULL);
   ~Thread();
-  unsigned long getId() const { return m_threadId; };
+
+  unsigned long getId() const 
+  { 
+#ifdef _WIN32
+    return m_threadId; 
+#else
+    return m_handle;
+#endif
+  };
+
   void join();
 private:
 #ifdef _WIN32
@@ -40,7 +49,6 @@ private:
   DWORD m_threadId;
   HANDLE m_handle;
 #else
-  unsigned long m_threadId;
   pthread_t m_handle;
 #endif
   char m_name[32];  //for debug
@@ -74,7 +82,6 @@ template<typename T>
 void* Thread<T>::run(void* arg)
 {
   Thread *t = (Thread*)arg;
-  t->m_threadId = pthread_self();
   (t->m_client->*(t->m_cbfunc))();
 
   return NULL;
