@@ -28,12 +28,8 @@ public:
 
   unsigned long getId() const 
   { 
-#ifdef _WIN32
-    return m_threadId; 
-#else
-    return m_handle;
-#endif
-  };
+    return m_threadId;
+  }
 
   void join();
 private:
@@ -49,7 +45,7 @@ private:
   DWORD m_threadId;
   HANDLE m_handle;
 #else
-  pthread_t m_handle;
+  pthread_t m_threadId;
 #endif
   char m_name[32];  //for debug
 };
@@ -60,7 +56,7 @@ Thread<T>::Thread(CBFunc f, T* t, const char* name):m_cbfunc(f), m_client(t)
 #ifdef _WIN32
   m_handle = CreateThread(NULL, 0, run, this, 0, &m_threadId);
 #else
-  pthread_create(&m_handle, NULL, run, this); 
+  pthread_create(&m_threadId, NULL, run, this); 
 #endif
   if(name)
     strncpy(m_name, name, 32);
@@ -104,7 +100,7 @@ void Thread<T>::join()
 #ifdef _WIN32
   WaitForSingleObject(m_handle, INFINITE);
 #else
-  pthread_join(m_handle, NULL);
+  pthread_join(m_threadId, NULL);
 #endif
   //LOGV("Thread join %s(0x%x)\n", m_name, m_threadId);
 }
