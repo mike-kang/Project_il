@@ -128,7 +128,7 @@ bool OMXILComponent::disable_port (OMX_U32 port){
   return true;
 }
 
-#if 0
+#if 1
 OMX_ERRORTYPE OMXILComponent::EventHandler (
         OMX_IN OMX_HANDLETYPE hComponent,
         OMX_IN OMX_PTR pAppData,
@@ -221,7 +221,7 @@ OMX_ERRORTYPE OMXILComponent::EventHandler (
     case OMX_EventBufferFlag:
       if (verbos == 1) printf ("event: %s, OMX_EventBufferFlag, port: %d\n",
           component->m_name, data1);
-      sem_post(&component->sem_EventComplete);
+      //sem_post(&component->sem_EventComplete);
       break;
     case OMX_EventResourcesAcquired:
       if (verbos == 1) printf ("event: %s, OMX_EventResourcesAcquired\n", component->m_name);
@@ -372,7 +372,6 @@ bool OMXILCameraComponent::set_output_port()
   //See mmal/util/mmal_util.c, mmal_encoding_width_to_stride()
   port_def.format.image.nStride = round_up (m_width, 16);
   
-  printf("gg %d\n", port_def.format.image.nStride);
   if ((error = OMX_SetParameter (m_handle, OMX_IndexParamPortDefinition,
       &port_def))){
     LOGE( "error: OMX_SetParameter: %s\n",
@@ -580,7 +579,7 @@ bool OMXILCameraComponent::set_camera_settings()
 
 bool OMXILCameraComponent::capture(bool on)
 {
-  printf("capture\n");
+  LOGV("capture: %d\n", on);
   OMX_ERRORTYPE error;
   static OMX_CONFIG_PORTBOOLEANTYPE cameraCapturePort;
   static bool inited = false;
@@ -784,7 +783,7 @@ bool OMXILEncoderComponent::set_jpeg_settings()
 bool OMXILEncoderComponent::capture()
 {
   LOGV("capture\n");
-  pthread_create(&m_threadId, NULL, capturing, this); 
+  pthread_create(&m_captureThreadId, NULL, capturing, this); 
   return true;
 }
 
@@ -793,7 +792,8 @@ void* OMXILEncoderComponent::capturing(void* arg)
 {
   OMX_ERRORTYPE error;
   OMXILEncoderComponent* component = (OMXILEncoderComponent*)arg;
-
+  component->m_bufferStatus = NONE_S;
+  
   while(1){
     //Get the buffer data (a slice of the image)
     if ((error = OMX_FillThisBuffer (component->m_handle, component->m_output_buffer))){
@@ -804,11 +804,12 @@ void* OMXILEncoderComponent::capturing(void* arg)
     //Wait until it's filled
     sem_wait(&component->sem_EventComplete);
 
-    if(component->m_bufferStatus == FILLED){
+    if(component->m_bufferStatus == EOF_S){
       LOGI("Good! %d\n", component->m_flength);
-      if(component->m_cbBufferFilled) component->m_cbBufferFilled(component->m_flength);
+      if(component->m_cbEndOfFrame) component->m_cbEndOfFrame(component->m_flength, component->m_clientData);
     }
-    else if(component->m_bufferStatus == DONE){
+    else if(component->m_bufferStatus == EOS_S){
+      if(component->m_cbEndOfStream) component->m_cbEndOfStream(component->m_clientData);
       break;
     }
     //When it's the end of the stream, an OMX_EventBufferFlag is emitted in the
@@ -829,11 +830,11 @@ OMX_ERRORTYPE OMXILEncoderComponent::FillBufferDone (
   LOGV ("event: %s, fill_buffer_done %d (0x%x)\n", component->m_name, pBuffer->nFilledLen, pBuffer->nFlags);
 
   if(pBuffer->nFlags == OMX_BUFFERFLAG_ENDOFFRAME){
-    component->m_bufferStatus = FILLED;    
+    component->m_bufferStatus = EOF_S;    
     component->m_flength = pBuffer->nFilledLen;
   }
   if(pBuffer->nFlags == OMX_BUFFERFLAG_EOS){
-    component->m_bufferStatus = DONE;    
+    component->m_bufferStatus = EOS_S;    
   }
   
   sem_post(&component->sem_EventComplete);

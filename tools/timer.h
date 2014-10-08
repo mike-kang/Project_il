@@ -2,12 +2,16 @@
 #define _TIMER_HEADER
 
 #include <pthread.h>
+#include "mutex.h"
+#include "condition.h"
 
 namespace tools {
 class Timer {
 public:
   Timer(int count, void (*cbFunc)(void*), void* clientData);
   ~Timer(){};
+  bool IsActive();
+  void start();
   void reset(int count);
   void cancel();
 
@@ -18,6 +22,8 @@ private:
   void* m_clientData;
   bool m_active;
   static void* run(void* arg);
+  Mutex mtx;
+  Condition timerCancel;
 };
 
 

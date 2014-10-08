@@ -6,9 +6,7 @@
 int main()
 {
   log_init(TYPE_CONSOLE, NULL);
-  LOGI("aaaa\n");
-  LOGI("bbb\n");
-  sleep(1);
+  LOGI("start main\n");
 
   MainDelegator* md = new MainDelegator();
 

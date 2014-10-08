@@ -16,7 +16,7 @@ filesystem.o : filesystem.h
 log.o : log.h logservice.h
 logservice.o : logservice.h property.h filesystem.h condition.h queue.h thread.h mutex.h
 date.o : date.h
-timer.o : timer.h
+timer.o : timer.h condition.h  mutex.h
 .PHONY : clean
 clean :
 	-rm *.o ${LIB}

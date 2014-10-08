@@ -42,6 +42,21 @@ public:
 #endif
     //cout << "Consition::wait() -- " << m.get() << endl;
   }
+  
+  int timedwait(Mutex& m, int count)
+  {
+    //cout << "Consition::timedwait() ++ " << m.get() << endl;
+    m_bWait = true;
+#ifdef _WIN32  
+#else
+    struct timespec ts_timeout;
+    ts_timeout.tv_sec = time(NULL) + count;
+    ts_timeout.tv_nsec = 0;
+    int ret = pthread_cond_timedwait(&m_p, (pthread_mutex_t*)(m.get()), &ts_timeout);
+#endif
+    //cout << "Consition::timedwait() -- " << m.get() <<" " << ret<< endl;
+    return ret;
+  }
   void notify_one()
   {
     //cout << "Consition::notify_one() ++ " << endl;

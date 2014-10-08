@@ -25,7 +25,7 @@
 
 //static int verbos = 1;
 
-CameraStill::CameraStill(int close_delay_time):m_close_delay_time(close_delay_time), m_bReady(false)
+CameraStill::CameraStill(int close_delay_time):m_delay_time(close_delay_time), m_bReady(false)
 {
   OMX_ERRORTYPE error;
   //Initialize Broadcom's VideoCore APIs
@@ -38,13 +38,17 @@ CameraStill::CameraStill(int close_delay_time):m_close_delay_time(close_delay_ti
   }   
 
   
-  m_encoder_component = new OMXILEncoderComponent(CAM_WIDTH, CAM_HEIGHT, m_imgBuf, BUF_SIZE, bufferFilled);
+  m_encoder_component = new OMXILEncoderComponent(CAM_WIDTH, CAM_HEIGHT, m_imgBuf, BUF_SIZE, cbEndOfFrame, cbEndOfStream, this);
   m_encoder_component->set_output_port();;
   m_encoder_component->set_jpeg_settings();
   m_encoder_component->change_state(OMX_StateIdle); //blocking
 
   m_preview_component = new OMXILComponent(NULLSINK_COMPONENT_NAME);
   m_preview_component->change_state(OMX_StateIdle); //blocking
+
+  m_timer = new tools::Timer(m_delay_time, cbTimer, this);
+
+  m_state = READY_S;
 
   LOGV("CameraStill Constructed\n");
 }
@@ -68,23 +72,48 @@ CameraStill::~CameraStill()
 
 }
 
-//static //this function is called from encoderComponent thread.
-void CameraStill::bufferFilled(int size)
+//static //this function is called from timer thread.
+void CameraStill::cbTimer(void* clientData)
 {
-  LOGI("bufferFilled %d\n", size);
+  CameraStill* cs = (CameraStill*)clientData;
+  LOGI("cbTimer \n");
+  cs->returnResources();
 }
 
 void CameraStill::takePicture()
 {
+  mtx.lock();
+  if(m_timer->IsActive())
+    m_timer->cancel();
   takePictureReady();
   m_camera_component->capture(true);
   m_encoder_component->capture();
-  
+  mtx.unlock();
 }
+
+//static //this function is called from encoderComponent thread.
+void CameraStill::cbEndOfFrame(int size, void* clientData)
+{
+  LOGV("cbEndOfFrame %d\n", size);
+  CameraStill* cs = (CameraStill*)clientData;
+  //request
+}
+
+//static //this function is called from encoderComponent thread.
+void CameraStill::cbEndOfStream(void* clientData)
+{
+  LOGV("cbEndOfStream\n");
+  CameraStill* cs = (CameraStill*)clientData;
+  cs->mtx.lock();
+  cs->m_camera_component->capture(false);
+  cs->m_timer->start();
+  cs->mtx.unlock();
+}
+
 
 bool CameraStill::takePictureReady()
 {
-  if(m_bReady) return true;
+  if(m_state == IREADY_S) return true;
   
   m_camera_component = new OMXILCameraComponent(CAM_WIDTH, CAM_HEIGHT);
   m_camera_component->load_camera_drivers();
@@ -116,8 +145,29 @@ bool CameraStill::takePictureReady()
   m_preview_component->change_state(OMX_StateExecuting); //blocking
   m_encoder_component->change_state(OMX_StateExecuting); //blocking
 
-  m_bReady = true;
+  m_state = IREADY_S;
   return true;
+}
+
+void CameraStill::returnResources()
+{
+  LOGV("returnResources\n");
+  mtx.lock();
+  m_camera_component->change_state(OMX_StateIdle); //blocking
+  m_encoder_component->change_state(OMX_StateIdle); //blocking
+  m_preview_component->change_state(OMX_StateIdle); //blocking
+
+  m_camera_component->disable_port (OMXILCameraComponent::OUTPUT_CAPTURE_PORT_NUM);
+  m_camera_component->disable_port (OMXILCameraComponent::OUTPUT_PREVIEW_PORT_NUM);
+  m_preview_component->disable_port (240);
+  m_encoder_component->disable_port (OMXILEncoderComponent::INPUT_PORT_NUM);
+  m_encoder_component->disable_port (OMXILEncoderComponent::OUTPUT_PORT_NUM);
+
+  m_camera_component->change_state(OMX_StateLoaded); //blocking
+  delete m_camera_component;
+  m_state = READY_S;
+
+  mtx.unlock();
 }
 
 

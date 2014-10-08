@@ -2,6 +2,8 @@
 #define _CAMERA_STILL_HEADER
 
 #include <iostream>
+#include "../tools/mutex.h"
+#include "../tools/timer.h"
 
 class OMXILComponent;
 class OMXILEncoderComponent;
@@ -9,7 +11,7 @@ class OMXILCameraComponent;
 
 class CameraStill {
 public:
-#if 0  
+#if 1  
   const static int CAM_WIDTH = 320;
   const static int CAM_HEIGHT = 240;
 #else
@@ -22,6 +24,16 @@ public:
     EXCEPTION_OMX_INIT,
   };
 
+  enum State {
+    NONE_S,
+    INIT_S,
+    READY_S,
+    ACQUIRING_S,
+    IREADY_S,
+    CAPTURING_S,
+    RETURING_S
+  };
+
   CameraStill(int close_delay_time);
 
   virtual ~CameraStill();
@@ -31,15 +43,20 @@ public:
 private:  
   void run();
   bool takePictureReady();
-  int m_close_delay_time; //sec
+  int m_delay_time; //sec
   OMXILCameraComponent* m_camera_component;
   OMXILComponent* m_preview_component;
   OMXILEncoderComponent* m_encoder_component;
   
   char m_imgBuf[BUF_SIZE];
   bool m_bReady;
-
-  static void bufferFilled(int size);
+  State m_state;
+  static void cbEndOfFrame(int size, void*clientData);
+  static void cbEndOfStream(void*clientData);
+  Mutex mtx;
+  tools::Timer* m_timer;
+  static void cbTimer(void*);
+  void returnResources();
 };
 
 

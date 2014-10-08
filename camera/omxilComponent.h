@@ -108,9 +108,9 @@ public:
     virtual void bufferFilled(int size) = 0;
   };    
   enum BUFFER_STATUS_T {
-    NONE,
-    FILLED,
-    DONE,  
+    NONE_S,
+    EOF_S,  //End of Frame
+    EOS_S,  //End of Stream
   };
   const static int INPUT_PORT_NUM = 340;
   const static int OUTPUT_PORT_NUM = 341;
@@ -118,9 +118,12 @@ public:
   virtual bool disable_port (OMX_U32 port);
   
   OMXILEncoderComponent(int width, int height, char* imgBuf, int szbuf, 
-      void (*cbBufferFilled)(int)):OMXILComponent("OMX.broadcom.image_encode", FillBufferDone), 
+      void (*cbEndOfFrame)(int, void*), void (*cbEndOfStream)(void*), void* 
+      clientData):OMXILComponent("OMX.broadcom.image_encode", FillBufferDone), 
       m_width(width), m_height(height), m_imgBuf(imgBuf), m_szbuf(szbuf), 
-      m_output_buffer(NULL), m_bufferStatus(NONE), m_cbBufferFilled(cbBufferFilled){}
+      m_output_buffer(NULL), m_bufferStatus(NONE_S), 
+      m_cbEndOfFrame(cbEndOfFrame), m_cbEndOfStream(cbEndOfStream), 
+      m_clientData(clientData){}
   virtual ~OMXILEncoderComponent(){};
 
   bool set_output_port();
@@ -133,9 +136,11 @@ private:
   int m_szbuf;
   OMX_BUFFERHEADERTYPE* m_output_buffer;
   BUFFER_STATUS_T m_bufferStatus;
-  void (*m_cbBufferFilled)(int);
+  void (*m_cbEndOfFrame)(int, void*);
+  void (*m_cbEndOfStream)(void*);
+  void* m_clientData;
   int m_flength;
-  pthread_t m_threadId;
+  pthread_t m_captureThreadId;
 
 
   static OMX_ERRORTYPE FillBufferDone (

@@ -1,7 +1,6 @@
 #include "maindelegator.h"
 #include "tools/log.h"
 #include "serialRfid1356.h"
-#include "libRaspiStill.h"
 #include "gpio.h"
 
 using namespace tools;
@@ -56,11 +55,11 @@ bool MainDelegator::request_processRfidSerialData(char* serialnum, int timelimit
 {
   bool ret = false;
   LOGV("request_processRfidSerialData\n");
+  m_rfid_mtx.lock();
   client_date_Rfid* cd = new client_date_Rfid(timelimit, serialnum);
   TEvent<MainDelegator>* e = new TEvent<MainDelegator>(&MainDelegator::_processRfidSerialData, cd);
   m_eventQ.push(e);
 
-  m_rfid_mtx.lock();
   m_rfid_process_completed.wait(m_rfid_mtx);
   m_rfid_mtx.unlock();
 
@@ -81,14 +80,13 @@ void MainDelegator::_processRfidSerialData(void* arg)
   char buf[4096];
 
 
+  m_rfid_mtx.lock();
 
   Gpio gpio(17, true);
   gpio.write(true);
 
 #ifdef CAMERA  
-  LOGI("takePicture +++\n");
   m_cameraStill->takePicture();
-  LOGI("takePicture ---\n");
 /*
   if(len < 0)
     fprintf(stderr, "takePicture error!\n");
@@ -114,6 +112,8 @@ void MainDelegator::_processRfidSerialData(void* arg)
 */  
 error:  
   m_rfid_process_completed.notify_one();
+  
+  m_rfid_mtx.unlock();
 }
 
 
@@ -124,7 +124,7 @@ MainDelegator::MainDelegator()
   LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 
 #ifdef CAMERA  
-  m_cameraStill = new CameraStill(60 * 10); //10 minutes
+  m_cameraStill = new CameraStill(10); //10 sec
 #endif
   m_serialRfid = new SerialRfid1356("/dev/ttyAMA0");
   ret = m_serialRfid->open();

@@ -40,6 +40,20 @@ public:
 #endif
     //cout << "EnterCriticalSection --" << (int)m_p << endl;
   }
+  
+  int timedlock(int count)
+  {
+    //cout << "EnterCriticalSection ++" << (int)m_p << endl;
+#ifdef _WIN32
+#else
+    struct timespec ts_timeout;
+    ts_timeout.tv_sec = time(NULL) + count;
+    ts_timeout.tv_nsec = 0;
+    return pthread_mutex_timedlock(m_p, &ts_timeout);
+#endif
+    //cout << "EnterCriticalSection --" << (int)m_p << endl;
+  }
+  
   void unlock()
   {
     //cout << "LeaveCriticalSection ++" << (int)m_p << endl;
