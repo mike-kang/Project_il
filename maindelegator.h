@@ -6,7 +6,9 @@
 #include "tools/event.h"
 #include "serialRfid.h"
 #include "webservice.h"
-
+#ifdef CAMERA
+#include "camera/camerastill.h"
+#endif
 
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
@@ -39,6 +41,10 @@ private:
   WebService* m_ws;
   SerialRfid* m_serialRfid;  
   char* m_faceBuf;
+  
+#ifdef CAMERA  
+  CameraStill* m_cameraStill;
+#endif
 };
 
 

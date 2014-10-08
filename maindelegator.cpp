@@ -87,8 +87,9 @@ void MainDelegator::_processRfidSerialData(void* arg)
 
 #ifdef CAMERA  
   LOGI("takePicture +++\n");
-  int len = takePicture();
-  LOGI("takePicture %d ---\n", len);
+  m_cameraStill->takePicture();
+  LOGI("takePicture ---\n");
+/*
   if(len < 0)
     fprintf(stderr, "takePicture error!\n");
   else{
@@ -96,6 +97,7 @@ void MainDelegator::_processRfidSerialData(void* arg)
     fwrite(m_faceBuf, 1, len, fp);
     fclose(fp);
   }
+*/
 #endif  
 /*
   sock = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", cd->m_serialnum, cd->timelimit);  //blocked I/O
@@ -118,21 +120,19 @@ error:
 MainDelegator::MainDelegator()
 {
   bool ret;
-#ifdef CAMERA  
-  m_faceBuf = new char[300* 1024];
-  init_raspistill(320, 240, m_faceBuf);
-#endif
   m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
-  LOGV("MainDelegator \n");
+  LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 
-#if 0  
+#ifdef CAMERA  
+  m_cameraStill = new CameraStill(60 * 10); //10 minutes
+#endif
   m_serialRfid = new SerialRfid1356("/dev/ttyAMA0");
   ret = m_serialRfid->open();
   if(!ret)
     LOGE("SerialRfid open fail!\n");
   
   m_serialRfid->start(300, this); //interval=300ms  
-#endif
+
 
   m_ws = new WebService("192.168.0.7", 8080);
   m_ws->start();
