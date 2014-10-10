@@ -130,8 +130,10 @@ MainDelegator::MainDelegator()
   LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 
 #ifdef CAMERA  
-  m_cameraStill = new CameraStill(10); //10 sec
+  m_cameraDelayOffTime = 10 * 60; //10min
   m_takePictureMaxWaitTime = 2;
+
+  m_cameraStill = new CameraStill(m_cameraDelayOffTime);
 
 #endif
   m_serialRfid = new SerialRfid1356("/dev/ttyAMA0");

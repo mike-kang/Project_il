@@ -44,6 +44,7 @@ private:
 #ifdef CAMERA  
   CameraStill* m_cameraStill;
   int m_takePictureMaxWaitTime;
+  int m_cameraDelayOffTime;
 #endif
 };
 
