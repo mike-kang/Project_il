@@ -805,7 +805,6 @@ void* OMXILEncoderComponent::capturing(void* arg)
     sem_wait(&component->sem_EventComplete);
 
     if(component->m_bufferStatus == EOF_S){
-      LOGI("Good! %d\n", component->m_flength);
       if(component->m_cbEndOfFrame) component->m_cbEndOfFrame(component->m_flength, component->m_clientData);
     }
     else if(component->m_bufferStatus == EOS_S){

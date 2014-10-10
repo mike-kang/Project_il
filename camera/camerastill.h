@@ -4,6 +4,7 @@
 #include <iostream>
 #include "../tools/mutex.h"
 #include "../tools/timer.h"
+#include "../tools/Semaphore.h"
 
 class OMXILComponent;
 class OMXILEncoderComponent;
@@ -38,7 +39,7 @@ public:
 
   virtual ~CameraStill();
   
-  void takePicture();
+  bool takePicture(char** buf, int* len, int maxWaitTime); //blocking function 
   
 private:  
   void run();
@@ -49,14 +50,17 @@ private:
   OMXILEncoderComponent* m_encoder_component;
   
   char m_imgBuf[BUF_SIZE];
+  int m_imgLength;
   bool m_bReady;
   State m_state;
   static void cbEndOfFrame(int size, void*clientData);
   static void cbEndOfStream(void*clientData);
   Mutex mtx;
   tools::Timer* m_timer;
+  Semaphore m_takePictureSem;
   static void cbTimer(void*);
   void returnResources();
+  
 };
 
 

@@ -50,8 +50,8 @@ public:
 #ifdef _WIN32  
 #else
     struct timespec ts_timeout;
-    ts_timeout.tv_sec = time(NULL) + count;
-    ts_timeout.tv_nsec = 0;
+    clock_gettime(CLOCK_REALTIME, &ts_timeout);
+    ts_timeout.tv_sec += count;
     int ret = pthread_cond_timedwait(&m_p, (pthread_mutex_t*)(m.get()), &ts_timeout);
 #endif
     //cout << "Consition::timedwait() -- " << m.get() <<" " << ret<< endl;

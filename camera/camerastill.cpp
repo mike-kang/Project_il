@@ -25,7 +25,7 @@
 
 //static int verbos = 1;
 
-CameraStill::CameraStill(int close_delay_time):m_delay_time(close_delay_time), m_bReady(false)
+CameraStill::CameraStill(int close_delay_time):m_delay_time(close_delay_time), m_bReady(false), m_takePictureSem(0)
 {
   OMX_ERRORTYPE error;
   //Initialize Broadcom's VideoCore APIs
@@ -80,8 +80,9 @@ void CameraStill::cbTimer(void* clientData)
   cs->returnResources();
 }
 
-void CameraStill::takePicture()
+bool CameraStill::takePicture(char** buf, int* len, int maxWaitTime)
 {
+  LOGV("takePicture\n");
   mtx.lock();
   if(m_timer->IsActive())
     m_timer->cancel();
@@ -89,6 +90,14 @@ void CameraStill::takePicture()
   m_camera_component->capture(true);
   m_encoder_component->capture();
   mtx.unlock();
+  m_takePictureSem.reset();
+  int ret = m_takePictureSem.timedwait(maxWaitTime);  //blocking for maxWaitTime.
+  LOGV("takePicture end waiting\n");
+  if(ret < 0)
+    return false;
+  *buf = m_imgBuf;
+  *len = m_imgLength;
+  return true;
 }
 
 //static //this function is called from encoderComponent thread.
@@ -96,7 +105,11 @@ void CameraStill::cbEndOfFrame(int size, void* clientData)
 {
   LOGV("cbEndOfFrame %d\n", size);
   CameraStill* cs = (CameraStill*)clientData;
-  //request
+  cs->m_imgLength = size;
+  
+  LOGV("cbEndOfFrame post\n");
+  cs->m_takePictureSem.post();
+  
 }
 
 //static //this function is called from encoderComponent thread.

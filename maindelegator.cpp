@@ -85,17 +85,23 @@ void MainDelegator::_processRfidSerialData(void* arg)
   Gpio gpio(17, true);
   gpio.write(true);
 
-#ifdef CAMERA  
-  m_cameraStill->takePicture();
-/*
-  if(len < 0)
-    fprintf(stderr, "takePicture error!\n");
-  else{
-    FILE* fp = fopen("test.jpeg", "wb");
-    fwrite(m_faceBuf, 1, len, fp);
-    fclose(fp);
+#ifdef CAMERA
+  char* imgBuf = NULL;;
+  int imgLength;
+  if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
+  {
+    //for test
+    if(imgLength < 0)
+      fprintf(stderr, "takePicture error!\n");
+    else{
+      FILE* fp = fopen("test.jpeg", "wb");
+      fwrite(imgBuf, 1, imgLength, fp);
+      fclose(fp);
+    }
   }
-*/
+  else{
+    LOGE("take Picture fail!!!\n");
+  }
 #endif  
 /*
   sock = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", cd->m_serialnum, cd->timelimit);  //blocked I/O
@@ -125,6 +131,8 @@ MainDelegator::MainDelegator()
 
 #ifdef CAMERA  
   m_cameraStill = new CameraStill(10); //10 sec
+  m_takePictureMaxWaitTime = 2;
+
 #endif
   m_serialRfid = new SerialRfid1356("/dev/ttyAMA0");
   ret = m_serialRfid->open();

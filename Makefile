@@ -16,7 +16,10 @@ OBJS = main.o
 
 
 
-all : main
+all : $(CAMERA_LIB) main
+
+$(CAMERA_LIB) :
+	make -C ./camera
 
 main : main.o  maindelegator.o serialRfid.o serialRfid1356.o webservice.o gpio.o tools/libtool.so $(CAMERA_LIB)
 	g++ -o $@ main.o maindelegator.o serialRfid.o serialRfid1356.o webservice.o gpio.o -L./tools -ltool -lpthread $(CAMERA_LFLAGS)

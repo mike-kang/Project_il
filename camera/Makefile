@@ -22,7 +22,7 @@ ${LIB} : ${OBJS}
 ${EXE} : ${OBJS} main.o
 	g++  -o ${EXE} ${OBJS} main.o -L../tools -ltool -lpthread ${CAMERA_LFLAGS} -lcamera
 	
-camerastill.o : ../tools/log.h ../tools/logservice.h camerastill.h omxilComponent.h 
+camerastill.o : ../tools/log.h ../tools/logservice.h camerastill.h omxilComponent.h ../tools/Semaphore.h
 omxilComponent.o : ../tools/log.h ../tools/logservice.h omxilComponent.h dump.h
 main.o : camerastill.h omxilComponent.h 
 

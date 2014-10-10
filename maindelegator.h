@@ -40,10 +40,10 @@ private:
   Mutex m_rfid_mtx;
   WebService* m_ws;
   SerialRfid* m_serialRfid;  
-  char* m_faceBuf;
   
 #ifdef CAMERA  
   CameraStill* m_cameraStill;
+  int m_takePictureMaxWaitTime;
 #endif
 };
 
