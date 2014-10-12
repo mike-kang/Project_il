@@ -1,7 +1,7 @@
 #include "logservice.h"
 #include "property.h"
 #include "filesystem.h"
-
+#include <fstream>
 #include <errno.h>
 #include <stdio.h>
 #ifdef _WIN32
@@ -29,7 +29,9 @@ LogService *LogService::m_instance = NULL;
 static LogService::log_t log_type = LogService::TYPE_NULL; //0: file 1:console 2:debugout(windows only)  3: null
 static bool log_file_type_flush_per_line = false; //FILE_TYPE_FLUSH_PER_LINE
 #ifdef _WIN32
-static HANDLE hOut = INVALID_HANDLE_VALUE;
+static HANDLE hOut = INVALID_HANDLE_VALUE;  //console handle
+#else
+std::ofstream consoleOfstream;
 #endif
 FILE* fp;
 
@@ -41,7 +43,8 @@ void consoleWrite(const char *buf)
   DWORD size;
   WriteFile(hOut, buf, strlen(buf), &size, NULL);
 #else  
-  std::cout << buf;
+  consoleOfstream << buf;
+  consoleOfstream.flush();
 #endif
 }
 
@@ -99,6 +102,9 @@ LogService* LogService::init(LogService::log_t type, char* path)
     hOut = GetStdHandle(STD_OUTPUT_HANDLE);
   }
 #else
+  if(log_type == TYPE_CONSOLE){ //console
+      consoleOfstream.open("/dev/pts/3");
+  }
 
 #endif
   return m_instance;
@@ -117,6 +123,10 @@ LogService::~LogService()
 //    if(hOut != INVALID_HANDLE_VALUE)
 //      CloseHandle(hOut);
 //    FreeConsole();
+  }
+#else
+  if(log_type == TYPE_CONSOLE){ //console
+      consoleOfstream.close();
   }
 #endif
 }
