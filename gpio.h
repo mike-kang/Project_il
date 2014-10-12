@@ -5,7 +5,7 @@
 
 class Gpio {
 public:
-  Gpio(int num, bool out);
+  Gpio(int num, bool out=true/*direct*/, bool init=false);
   virtual ~Gpio();
   void write(bool v);
   bool read();

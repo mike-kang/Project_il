@@ -19,7 +19,7 @@ using namespace tools;
 
 char* itoa(int val, int base);
 
-Gpio::Gpio(int num, bool out): m_number(num), m_out(out)
+Gpio::Gpio(int num, bool out, bool init): m_number(num), m_out(out)
 {
   int fd;
   char path[45];
@@ -42,6 +42,9 @@ Gpio::Gpio(int num, bool out): m_number(num), m_out(out)
     m_fd = open(path, O_WRONLY);
   else
     m_fd = open(path, O_RDONLY);
+
+  //set init value
+  write(init);
   
   LOGV("Gpio %d ---\n", m_fd);
 }
