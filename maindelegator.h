@@ -41,6 +41,7 @@ private:
   WebService* m_ws;
   SerialRfid* m_serialRfid;  
   
+  int m_rfid_processMaxTime;
 #ifdef CAMERA  
   CameraStill* m_cameraStill;
   int m_takePictureMaxWaitTime;

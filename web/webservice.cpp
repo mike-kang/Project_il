@@ -39,8 +39,29 @@ void WebService::run()
   }
 
 }
+/*
+int WebService::request_CodeDataSelect(int timelimit)
+{
+  int fd = -1;
+  LOGV("request_GetNetInfo\n");
+  char *cmd = new char[100];
+  sprintf(cmd,"GET /WebService/ItlogService.asmx/CodeDataSelect? HTTP/1.1\r\nHost: %s\r\n\r\n", m_ip);
+  req_data* rd = new req_data(cmd, timelimit);
 
+  rd->mtx.lock();
+  TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
+  m_requestQ.push(e);
 
+  rd->m_request_completed.wait(rd->mtx);
+  rd->mtx.unlock();
+
+  if(rd->retval == RET_SUCCESS)
+    fd = rd->fd;
+
+  delete rd;
+  return fd;
+}
+*/
 
 int WebService::request_GetNetInfo(int timelimit)
 {
@@ -49,10 +70,11 @@ int WebService::request_GetNetInfo(int timelimit)
   char *cmd = new char[100];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/GetNetInfo? HTTP/1.1\r\nHost: %s\r\n\r\n", m_ip);
   req_data* rd = new req_data(cmd, timelimit);
+
+  rd->mtx.lock();
   TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
   m_requestQ.push(e);
 
-  rd->mtx.lock();
   rd->m_request_completed.wait(rd->mtx);
   rd->mtx.unlock();
 
@@ -72,10 +94,11 @@ int WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int tim
   sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=A&sSearchValue= HTTP/1.1\r\nHost: %s\r\n\r\n"
     , sMemcoCd, sSiteCd, m_ip);
   req_data* rd = new req_data(cmd, timelimit);
+
+  rd->mtx.lock();
   TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
   m_requestQ.push(e);
 
-  rd->mtx.lock();
   rd->m_request_completed.wait(rd->mtx);
   rd->mtx.unlock();
 
@@ -111,10 +134,10 @@ int WebService::request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* seri
 
   LOGV("cmd:%s\n", cmd);
   req_data* rd = new req_data(cmd, timelimit);
+  rd->mtx.lock();
   TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
   m_requestQ.push(e);
 
-  rd->mtx.lock();
   rd->m_request_completed.wait(mtx);
   rd->mtx.unlock();
 
@@ -167,10 +190,14 @@ void WebService::_processRequest(void* arg)
   fds.fd = sock;
   fds.events = POLLIN;
   ret = poll(&fds, 1, rd->timelimit);
-  if(ret == -1)
+  if(ret == -1){
+    LOGE("RET_POLL_FAIL\n");
     rd->retval = RET_POLL_FAIL;
-  else if(ret == 0)
+  }
+  else if(ret == 0){
+    LOGE("RET_POLL_TIMEOUT\n");
     rd->retval = RET_POLL_TIMEOUT;
+  }
   else{
     rd->retval = RET_SUCCESS;
     rd->fd = sock;
@@ -191,12 +218,14 @@ int WebService::send_command(char* cmd)
   }
   LOGV("connect\n");
   if(connect(sock, (struct sockaddr *)&m_remote, sizeof(struct sockaddr)) < 0){
+    LOGE("EXCEPTION_CONNECT\n");
     throw EXCEPTION_CONNECT;
   }
 
   LOGV("send command\n");
   int len = send(sock, cmd, strlen(cmd), 0);
   if(len == -1){
+    LOGE("EXCEPTION_SEND_COMMAND\n");
     throw EXCEPTION_SEND_COMMAND;
   }
 

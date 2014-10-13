@@ -2,8 +2,13 @@
 #include "tools/log.h"
 #include "serialRfid1356.h"
 #include "gpio.h"
+#include <cstdio>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 using namespace tools;
+using namespace std;
 
 #define LOG_TAG "MainDelegator"
 
@@ -11,7 +16,7 @@ void MainDelegator::onData(char* buf)
 {
   LOGI("onData %s\n", buf);
   //request
-  int fd = request_processRfidSerialData(buf, 3000);
+  int fd = request_processRfidSerialData(buf, m_rfid_processMaxTime);
   
   
 }
@@ -36,18 +41,18 @@ void MainDelegator::run()
 
 }
 
-struct client_date {
+struct client_data {
   int retval;
   int timelimit;
 
-  client_date(int t):timelimit(t){};
+  client_data(int t):timelimit(t){};
 };
 
-struct client_date_Rfid : client_date {
+struct client_data_Rfid : client_data {
   char* m_serialnum;
 
-  client_date_Rfid(int timelimit, char* serialnum=NULL)
-    :client_date(timelimit), m_serialnum(serialnum){} 
+  client_data_Rfid(int timelimit, char* serialnum=NULL)
+    :client_data(timelimit), m_serialnum(serialnum){} 
 };
 
 //blocking function
@@ -56,7 +61,7 @@ bool MainDelegator::request_processRfidSerialData(char* serialnum, int timelimit
   bool ret = false;
   LOGV("request_processRfidSerialData\n");
   m_rfid_mtx.lock();
-  client_date_Rfid* cd = new client_date_Rfid(timelimit, serialnum);
+  client_data_Rfid* cd = new client_data_Rfid(timelimit, serialnum);
   TEvent<MainDelegator>* e = new TEvent<MainDelegator>(&MainDelegator::_processRfidSerialData, cd);
   m_eventQ.push(e);
 
@@ -75,19 +80,67 @@ bool MainDelegator::request_processRfidSerialData(char* serialnum, int timelimit
 void MainDelegator::_processRfidSerialData(void* arg)
 {
   int ret;
-  client_date_Rfid* cd = (client_date_Rfid*)arg;
+  client_data_Rfid* cd = (client_data_Rfid*)arg;
   int sock;
   char buf[4096];
-
-
-  m_rfid_mtx.lock();
-
-  Gpio gpio(17, true);
-  gpio.write(true);
-
-#ifdef CAMERA
+  int readlen;
   char* imgBuf = NULL;;
   int imgLength;
+  int contentsLength;
+
+  m_rfid_mtx.lock();
+/*
+  Gpio gpio(17, true);
+  gpio.write(true);
+*/
+  //request to web server
+  sock = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", cd->m_serialnum, cd->timelimit);  //blocked I/O
+  if(sock > 0){
+
+    //header
+    readlen = recv(sock, buf, 4096, 0); //for header
+    if(readlen > 0){
+      LOGV("received: %d\n", readlen);
+      //debug start
+      std::ofstream oOut("received.txt");
+      oOut << buf << endl;
+      oOut.close();
+      //debug end
+      char* p = strstr(buf, " ");
+      char* e = strstr(p+1, " "); *e = '\0';
+      int retVal = atoi(p+1);
+      LOGV("return val: %d\n", retVal);
+      if(retVal != 200){
+        LOGE("fail ---\n"); 
+      }
+      p = strstr(e+1, "\nContent-Length:");
+      //LOGV("p: %x\n", p);
+      p+=17; //"\nContent-Length: " 
+      e = strstr(p, "\n"); *e = '\0';
+      contentsLength = atoi(p);
+      LOGV("length: %d\n", contentsLength);
+      LOGV("test: %d\n", e - buf);
+
+      //test
+      p = strstr(e+1,"?xml");
+      char*p2 = strstr(e+1,"</DataSet>");
+      LOGV("test2 %d\n", p2- p);
+    }
+
+    //contents
+    //char* buffer = new char[contentsLength];
+    //readlen = recv(sock, buffer, contentsLength, 0); //for header
+    
+
+    
+    close(sock);
+  }
+  else
+  {
+    LOGE("request_RfidInfoSelect fail!\n");
+    goto error;
+  }
+#ifdef CAMERA
   if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
   {
     //for test
@@ -103,19 +156,7 @@ void MainDelegator::_processRfidSerialData(void* arg)
     LOGE("take Picture fail!!!\n");
   }
 #endif  
-/*
-  sock = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", cd->m_serialnum, cd->timelimit);  //blocked I/O
-  if(sock < 0){
-    LOGE("request_RfidInfoSelect fail!\n");
-    goto error;
-  }
-  int readlen;
-  while((readlen = recv(sock, buf, 4096, 0)) > 0){
-    LOGV("%s", buf);
-    memset(buf,0,4096);
-  }
-  close(sock);
-*/  
+  system("aplay Sound/ok.wav");  
 error:  
   m_rfid_process_completed.notify_one();
   
@@ -129,10 +170,11 @@ MainDelegator::MainDelegator()
   m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
   LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 
-#ifdef CAMERA  
-  m_cameraDelayOffTime = 10 * 60; //10min
-  m_takePictureMaxWaitTime = 2;
+  m_rfid_processMaxTime = 3000; // 3 sec
 
+#ifdef CAMERA  
+  m_cameraDelayOffTime = 10 * 60; //10 min
+  m_takePictureMaxWaitTime = 2; // 2 sec
   m_cameraStill = new CameraStill(m_cameraDelayOffTime);
 
 #endif
@@ -151,28 +193,58 @@ MainDelegator::MainDelegator()
   sock = m_ws->request_GetNetInfo(3000);  //blocked I/O
   if(sock < 0)
     LOGE("request_GetNetInfo fail!\n");
+  char buf[4096+1];
+  int readlen;
+  if(sock> 0){
+    readlen = recv(sock, buf, 4096, 0);
+    LOGV("%s\n", buf);
+    close(sock);
+    
+    //debug start
+    std::ofstream oOut("received_GetNetInfo.txt");
+    oOut << buf << endl;
+    oOut.close();
+    //debug end
+  }
+  /*
+  sock = m_ws->request_GetNetInfo(3000);  //blocked I/O
+  if(sock < 0)
+    LOGE("request_GetNetInfo fail!\n");
   char buf[4096];
   int readlen;
   if(sock> 0){
     readlen = recv(sock, buf, 4096, 0);
     LOGV("%s\n", buf);
-   
-
     close(sock);
+    
+    //debug start
+    std::ofstream oOut("received_GetNetInfo.txt");
+    oOut << buf << endl;
+    oOut.close();
+    //debug end
   }
+*/
 
-  /*
   sock = m_ws->request_RfidInfoSelectAll("MC00000003", "ST00000005", -1);  //blocked I/O
   if(sock < 0)
     LOGE("request_RfidInfoSelect fail!\n");
   if(sock> 0){
+    std::ofstream oOut("received_RfidInfoSelectAll.txt");
     while((readlen = recv(sock, buf, 4096, 0)) > 0){
-      LOGV("%s\n", buf);
+      LOGV("received: %d\n", readlen);
+      
+      buf[readlen] ='\0';
+      
+      //debug start
+      oOut << buf;
+      //debug end
+      //if(readlen < 4096) break;
     }
+    oOut.close();
 
     close(sock);
   }
-   */ 
+
 //#define TEST_SERVER_TIME_GET
 //#define TEST_RFID_INFO_SELECT   
 
