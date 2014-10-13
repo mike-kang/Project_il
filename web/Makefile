@@ -13,6 +13,9 @@ ${EXE} :  ${OBJS}
 	g++  -o ${EXE}  ${OBJS} -L../tools -ltool -lrt -lpthread
 	
 
+main.o : webservice.h
+webservice.o : webservice.h
+
 .PHONY : clean
 clean :
 	-rm *.o  ${EXE}

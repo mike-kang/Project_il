@@ -24,7 +24,7 @@ int main()
   //std::string decoded = base64_decode(encoded);
 
   std::ofstream oOut("resultbyEncode.txt");
-  oOut << encoded << endl;
+  oOut << encoded;
   oOut.close();
   
 
@@ -37,7 +37,7 @@ int main()
   string decoded = base64_decode(encoded2);
   
   ofstream oOut2("resultbyDecode.jpg", ofstream::binary);
-  oOut2 << decoded << endl;
+  oOut2 << decoded;
   oOut2.close();
   return 0;
 }

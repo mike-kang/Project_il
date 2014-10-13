@@ -24,9 +24,11 @@ public:
     Condition m_request_completed;
     Mutex mtx;
     char* m_cmd;
-    req_data(char* cmd, int t):m_cmd(cmd), timelimit(t){ m_cbfunc=NULL;};
-    req_data(char* cmd, CCBFunc cbfunc, void* client):m_cmd(cmd), m_cbfunc(cbfunc), m_client(client){timelimit=-1;};
-    virtual ~req_data() { delete m_cmd;}
+    int m_cmd_offset;
+    req_data(char* cmd, int t):m_cmd(cmd), m_cmd_offset(0), timelimit(t) { m_cbfunc=NULL;};
+    req_data(char* cmd, int cmd_offset, int t):m_cmd(cmd), m_cmd_offset(cmd_offset), timelimit(t) { m_cbfunc=NULL;};
+    req_data(char* cmd, CCBFunc cbfunc, void* client):m_cmd(cmd), m_cmd_offset(0), m_cbfunc(cbfunc), m_client(client){timelimit=-1;};
+    virtual ~req_data() { delete m_cmd; }
   };
 
   enum Except{
@@ -49,12 +51,14 @@ public:
   int start();
 
 //request
-  int request_GetNetInfo(int timelimit);
+  int request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, int timelimit);
+  int request_GetNetInfo(int timelimit, CCBFunc cbfunc=NULL);
   int request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit);
   void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, CCBFunc cbfunc, void* client);
   int request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int 
   timelimit);
   void request_ServerTimeGet(CCBFunc cbfunc, void* client);
+  int request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit);
 
 private:
   void run(); 
@@ -69,7 +73,7 @@ private:
   tools::Queue<TEvent< WebService> > m_requestQ;
   Condition m_request_completed;
   Mutex mtx;
-  char m_ip[16]; //XXX.XXX.XXX.XXX
+  char m_serverIP[16]; //XXX.XXX.XXX.XXX
   int m_port;
   struct sockaddr_in m_remote;
 };

@@ -7,7 +7,7 @@
 
 WebService::WebService(const char* ip, int port)
 {
-  strcpy(m_ip, ip);
+  strcpy(m_serverIP, ip);
   m_port = port;
 
 }
@@ -15,7 +15,7 @@ WebService::WebService(const char* ip, int port)
 int WebService::start()
 {
   m_remote.sin_family = AF_INET;
-  inet_pton(AF_INET, m_ip, (void *)(&(m_remote.sin_addr.s_addr)));
+  inet_pton(AF_INET, m_serverIP, (void *)(&(m_remote.sin_addr.s_addr)));
   m_remote.sin_port = htons(m_port);
   m_thread = new Thread<WebService>(&WebService::run, this, "WebServiceThread");
 }
@@ -39,13 +39,16 @@ void WebService::run()
   }
 
 }
-/*
-int WebService::request_CodeDataSelect(int timelimit)
+
+#if 0
+int WebService::request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, int timelimit)
 {
   int fd = -1;
-  LOGV("request_GetNetInfo\n");
-  char *cmd = new char[100];
-  sprintf(cmd,"GET /WebService/ItlogService.asmx/CodeDataSelect? HTTP/1.1\r\nHost: %s\r\n\r\n", m_ip);
+  LOGV("request_CodeDataSelect\n");
+  char *cmd = new char[300];
+  sprintf(cmd,"GET /WebService/ItlogService.asmx/CodeDataSelect?sMemcoCd=%s&sSiteCd=%s&sType=T&sGroupCd=0007 HTTP/1.1\r\nHost: %s\r\n\r\n"
+    , sMemcoCd, sSiteCd, m_serverIP);
+
   req_data* rd = new req_data(cmd, timelimit);
 
   rd->mtx.lock();
@@ -61,15 +64,69 @@ int WebService::request_CodeDataSelect(int timelimit)
   delete rd;
   return fd;
 }
-*/
+#else
+//SOAP 1.1
+#define SOAP_2
+#ifdef SOAP_1_1
+#define SOAP_HEADER_SZ 161 //except ip & length
+#elif defined SOAP_2
+#define SOAP_HEADER_SZ 112 //except ip & length
+#endif
 
-int WebService::request_GetNetInfo(int timelimit)
+int WebService::request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, int timelimit)
 {
   int fd = -1;
-  LOGV("request_GetNetInfo\n");
-  char *cmd = new char[100];
-  sprintf(cmd,"GET /WebService/ItlogService.asmx/GetNetInfo? HTTP/1.1\r\nHost: %s\r\n\r\n", m_ip);
-  req_data* rd = new req_data(cmd, timelimit);
+  LOGV("request_CodeDataSelect SOAP 1.1\n");
+  char *cmd = new char[1024];
+
+#ifdef SOAP_1_1
+  sprintf(cmd+400, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
+    "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope\">\r\n"
+    "  <soap:Body>\r\n"
+    "    <CodeDataSelect xmlns=\"http://tempuri.org/\">\r\n"
+    "      <sMemcoCd>%s</sMemcoCd>\r\n"
+    "      <sSiteCd>%s</sSiteCd>\r\n"
+    "      <sType>T</sType>\r\n"
+    "      <sGroupCd>0007</sGroupCd>\r\n"
+    "    </CodeDataSelect>\r\n"
+    "  </soap:Body>\r\n"
+    "</soap:Envelope>",  sMemcoCd, sSiteCd);
+#elif defined SOAP_2
+  sprintf(cmd+400, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
+    "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">\r\n"
+    "  <soap12:Body>\r\n"
+    "    <CodeDataSelect xmlns=\"http://tempuri.org/\">\r\n"
+    "      <sMemcoCd>%s</sMemcoCd>\r\n"
+    "      <sSiteCd>%s</sSiteCd>\r\n"
+    "      <sType>T</sType>\r\n"
+    "      <sGroupCd>0007</sGroupCd>\r\n"
+    "    </CodeDataSelect>\r\n"
+    "  </soap12:Body>\r\n"
+    "</soap12:Envelope>",  sMemcoCd, sSiteCd);
+#endif
+  int len1 = strlen(cmd + 400);
+
+  int headerlength = SOAP_HEADER_SZ + strlen(m_serverIP) + 3; // strlen(itoa(len1,10)) = 3
+  int offset = 400 - headerlength;
+ 
+#ifdef SOAP_1_1
+  sprintf(cmd + offset, "POST /WebService/ItlogService.asmx HTTP/1.1\r\n"
+    "Host: %s\r\n"
+    "Content-Type: text/xml; charset=utf-8\r\n"
+    "Content-Length: %d\r\n"
+    "SOAPAction: \"http://tempuri.org/CodeDataSelect\"\r\n\r\n", m_serverIP, len1);
+#elif defined SOAP_2   
+  sprintf(cmd + offset, "POST /WebService/ItlogService.asmx HTTP/1.1\r\n"
+    "Host: %s\r\n"
+    "Content-Type: text/xml; charset=utf-8\r\n"
+    "Content-Length: %d\r\n\r\n", m_serverIP, len1);
+#endif
+  int len2 = strlen(cmd + offset);
+
+  cmd[400] = '<';
+  LOGV(cmd + offset);    
+
+  req_data* rd = new req_data(cmd, offset, timelimit);
 
   rd->mtx.lock();
   TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
@@ -78,6 +135,34 @@ int WebService::request_GetNetInfo(int timelimit)
   rd->m_request_completed.wait(rd->mtx);
   rd->mtx.unlock();
 
+  if(rd->retval == RET_SUCCESS)
+    fd = rd->fd;
+
+  delete rd;
+
+  LOGV("strlen=%d %d\n", len1, len2);
+  return fd;
+}
+
+#endif
+int WebService::request_GetNetInfo(int timelimit, CCBFunc cbfunc)
+{
+  int fd = -1;
+  LOGV("request_GetNetInfo\n");
+  char *cmd = new char[100];
+  sprintf(cmd,"GET /WebService/ItlogService.asmx/GetNetInfo? HTTP/1.1\r\nHost: %s\r\n\r\n", m_serverIP);
+  req_data* rd = new req_data(cmd, timelimit);
+
+  if(!cbfunc)
+    rd->mtx.lock();
+  
+  TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
+  m_requestQ.push(e);
+
+  if(!cbfunc){
+    rd->m_request_completed.wait(rd->mtx);
+    rd->mtx.unlock();
+  }
   if(rd->retval == RET_SUCCESS)
     fd = rd->fd;
 
@@ -92,7 +177,7 @@ int WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int tim
   LOGV("request_RfidInfoSelectAll\n");
   char *cmd = new char[300];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=A&sSearchValue= HTTP/1.1\r\nHost: %s\r\n\r\n"
-    , sMemcoCd, sSiteCd, m_ip);
+    , sMemcoCd, sSiteCd, m_serverIP);
   req_data* rd = new req_data(cmd, timelimit);
 
   rd->mtx.lock();
@@ -110,12 +195,12 @@ int WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int tim
 }
 
 //async
-void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, WebService::CCBFunc cbfunc, void* client)
+void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, CCBFunc cbfunc, void* client)
 {
   LOGV("request_RfidInfoSelectAll\n");
   char *cmd = new char[300];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=A&sSearchValue= HTTP/1.1\r\nHost: %s\r\n\r\n"
-    , sMemcoCd, sSiteCd, m_ip);
+    , sMemcoCd, sSiteCd, m_serverIP);
   req_data* rd = new req_data(cmd, cbfunc, client);
   TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
   m_requestQ.push(e);
@@ -130,7 +215,7 @@ int WebService::request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* seri
   LOGV("request_RfidInfoSelect\n");
   char *cmd = new char[300];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=R&sSearchValue=RFID_CAR='%s' HTTP/1.1\r\nHost: %s\r\n\r\n"
-    , sMemcoCd, sSiteCd, serialnum, m_ip);
+    , sMemcoCd, sSiteCd, serialnum, m_serverIP);
 
   LOGV("cmd:%s\n", cmd);
   req_data* rd = new req_data(cmd, timelimit);
@@ -153,10 +238,34 @@ void WebService::request_ServerTimeGet(WebService::CCBFunc cbfunc, void* client)
 {
   LOGV("request_ServerTimeGet\n");
   char *cmd = new char[300];
-  sprintf(cmd,"GET /WebService/ItlogService.asmx/ServerTimeGet? HTTP/1.1\r\nHost: %s\r\n\r\n", m_ip);
+  sprintf(cmd,"GET /WebService/ItlogService.asmx/ServerTimeGet? HTTP/1.1\r\nHost: %s\r\n\r\n", m_serverIP);
   req_data* rd = new req_data(cmd, cbfunc, client);
   TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
   m_requestQ.push(e);
+}
+
+int WebService::request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit)
+{
+  int fd = -1;
+  LOGV("request_StatusUpdate\n");
+  char *cmd = new char[400];
+  sprintf(cmd,"GET /WebService/ItlogService.asmx/Status_Update?sMemcoCd=%s&sSiteCd=%s&sGateCode=%s&sGateNo=%s&sGateIp=%s&sGateMac=%s HTTP/1.1\r\nHost: %s\r\n\r\n"
+    , sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, m_serverIP);
+
+  LOGV("cmd:%s\n", cmd);
+  req_data* rd = new req_data(cmd, timelimit);
+  rd->mtx.lock();
+  TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
+  m_requestQ.push(e);
+
+  rd->m_request_completed.wait(mtx);
+  rd->mtx.unlock();
+
+  if(rd->retval == RET_SUCCESS)
+    fd = rd->fd;
+
+  delete rd;
+  return fd;
 }
 
 
@@ -167,7 +276,7 @@ void WebService::_processRequest(void* arg)
   int sock;
 
   try{
-    sock = send_command(rd->m_cmd);
+    sock = send_command(rd->m_cmd + rd->m_cmd_offset);
   }
   catch (Except& e) {
     switch(e){
