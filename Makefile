@@ -12,7 +12,7 @@ else
   CPPFLAGS += -DCAMERA
 endif
 
-OBJS = main.o  maindelegator.o serialRfid.o serialRfid1356.o web/webservice.o gpio.o
+OBJS = main.o  maindelegator.o serialRfid.o serialRfid1356.o web/webservice.o hardware/gpio.o
 
 
 
@@ -25,12 +25,12 @@ main : ${OBJS} tools/libtool.so $(CAMERA_LIB)
 	g++ -o $@ ${OBJS} -L./tools -ltool -lpthread $(CAMERA_LFLAGS)
 
 
-main.o : maindelegator.h tools/log.h tools/logservice.h
-maindelegator.o : maindelegator.h tools/condition.h tools/mutex.h tools/serial.h serialRfid.h serialRfid1356.h tools/log.h tools/logservice.h camera/camerastill.h web/webservice.h
+main.o : maindelegator.h tools/log.h tools/logservice.h hardware/switchgpio.h hardware/gpio.h
+maindelegator.o : maindelegator.h tools/condition.h tools/mutex.h tools/serial.h serialRfid.h serialRfid1356.h tools/log.h tools/logservice.h camera/camerastill.h web/webservice.h hardware/switchgpio.h hardware/gpio.h
 serialRfid.o : serialRfid.h tools/log.h tools/logservice.h
 serialRfid1356.o : serialRfid1356.h tools/log.h tools/logservice.h
 web/webservice.o : web/webservice.h tools/log.h tools/logservice.h
-gpio.o : gpio.h tools/filesystem.h tools/log.h tools/logservice.h
+hardware/gpio.o : hardware/gpio.h tools/filesystem.h tools/log.h tools/logservice.h
 .PHONY : clean
 clean :
 	-rm *.o main

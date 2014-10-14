@@ -384,8 +384,6 @@ void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int ti
   return;
 }
 
-
-//sync
 char* WebService::request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* client)
 {
   char* ret = NULL;

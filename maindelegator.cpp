@@ -1,7 +1,6 @@
 #include "maindelegator.h"
 #include "tools/log.h"
 #include "serialRfid1356.h"
-#include "gpio.h"
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -122,7 +121,7 @@ error:
 }
 
 
-MainDelegator::MainDelegator()
+MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
 {
   bool ret;
   m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");

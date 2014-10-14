@@ -333,7 +333,7 @@ int main()
   }
 
   try{
-    xml_buf = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", "253153215009", 7000);  //blocked I/O
+    xml_buf = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", "253153215009", 3000);  //blocked I/O
     //xml_buf = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", "253153215009", cbRfidInfoSelect, NULL);  //blocked I/O
     if(xml_buf){
       cout << "***RfidInfoSelect: " << xml_buf << endl;

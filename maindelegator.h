@@ -9,6 +9,7 @@
 #ifdef CAMERA
 #include "camera/camerastill.h"
 #endif
+#include "hardware/switchgpio.h"
 
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
@@ -49,6 +50,12 @@ private:
   int m_takePictureMaxWaitTime; //sec
   int m_cameraDelayOffTime; //sec
 #endif
+
+  //Led
+  SwitchGpio m_yellowLed;
+  SwitchGpio m_blueLed;
+  SwitchGpio m_greenLed;
+  SwitchGpio m_redLed;
 };
 
 
