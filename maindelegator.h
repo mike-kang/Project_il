@@ -5,7 +5,7 @@
 #include "tools/thread.h"
 #include "tools/event.h"
 #include "serialRfid.h"
-#include "webservice.h"
+#include "web/webservice.h"
 #ifdef CAMERA
 #include "camera/camerastill.h"
 #endif
@@ -28,8 +28,8 @@ private:
 
   void _processRfidSerialData(void* arg);
 
-  static void cb_ServerTimeGet(void* arg);
-  void _cb_ServerTimeGet(void* arg);
+  //static void cb_ServerTimeGet(void* arg);
+  //void _cb_ServerTimeGet(void* arg);
 
 
   Thread<MainDelegator> *m_thread;
@@ -40,12 +40,14 @@ private:
   Mutex m_rfid_mtx;
   WebService* m_ws;
   SerialRfid* m_serialRfid;  
-  
-  int m_rfid_processMaxTime;
+
+  //settings
+  int m_rfidCheckInterval; //ms
+  int m_rfid_processMaxTime; //ms
 #ifdef CAMERA  
   CameraStill* m_cameraStill;
-  int m_takePictureMaxWaitTime;
-  int m_cameraDelayOffTime;
+  int m_takePictureMaxWaitTime; //sec
+  int m_cameraDelayOffTime; //sec
 #endif
 };
 

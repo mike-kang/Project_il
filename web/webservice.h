@@ -16,6 +16,7 @@ class WebService {
 public:
   static const int MAX_POLL_TIME = 3000;
   typedef  void (*CCBFunc)(void *client_data, int status, void* ret);
+
   class WebApi {
   public:
     enum Exception{
@@ -41,9 +42,7 @@ public:
 #endif    
     virtual bool parsing() = 0;
     
-    //WebApi(WebService* ws, char* cmd, int t):m_ws(ws), m_cmd(cmd), m_cmd_offset(0), timelimit(t) { m_cbfunc=NULL; } //sync
     WebApi(WebService* ws, char* cmd, int cmd_offset, int t):m_ws(ws), m_cmd(cmd), m_cmd_offset(cmd_offset), timelimit(t) { m_cbfunc=NULL;} //sync
-    //WebApi(WebService* ws, char* cmd, CCBFunc cbfunc, void* client):m_ws(ws), m_cmd(cmd), m_cmd_offset(0), m_cbfunc(cbfunc), m_client(client){timelimit=-1;} //async
     WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):m_ws(ws), m_cmd(cmd), m_cmd_offset(cmd_offset), m_cbfunc(cbfunc), m_client(client){timelimit=-1;};  //async
     virtual ~WebApi()
     {
@@ -95,14 +94,14 @@ public:
     {
       m_pRet = &m_ret;
 #ifdef DEBUG
-      oOut.open("received_CodeDataSelect.txt");
+      oOut.open("received_GetNetInfo.txt");
 #endif
     }
     GetNetInfo_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
     {
       m_pRet = &m_ret;
 #ifdef DEBUG
-      oOut.open("received_CodeDataSelect.txt");
+      oOut.open("received_GetNetInfo.txt");
 #endif
     }
     virtual ~GetNetInfo_WebApi()
@@ -117,22 +116,141 @@ public:
 
   };
 
+  class RfidInfoSelectAll_WebApi : public WebApi {
+  friend class WebService;
+  public:
+    virtual bool parsing();
+    
+    RfidInfoSelectAll_WebApi(WebService* ws, char* cmd, int cmd_offset, int t, char* outFilename):WebApi(ws, cmd, cmd_offset, t)  //sync
+    {
+#ifdef DEBUG
+      oOut.open("received_RfidInfoSelectAll.txt");
+#endif
+      strcpy(m_filename, outFilename);
+    }
+    RfidInfoSelectAll_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client, char* outFilename):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    {
+#ifdef DEBUG
+      oOut.open("received_RfidInfoSelectAll.txt");
+#endif
+      strcpy(m_filename, outFilename);
+    }
 
-  struct req_data {
-    int retval;
-    int fd;
-    int timelimit;
-    CCBFunc m_cbfunc;
-    void *m_client;
-    Condition m_request_completed;
-    Mutex mtx;
-    char* m_cmd;
-    int m_cmd_offset;
-    req_data(char* cmd, int t):m_cmd(cmd), m_cmd_offset(0), timelimit(t) { m_cbfunc=NULL;};
-    req_data(char* cmd, int cmd_offset, int t):m_cmd(cmd), m_cmd_offset(cmd_offset), timelimit(t) { m_cbfunc=NULL;};
-    req_data(char* cmd, CCBFunc cbfunc, void* client):m_cmd(cmd), m_cmd_offset(0), m_cbfunc(cbfunc), m_client(client){timelimit=-1;};
-    virtual ~req_data() { delete m_cmd; }
+    virtual ~RfidInfoSelectAll_WebApi()
+    {
+#ifdef DEBUG
+      oOut.close();
+#endif  
+    }
+
+  private:
+    char m_filename[255];
   };
+
+  class RfidInfoSelect_WebApi : public WebApi {
+  friend class WebService;
+  public:
+    virtual bool parsing();
+    
+    RfidInfoSelect_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
+    {
+#ifdef DEBUG
+      oOut.open("received_RfidInfoSelect.txt");
+#endif
+    }
+    RfidInfoSelect_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    {
+#ifdef DEBUG
+      oOut.open("received_RfidInfoSelect.txt");
+#endif
+    }
+    virtual ~RfidInfoSelect_WebApi()
+    {
+#ifdef DEBUG
+      oOut.close();
+#endif  
+    }
+  };
+
+  class ServerTimeGet_WebApi : public WebApi {
+  friend class WebService;
+  public:
+    virtual bool parsing();
+    
+    ServerTimeGet_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
+    {
+#ifdef DEBUG
+      oOut.open("received_ServerTimeGet.txt");
+#endif
+    }
+    ServerTimeGet_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    {
+#ifdef DEBUG
+      oOut.open("received_ServerTimeGet.txt");
+#endif
+    }
+    virtual ~ServerTimeGet_WebApi()
+    {
+#ifdef DEBUG
+      oOut.close();
+#endif  
+    }
+  };
+  
+  class StatusUpdate_WebApi : public WebApi {
+  friend class WebService;
+  public:
+    virtual bool parsing();
+    
+    StatusUpdate_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
+    {
+#ifdef DEBUG
+      oOut.open("received_StatusUpdate.txt");
+#endif
+    }
+    StatusUpdate_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    {
+      m_pRet = &m_ret;
+#ifdef DEBUG
+      oOut.open("received_StatusUpdate.txt");
+#endif
+    }
+    virtual ~StatusUpdate_WebApi()
+    {
+      m_pRet = &m_ret;
+#ifdef DEBUG
+      oOut.close();
+#endif  
+    }
+    private:
+      bool m_ret;
+  };
+
+  class TimeSheetInsert_WebApi : public WebApi {
+  friend class WebService;
+  public:
+    virtual bool parsing();
+    
+    TimeSheetInsert_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
+    {
+#ifdef DEBUG
+      oOut.open("received_TimeSheetInsert.txt");
+#endif
+    }
+    TimeSheetInsert_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    {
+#ifdef DEBUG
+      oOut.open("received_TimeSheetInsert.txt");
+#endif
+    }
+    virtual ~TimeSheetInsert_WebApi()
+    {
+#ifdef DEBUG
+      oOut.close();
+#endif  
+    }
+  };
+  
 
   enum Except{
     EXCEPTION_CREATE_SOCKET,
@@ -158,14 +276,67 @@ public:
   //int start();
 
 //request
-  char* request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, int timelimit, CCBFunc cbfunc=NULL, void* client=NULL);
-  bool request_GetNetInfo(int timelimit, CCBFunc cbfunc=NULL, void* client=NULL);
-  int request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit);
-  void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, CCBFunc cbfunc, void* client);
-  int request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int 
-  timelimit);
-  void request_ServerTimeGet(CCBFunc cbfunc, void* client);
-  int request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit);
+  char* request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, int timelimit, CCBFunc cbfunc, void* client);
+  char* request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, int timelimit)
+  {
+    request_CodeDataSelect(sMemcoCd, sSiteCd, sDvLoc, timelimit, NULL, NULL);
+  }
+  char* request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, CCBFunc cbfunc, void* client)
+  {
+    request_CodeDataSelect(sMemcoCd, sSiteCd, sDvLoc, 0, cbfunc, client);
+  }
+
+  bool request_GetNetInfo(int timelimit, CCBFunc cbfunc, void* client);
+  bool request_GetNetInfo(int timelimit)
+  {
+    request_GetNetInfo(timelimit, NULL, NULL);
+  }
+  bool request_GetNetInfo(CCBFunc cbfunc, void* client)
+  {
+    request_GetNetInfo(0, cbfunc, client);
+  }
+  void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit, CCBFunc cbfunc, void* client, char* outFilename);
+  void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit, char* outFilename)
+  {
+    request_RfidInfoSelectAll(sMemcoCd, sSiteCd, timelimit, NULL, NULL, outFilename);
+  }
+  void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, CCBFunc cbfunc, void* client, char* outFilename)
+  {
+    request_RfidInfoSelectAll(sMemcoCd, sSiteCd, 0, cbfunc, client, outFilename);
+  }
+
+  char* request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* 
+  client);
+  char* request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit)
+  {
+    request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, timelimit, NULL, NULL);
+  }
+  char* request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, CCBFunc cbfunc, void* 
+  client)
+  {
+    request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, 0, cbfunc, client);
+  }
+  char* request_ServerTimeGet(int timelimit, CCBFunc cbfunc, void* client);
+  char* request_ServerTimeGet(int timelimit)
+  {
+    request_ServerTimeGet(timelimit, NULL, NULL);
+  }
+  char* request_ServerTimeGet(CCBFunc cbfunc, void* client)
+  {
+    request_ServerTimeGet(0, cbfunc, client);
+  }
+
+  bool request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* 
+  client);
+  bool request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit)
+  {
+    request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, timelimit, NULL, NULL);
+  }
+  bool request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, CCBFunc cbfunc, void* 
+  client)
+  {
+    request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, 0, cbfunc, client);
+  }
 
 private:
   //void run(); 

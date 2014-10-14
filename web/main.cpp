@@ -255,19 +255,41 @@ char* dump_error(WebService::Except e)
 
 void cbGetNetInfo(void *client_data, int status, void* ret)
 {
-  cout << "cbGetNetInfo" << endl;
   LOGV("cbGetNetInfo status:%d, ret:%d\n", status, *((bool*)ret));
 }
 
 void cbCodeDataSelect(void *client_data, int status, void* ret)
 {
   char* xml_buf = (char*)ret;
-  cout << "cbCodeDataSelect" << endl;
   LOGV("cbCodeDataSelect status:%d, ret:%s\n", status, xml_buf);
   cout << "***cbCodeDataSelect: " << xml_buf << endl;
+  delete xml_buf;
 }
 
+void cbRfidInfoSelectAll(void *client_data, int status, void* ret)
+{
+  LOGV("cbCodeDataSelect status:%d\n", status);
+}
 
+void cbRfidInfoSelect(void *client_data, int status, void* ret)
+{
+  char* xml_buf = (char*)ret;
+  LOGV("cbRfidInfoSelect status:%d, ret:%s\n", status, xml_buf);
+  cout << "***cbRfidInfoSelect: " << xml_buf << endl;
+  delete xml_buf;
+}
+
+void cbServerTimeGet(void *client_data, int status, void* ret)
+{
+  char* time_buf = (char*)ret;
+  LOGV("cbServerTimeGet status:%d, ret:%s\n", status, time_buf);
+  delete time_buf;
+}
+
+void cbStatusUpdate(void *client_data, int status, void* ret)
+{
+  LOGV("cbStatusUpdate status:%d, ret:%d\n", status, *((bool*)ret));
+}
 
 int main()
 {
@@ -278,38 +300,70 @@ int main()
   //m_ws->start();
 
   bool ret;
-/*
-  try{
-    //ret = m_ws->request_GetNetInfo(3000);  //blocked I/O
-    ret = m_ws->request_GetNetInfo(0, cbGetNetInfo, NULL);  //blocked I/O
-    LOGV("***GetNetInfo: %d\n", ret);
-  }
-  catch(WebService::Except e){
-    LOGE("request_GetNetInfo: %s\n", dump_error(e));
-  }
-
-  sleep(3);
-*/
   char* xml_buf;
-  
+  char* time_buf;
+ 
   try{
     //xml_buf = m_ws->request_CodeDataSelect("MC00000003", "ST00000005", "0001", 3000);  //blocked I/O
-    xml_buf = m_ws->request_CodeDataSelect("MC00000003", "ST00000005", "0001", 0, cbCodeDataSelect, NULL);  //blocked I/O
+    xml_buf = m_ws->request_CodeDataSelect("MC00000003", "ST00000005", "0001", cbCodeDataSelect, NULL);  //blocked I/O
     if(xml_buf){
-      cout << "***11CodeDataSelect: " << xml_buf << endl;
+      cout << "***CodeDataSelect: " << xml_buf << endl;
       delete xml_buf;
     }
   }
   catch(WebService::Except e){
     LOGE("request_CodeDataSelect: %s\n", dump_error(e));
   }
-/*  
-  CodeDataSelect();
-  
-  ret = StatusUpdate();
-  LOGV("***StatusUpdate: %d\n", ret);
-*/
 
+  try{
+    //ret = m_ws->request_GetNetInfo(3000);  //blocked I/O
+    ret = m_ws->request_GetNetInfo(cbGetNetInfo, NULL);  //blocked I/O
+    LOGV("***GetNetInfo: %d\n", ret);
+  }
+  catch(WebService::Except e){
+    LOGE("request_GetNetInfo: %s\n", dump_error(e));
+  }
+
+  try{
+    m_ws->request_RfidInfoSelectAll("MC00000003", "ST00000005", 3000, "employee.xml");  //blocked I/O
+    //m_ws->request_RfidInfoSelectAll("MC00000003", "ST00000005", cbRfidInfoSelectAll, NULL, "employee.xml");  //blocked I/O
+  }
+  catch(WebService::Except e){
+    LOGE("request_RfidInfoSelectAll: %s\n", dump_error(e));
+  }
+
+  try{
+    xml_buf = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", "253153215009", 3000);  //blocked I/O
+    //xml_buf = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", "253153215009", cbRfidInfoSelect, NULL);  //blocked I/O
+    if(xml_buf){
+      cout << "***RfidInfoSelect: " << xml_buf << endl;
+      delete xml_buf;
+    }
+  }
+  catch(WebService::Except e){
+    LOGE("request_RfidInfoSelect: %s\n", dump_error(e));
+  }
+
+  try{
+    time_buf = m_ws->request_ServerTimeGet(3000);  //blocked I/O
+    //time_buf = m_ws->request_ServerTimeGet(cbServerTimeGet, NULL);  //blocked I/O
+    if(time_buf){
+      cout << "***ServerTimeGet: " << time_buf << endl;
+      delete time_buf;
+    }
+  }
+  catch(WebService::Except e){
+    LOGE("request_ServerTimeGet: %s\n", dump_error(e));
+  }
+
+  try{
+    ret = m_ws->request_StatusUpdate("IN", "ST00000005", "0001", "1", "192.168.190.130", "00-0c-29-95-30-24", 3000);  //blocked I/O
+    //ret = m_ws->request_StatusUpdate("IN", "ST00000005", "0001", "1", "192.168.190.130", "00-0c-29-95-30-24", cbStatusUpdate, NULL);  //blocked I/O
+    LOGV("***GetNetInfo: %d\n", ret);
+  }
+  catch(WebService::Except e){
+    LOGE("request_StatusUpdate: %s\n", dump_error(e));
+  }
 
 
   

@@ -18,15 +18,6 @@ WebService::WebService(const char* ip, int port)
   m_remote.sin_port = htons(m_port);
 }
 
-/*
-int WebService::start()
-{
-  m_remote.sin_family = AF_INET;
-  inet_pton(AF_INET, m_serverIP, (void *)(&(m_remote.sin_addr.s_addr)));
-  m_remote.sin_port = htons(m_port);
-  m_thread = new Thread<WebService>(&WebService::run, this, "WebServiceThread");
-}
-*/
 bool WebService::WebApi::parsingHeader(char* buf, char **startContent, int* contentLength, int* readByteContent)
 {
   int readlen = recv(m_sock, buf, RCVHEADERBUFSIZE - 1, 0);
@@ -62,28 +53,11 @@ bool WebService::WebApi::parsingHeader(char* buf, char **startContent, int* cont
   return true;
 }
 
-bool WebService::GetNetInfo_WebApi::parsing()
-{
-  char headerbuf[RCVHEADERBUFSIZE];
-  char* startContent;
-  int contentLength;
-  int readByteContent;
-
-  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
-    return false;
-
-  //contents
-  char* p;
-  p = strstr(startContent, "\n");
-  p = strstr(p, "boolean");
-  p = strstr(p, ">");
-  
-  m_ret = (*(p+1)=='t');
-  return true;
-}
-
-
-
+/***********************************************************************************/
+/*                                                                                 */
+/*   parsing functions                                                             */
+/*                                                                                 */
+/***********************************************************************************/
 bool WebService::CodeDataSelect_WebApi::parsing()
 {
   char headerbuf[RCVHEADERBUFSIZE];
@@ -116,6 +90,146 @@ bool WebService::CodeDataSelect_WebApi::parsing()
   return true;
 }
 
+bool WebService::GetNetInfo_WebApi::parsing()
+{
+  char headerbuf[RCVHEADERBUFSIZE];
+  char* startContent;
+  int contentLength;
+  int readByteContent;
+
+  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
+    return false;
+
+  //contents
+  char* p;
+  p = strstr(startContent, "\n");
+  p = strstr(p, "boolean");
+  p = strstr(p, ">");
+  
+  m_ret = (*(p+1)=='t');
+  return true;
+}
+
+bool WebService::RfidInfoSelectAll_WebApi::parsing()
+{
+  char headerbuf[RCVHEADERBUFSIZE];
+  char* startContent;
+  int contentLength;
+  int readByteContent;
+  ofstream oRet(m_filename);
+  
+  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
+    return false;
+
+  headerbuf[startContent - headerbuf + readByteContent] = '\0';
+  oRet << headerbuf;
+  
+  //contents
+  char* buf = new char[contentLength+1];
+  
+  memcpy(buf, startContent, readByteContent);
+  int nleaved = contentLength - readByteContent;
+  while(nleaved){
+    int readlen = recv(m_sock, buf + readByteContent, nleaved, 0);
+    buf[readByteContent + readlen] = '\0';
+    oRet << buf + readByteContent;
+    nleaved -= readlen;
+    readByteContent += readlen;
+    LOGV("read:%d, readByteContent:%d, nleaved:%d\n", readlen, readByteContent, nleaved);
+  }
+
+  delete buf;
+  oRet.close();
+  
+  return true;
+}
+
+bool WebService::RfidInfoSelect_WebApi::parsing()
+{
+  char headerbuf[RCVHEADERBUFSIZE];
+  char* startContent;
+  int contentLength;
+  int readByteContent;
+  
+  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
+    return false;
+
+  //contents
+  char* buf = new char[contentLength+1];
+  
+  memcpy(buf, startContent, readByteContent);
+  int nleaved = contentLength - readByteContent;
+  while(nleaved){
+    int readlen = recv(m_sock, buf + readByteContent, nleaved, 0);
+#ifdef DEBUG
+    buf[readByteContent + readlen] = '\0';
+    oOut << buf + readByteContent;
+#endif
+    nleaved -= readlen;
+    readByteContent += readlen;
+    LOGV("read:%d, readByteContent:%d, nleaved:%d\n", readlen, readByteContent, nleaved);
+  }
+        
+  buf[contentLength] = '\0';
+  m_pRet = buf;
+
+  return true;
+}
+
+bool WebService::ServerTimeGet_WebApi::parsing()
+{
+  char headerbuf[RCVHEADERBUFSIZE];
+  char* startContent;
+  int contentLength;
+  int readByteContent;
+
+  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
+    return false;
+
+  //contents
+  char* p;
+  p = strstr(startContent, "\n");
+  p = strstr(p, "dateTime");
+  p = strstr(p, ">");
+  
+  char* start = p + 1;
+  
+  p = strstr(start, "<");
+  *p = '\0';
+  int len = strlen(start);
+  m_pRet = new char[len+1];
+  strcpy((char*)m_pRet, start);
+
+  return true;
+}
+
+bool WebService::StatusUpdate_WebApi::parsing()
+{
+  char headerbuf[RCVHEADERBUFSIZE];
+  char* startContent;
+  int contentLength;
+  int readByteContent;
+
+  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
+    return false;
+
+  //contents
+  char* p;
+  p = strstr(startContent, "\n");
+  p = strstr(p, "boolean");
+  p = strstr(p, ">");
+  
+  m_ret = (*(p+1)=='t');
+  return true;
+}
+
+
+
+/***********************************************************************************/
+/*                                                                                 */
+/*   request functions                                                             */
+/*                                                                                 */
+/***********************************************************************************/
 //#define SOAP_2_CODEDATASELECT //not work
 #define SOAP_HEADER_SZ 112 //except ip & length
 
@@ -231,177 +345,162 @@ bool WebService::request_GetNetInfo(int timelimit, CCBFunc cbfunc, void* client)
   return ret;
 }
 
-//sync
-int WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit)
-{
-  int fd = -1;
-  LOGV("request_RfidInfoSelectAll\n");
-  char *cmd = new char[300];
-  sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=A&sSearchValue= HTTP/1.1\r\nHost: %s\r\n\r\n"
-    , sMemcoCd, sSiteCd, m_serverIP);
-  req_data* rd = new req_data(cmd, timelimit);
-
-  rd->mtx.lock();
-  TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
-  m_requestQ.push(e);
-
-  rd->m_request_completed.wait(rd->mtx);
-  rd->mtx.unlock();
-
-  if(rd->retval == RET_SUCCESS)
-    fd = rd->fd;
-
-  delete rd;
-  return fd;
-}
-
-//async
-void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, CCBFunc cbfunc, void* client)
+void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit, CCBFunc cbfunc, void* client, char* outFilename)
 {
   LOGV("request_RfidInfoSelectAll\n");
   char *cmd = new char[300];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=A&sSearchValue= HTTP/1.1\r\nHost: %s\r\n\r\n"
     , sMemcoCd, sSiteCd, m_serverIP);
-  req_data* rd = new req_data(cmd, cbfunc, client);
-  TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
-  m_requestQ.push(e);
+  
+  RfidInfoSelectAll_WebApi* wa;
 
+  if(cbfunc){
+    wa = new RfidInfoSelectAll_WebApi(this, cmd, 0, cbfunc, client, outFilename);
+    wa->processCmd();
+  }
+  else{
+    wa = new RfidInfoSelectAll_WebApi(this, cmd, 0, timelimit, outFilename);
+  
+    int status = wa->processCmd();
+
+    switch(status){
+      case RET_CREATE_SOCKET_FAIL:
+        throw EXCEPTION_CREATE_SOCKET;
+      case RET_CONNECT_FAIL:
+        throw EXCEPTION_CONNECT;
+      case RET_SEND_CMD_FAIL:
+        throw EXCEPTION_SEND_COMMAND;
+      case RET_POLL_FAIL:
+        throw EXCEPTION_POLL_FAIL;
+      case RET_POLL_TIMEOUT:
+        throw EXCEPTION_POLL_TIMEOUT;
+      case RET_PARSING_FAIL:
+        throw EXCEPTION_PARSING_FAIL;
+    }
+    
+    delete wa;
+  }
+  return;
 }
 
 
 //sync
-int WebService::request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit)
+char* WebService::request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* client)
 {
-  int fd = -1;
+  char* ret = NULL;
   LOGV("request_RfidInfoSelect\n");
   char *cmd = new char[300];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=R&sSearchValue=RFID_CAR='%s' HTTP/1.1\r\nHost: %s\r\n\r\n"
     , sMemcoCd, sSiteCd, serialnum, m_serverIP);
 
-  LOGV("cmd:%s\n", cmd);
-  req_data* rd = new req_data(cmd, timelimit);
-  rd->mtx.lock();
-  TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
-  m_requestQ.push(e);
+  RfidInfoSelect_WebApi* wa;
 
-  rd->m_request_completed.wait(mtx);
-  rd->mtx.unlock();
+  if(cbfunc){
+    wa = new RfidInfoSelect_WebApi(this, cmd, 0, cbfunc, client);
+    wa->processCmd();
+  }
+  else{
+    wa = new RfidInfoSelect_WebApi(this, cmd, 0, timelimit);
+  
+    int status = wa->processCmd();
 
-  if(rd->retval == RET_SUCCESS)
-    fd = rd->fd;
-
-  delete rd;
-  return fd;
+    switch(status){
+      case RET_CREATE_SOCKET_FAIL:
+        throw EXCEPTION_CREATE_SOCKET;
+      case RET_CONNECT_FAIL:
+        throw EXCEPTION_CONNECT;
+      case RET_SEND_CMD_FAIL:
+        throw EXCEPTION_SEND_COMMAND;
+      case RET_POLL_FAIL:
+        throw EXCEPTION_POLL_FAIL;
+      case RET_POLL_TIMEOUT:
+        throw EXCEPTION_POLL_TIMEOUT;
+      case RET_PARSING_FAIL:
+        throw EXCEPTION_PARSING_FAIL;
+    }
+    
+    ret = (char*)wa->m_pRet;
+    delete wa;
+  }
+  return ret;
 }
 
-//async
-void WebService::request_ServerTimeGet(WebService::CCBFunc cbfunc, void* client)
+char* WebService::request_ServerTimeGet(int timelimit, CCBFunc cbfunc, void* client)
 {
+  char* ret = NULL;
   LOGV("request_ServerTimeGet\n");
   char *cmd = new char[300];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/ServerTimeGet? HTTP/1.1\r\nHost: %s\r\n\r\n", m_serverIP);
-  req_data* rd = new req_data(cmd, cbfunc, client);
-  TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
-  m_requestQ.push(e);
+  ServerTimeGet_WebApi* wa;
+
+  if(cbfunc){
+    wa = new ServerTimeGet_WebApi(this, cmd, 0, cbfunc, client);
+    wa->processCmd();
+  }
+  else{
+    wa = new ServerTimeGet_WebApi(this, cmd, 0, timelimit);
+  
+    int status = wa->processCmd();
+
+    switch(status){
+      case RET_CREATE_SOCKET_FAIL:
+        throw EXCEPTION_CREATE_SOCKET;
+      case RET_CONNECT_FAIL:
+        throw EXCEPTION_CONNECT;
+      case RET_SEND_CMD_FAIL:
+        throw EXCEPTION_SEND_COMMAND;
+      case RET_POLL_FAIL:
+        throw EXCEPTION_POLL_FAIL;
+      case RET_POLL_TIMEOUT:
+        throw EXCEPTION_POLL_TIMEOUT;
+      case RET_PARSING_FAIL:
+        throw EXCEPTION_PARSING_FAIL;
+    }
+    
+    ret = (char*)wa->m_pRet;
+    delete wa;
+  }
+  return ret;
 }
 
-int WebService::request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit)
+bool WebService::request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* client)
 {
-  int fd = -1;
+  bool ret;
   LOGV("request_StatusUpdate\n");
   char *cmd = new char[400];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/Status_Update?sMemcoCd=%s&sSiteCd=%s&sGateCode=%s&sGateNo=%s&sGateIp=%s&sGateMac=%s HTTP/1.1\r\nHost: %s\r\n\r\n"
     , sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, m_serverIP);
 
-  LOGV("cmd:%s\n", cmd);
-  req_data* rd = new req_data(cmd, timelimit);
-  rd->mtx.lock();
-  TEvent<WebService>* e = new TEvent<WebService>(&WebService::_processRequest, rd);
-  m_requestQ.push(e);
+  StatusUpdate_WebApi* wa;
 
-  rd->m_request_completed.wait(mtx);
-  rd->mtx.unlock();
-
-  if(rd->retval == RET_SUCCESS)
-    fd = rd->fd;
-
-  delete rd;
-  return fd;
-}
-
-
-void WebService::_processRequest(void* arg)
-{
-/*
-  int ret;
-  req_data* rd = (req_data*)arg;
-  int sock;
-
-  try{
-    sock = send_command(rd->m_cmd + rd->m_cmd_offset);
-  }
-  catch (Except& e) {
-    switch(e){
-      case EXCEPTION_CREATE_SOCKET:
-        rd->retval = RET_CREATE_SOCKET_FAIL;
-        break;
-      case EXCEPTION_CONNECT:
-        rd->retval = RET_CONNECT_FAIL;
-        break;
-      case EXCEPTION_SEND_COMMAND:
-        rd->retval = RET_SEND_CMD_FAIL;
-        break;
-    }
-    goto error;
-    return;
-  }
-  
-  struct pollfd fds;
-  
-  fds.fd = sock;
-  fds.events = POLLIN;
-  ret = poll(&fds, 1, rd->timelimit);
-  if(ret == -1){
-    LOGE("RET_POLL_FAIL\n");
-    rd->retval = RET_POLL_FAIL;
-  }
-  else if(ret == 0){
-    LOGE("RET_POLL_TIMEOUT\n");
-    rd->retval = RET_POLL_TIMEOUT;
+  if(cbfunc){
+    wa = new StatusUpdate_WebApi(this, cmd, 0, cbfunc, client);
+    wa->processCmd();
   }
   else{
-    rd->retval = RET_SUCCESS;
-    rd->fd = sock;
-  }
+    wa = new StatusUpdate_WebApi(this, cmd, 0, timelimit);
+  
+    int status = wa->processCmd();
 
-error:  
-  if(!rd->m_cbfunc)
-    rd->m_request_completed.notify_one();
-  else
-    rd->m_cbfunc(rd); 
-    */
-}
-
-int WebService::send_command(char* cmd)
-{
-  int sock;
-  if((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0){
-    throw EXCEPTION_CREATE_SOCKET;
+    switch(status){
+      case RET_CREATE_SOCKET_FAIL:
+        throw EXCEPTION_CREATE_SOCKET;
+      case RET_CONNECT_FAIL:
+        throw EXCEPTION_CONNECT;
+      case RET_SEND_CMD_FAIL:
+        throw EXCEPTION_SEND_COMMAND;
+      case RET_POLL_FAIL:
+        throw EXCEPTION_POLL_FAIL;
+      case RET_POLL_TIMEOUT:
+        throw EXCEPTION_POLL_TIMEOUT;
+      case RET_PARSING_FAIL:
+        throw EXCEPTION_PARSING_FAIL;
+    }
+    
+    ret = wa->m_ret;
+    delete wa;
   }
-  LOGV("connect\n");
-  if(connect(sock, (struct sockaddr *)&m_remote, sizeof(struct sockaddr)) < 0){
-    LOGE("EXCEPTION_CONNECT\n");
-    throw EXCEPTION_CONNECT;
-  }
-
-  LOGV("send command\n");
-  int len = send(sock, cmd, strlen(cmd), 0);
-  if(len == -1){
-    LOGE("EXCEPTION_SEND_COMMAND\n");
-    throw EXCEPTION_SEND_COMMAND;
-  }
-
-  return sock;
+  return ret;
 }
 
 void WebService::WebApi::run()
