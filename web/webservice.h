@@ -10,11 +10,114 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <string.h>
+#include <fstream>
 
 class WebService {
 public:
   static const int MAX_POLL_TIME = 3000;
-  typedef  void (*CCBFunc)(void *client_data);
+  typedef  void (*CCBFunc)(void *client_data, int status, void* ret);
+  class WebApi {
+  public:
+    enum Exception{
+      Exception_Parsing,
+
+
+    };
+    int processCmd();
+    int getStatus() const { return m_status; }
+  protected:
+    int m_status;
+    int m_sock;
+    int timelimit;
+    CCBFunc m_cbfunc;
+    void *m_client;
+    Condition m_request_completed;
+    Mutex mtx;
+    char* m_cmd;
+    int m_cmd_offset;
+    void* m_pRet;
+#ifdef DEBUG
+    ofstream oOut; //for debug
+#endif    
+    virtual bool parsing() = 0;
+    
+    //WebApi(WebService* ws, char* cmd, int t):m_ws(ws), m_cmd(cmd), m_cmd_offset(0), timelimit(t) { m_cbfunc=NULL; } //sync
+    WebApi(WebService* ws, char* cmd, int cmd_offset, int t):m_ws(ws), m_cmd(cmd), m_cmd_offset(cmd_offset), timelimit(t) { m_cbfunc=NULL;} //sync
+    //WebApi(WebService* ws, char* cmd, CCBFunc cbfunc, void* client):m_ws(ws), m_cmd(cmd), m_cmd_offset(0), m_cbfunc(cbfunc), m_client(client){timelimit=-1;} //async
+    WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):m_ws(ws), m_cmd(cmd), m_cmd_offset(cmd_offset), m_cbfunc(cbfunc), m_client(client){timelimit=-1;};  //async
+    virtual ~WebApi()
+    {
+      close(m_sock);
+      delete m_thread;
+      delete m_cmd;
+    }
+    bool parsingHeader(char* buf, char **startContent, int* contentLength, int* readByteContent);
+
+
+  private:
+    void run();
+
+    WebService* m_ws;
+    Thread<WebApi>* m_thread;
+  };
+  
+  class CodeDataSelect_WebApi : public WebApi {
+  friend class WebService;
+  public:
+    virtual bool parsing();
+    
+    CodeDataSelect_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t) //sync
+    {
+#ifdef DEBUG
+      oOut.open("received_CodeDataSelect.txt");
+#endif
+    }
+    CodeDataSelect_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    {
+#ifdef DEBUG
+      oOut.open("received_CodeDataSelect.txt");
+#endif
+    }
+    virtual ~CodeDataSelect_WebApi()
+    {
+#ifdef DEBUG
+      oOut.close();
+#endif  
+    }
+
+  };
+  class GetNetInfo_WebApi : public WebApi {
+  friend class WebService;
+  public:
+    virtual bool parsing();
+    
+    GetNetInfo_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
+    {
+      m_pRet = &m_ret;
+#ifdef DEBUG
+      oOut.open("received_CodeDataSelect.txt");
+#endif
+    }
+    GetNetInfo_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    {
+      m_pRet = &m_ret;
+#ifdef DEBUG
+      oOut.open("received_CodeDataSelect.txt");
+#endif
+    }
+    virtual ~GetNetInfo_WebApi()
+    {
+#ifdef DEBUG
+      oOut.close();
+#endif  
+    }
+
+  private:
+    bool m_ret;
+
+  };
+
+
   struct req_data {
     int retval;
     int fd;
@@ -35,6 +138,9 @@ public:
     EXCEPTION_CREATE_SOCKET,
     EXCEPTION_CONNECT,
     EXCEPTION_SEND_COMMAND,
+    EXCEPTION_POLL_FAIL,
+    EXCEPTION_POLL_TIMEOUT,
+    EXCEPTION_PARSING_FAIL
   };
 
   enum Ret {
@@ -44,15 +150,16 @@ public:
     RET_SEND_CMD_FAIL,
     RET_POLL_FAIL,
     RET_POLL_TIMEOUT,
+    RET_PARSING_FAIL
   };
 
   WebService(const char* ip, int port);
   ~WebService(){};
-  int start();
+  //int start();
 
 //request
-  int request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, int timelimit);
-  int request_GetNetInfo(int timelimit, CCBFunc cbfunc=NULL);
+  char* request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, int timelimit, CCBFunc cbfunc=NULL, void* client=NULL);
+  bool request_GetNetInfo(int timelimit, CCBFunc cbfunc=NULL, void* client=NULL);
   int request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit);
   void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, CCBFunc cbfunc, void* client);
   int request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int 
@@ -61,7 +168,7 @@ public:
   int request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit);
 
 private:
-  void run(); 
+  //void run(); 
   
   void _processRequest(void* arg);
 

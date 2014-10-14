@@ -32,6 +32,13 @@ public:
   }
 
   void join();
+  void detach()
+  {
+#ifdef _WIN32
+#else
+    pthread_detach(m_threadId);
+#endif
+  }
 private:
 #ifdef _WIN32
   static DWORD WINAPI run(LPVOID);

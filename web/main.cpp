@@ -11,7 +11,7 @@ using namespace std;
 #define RCVBUFSIZE 4096
 
 WebService* m_ws;
-
+#if 0
 bool GetNetInfo()
 {
   int sock;
@@ -236,6 +236,38 @@ bool StatusUpdate()
 
   return (*(p+1)=='t');
 }
+#endif
+
+#define DUMP_CASE(x) case x: return #x;
+
+char* dump_error(WebService::Except e)
+{
+  switch(e){
+    DUMP_CASE (WebService::EXCEPTION_CREATE_SOCKET)
+    DUMP_CASE (WebService::EXCEPTION_CONNECT)
+    DUMP_CASE (WebService::EXCEPTION_SEND_COMMAND)
+    DUMP_CASE (WebService::EXCEPTION_POLL_FAIL)
+    DUMP_CASE (WebService::EXCEPTION_POLL_TIMEOUT)
+    DUMP_CASE (WebService::EXCEPTION_PARSING_FAIL)
+  }
+
+}
+
+void cbGetNetInfo(void *client_data, int status, void* ret)
+{
+  cout << "cbGetNetInfo" << endl;
+  LOGV("cbGetNetInfo status:%d, ret:%d\n", status, *((bool*)ret));
+}
+
+void cbCodeDataSelect(void *client_data, int status, void* ret)
+{
+  char* xml_buf = (char*)ret;
+  cout << "cbCodeDataSelect" << endl;
+  LOGV("cbCodeDataSelect status:%d, ret:%s\n", status, xml_buf);
+  cout << "***cbCodeDataSelect: " << xml_buf << endl;
+}
+
+
 
 int main()
 {
@@ -243,17 +275,40 @@ int main()
 
 
   m_ws = new WebService("192.168.0.7", 8080);
-  m_ws->start();
+  //m_ws->start();
 
   bool ret;
-  ret = GetNetInfo();
-  LOGV("***GetNetInfo: %d\n", ret);
+/*
+  try{
+    //ret = m_ws->request_GetNetInfo(3000);  //blocked I/O
+    ret = m_ws->request_GetNetInfo(0, cbGetNetInfo, NULL);  //blocked I/O
+    LOGV("***GetNetInfo: %d\n", ret);
+  }
+  catch(WebService::Except e){
+    LOGE("request_GetNetInfo: %s\n", dump_error(e));
+  }
+
   sleep(3);
+*/
+  char* xml_buf;
+  
+  try{
+    //xml_buf = m_ws->request_CodeDataSelect("MC00000003", "ST00000005", "0001", 3000);  //blocked I/O
+    xml_buf = m_ws->request_CodeDataSelect("MC00000003", "ST00000005", "0001", 0, cbCodeDataSelect, NULL);  //blocked I/O
+    if(xml_buf){
+      cout << "***11CodeDataSelect: " << xml_buf << endl;
+      delete xml_buf;
+    }
+  }
+  catch(WebService::Except e){
+    LOGE("request_CodeDataSelect: %s\n", dump_error(e));
+  }
+/*  
   CodeDataSelect();
   
   ret = StatusUpdate();
   LOGV("***StatusUpdate: %d\n", ret);
-
+*/
 
 
 

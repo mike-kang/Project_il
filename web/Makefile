@@ -7,7 +7,7 @@ OBJS = main.o webservice.o
 EXE = webservice
 all : ${EXE}
 
-CPPFLAGS =   -g -I..
+CPPFLAGS =   -g -DDEBUG -I..
 
 ${EXE} :  ${OBJS}
 	g++  -o ${EXE}  ${OBJS} -L../tools -ltool -lrt -lpthread
