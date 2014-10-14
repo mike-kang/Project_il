@@ -122,7 +122,7 @@ bool WebService::RfidInfoSelectAll_WebApi::parsing()
     return false;
 
   headerbuf[startContent - headerbuf + readByteContent] = '\0';
-  oRet << headerbuf;
+  oRet << startContent;
   
   //contents
   char* buf = new char[contentLength+1];
@@ -132,10 +132,10 @@ bool WebService::RfidInfoSelectAll_WebApi::parsing()
   while(nleaved){
     int readlen = recv(m_sock, buf + readByteContent, nleaved, 0);
     buf[readByteContent + readlen] = '\0';
-    oRet << buf + readByteContent;
+    oRet << (buf + readByteContent);
     nleaved -= readlen;
     readByteContent += readlen;
-    LOGV("read:%d, readByteContent:%d, nleaved:%d\n", readlen, readByteContent, nleaved);
+    //LOGV("read:%d, readByteContent:%d, nleaved:%d\n", readlen, readByteContent, nleaved);
   }
 
   delete buf;
@@ -347,7 +347,7 @@ bool WebService::request_GetNetInfo(int timelimit, CCBFunc cbfunc, void* client)
 
 void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit, CCBFunc cbfunc, void* client, char* outFilename)
 {
-  LOGV("request_RfidInfoSelectAll\n");
+  LOGV("request_RfidInfoSelectAll +++\n");
   char *cmd = new char[300];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=A&sSearchValue= HTTP/1.1\r\nHost: %s\r\n\r\n"
     , sMemcoCd, sSiteCd, m_serverIP);
@@ -380,6 +380,7 @@ void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int ti
     
     delete wa;
   }
+  LOGV("request_RfidInfoSelectAll ---\n");
   return;
 }
 
@@ -388,7 +389,7 @@ void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int ti
 char* WebService::request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* client)
 {
   char* ret = NULL;
-  LOGV("request_RfidInfoSelect\n");
+  LOGV("request_RfidInfoSelect +++\n");
   char *cmd = new char[300];
   sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=R&sSearchValue=RFID_CAR='%s' HTTP/1.1\r\nHost: %s\r\n\r\n"
     , sMemcoCd, sSiteCd, serialnum, m_serverIP);
@@ -422,6 +423,7 @@ char* WebService::request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* se
     ret = (char*)wa->m_pRet;
     delete wa;
   }
+  LOGV("request_RfidInfoSelect ---\n");
   return ret;
 }
 

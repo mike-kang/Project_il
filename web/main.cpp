@@ -325,7 +325,7 @@ int main()
   }
 
   try{
-    m_ws->request_RfidInfoSelectAll("MC00000003", "ST00000005", 3000, "employee.xml");  //blocked I/O
+    m_ws->request_RfidInfoSelectAll("MC00000003", "ST00000005", 7000, "employee.xml");  //blocked I/O
     //m_ws->request_RfidInfoSelectAll("MC00000003", "ST00000005", cbRfidInfoSelectAll, NULL, "employee.xml");  //blocked I/O
   }
   catch(WebService::Except e){
@@ -333,7 +333,7 @@ int main()
   }
 
   try{
-    xml_buf = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", "253153215009", 3000);  //blocked I/O
+    xml_buf = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", "253153215009", 7000);  //blocked I/O
     //xml_buf = m_ws->request_RfidInfoSelect("MC00000003", "ST00000005", "253153215009", cbRfidInfoSelect, NULL);  //blocked I/O
     if(xml_buf){
       cout << "***RfidInfoSelect: " << xml_buf << endl;
@@ -343,7 +343,7 @@ int main()
   catch(WebService::Except e){
     LOGE("request_RfidInfoSelect: %s\n", dump_error(e));
   }
-
+/*
   try{
     time_buf = m_ws->request_ServerTimeGet(3000);  //blocked I/O
     //time_buf = m_ws->request_ServerTimeGet(cbServerTimeGet, NULL);  //blocked I/O
@@ -359,12 +359,12 @@ int main()
   try{
     ret = m_ws->request_StatusUpdate("IN", "ST00000005", "0001", "1", "192.168.190.130", "00-0c-29-95-30-24", 3000);  //blocked I/O
     //ret = m_ws->request_StatusUpdate("IN", "ST00000005", "0001", "1", "192.168.190.130", "00-0c-29-95-30-24", cbStatusUpdate, NULL);  //blocked I/O
-    LOGV("***GetNetInfo: %d\n", ret);
+    LOGV("***StatusUpdate: %d\n", ret);
   }
   catch(WebService::Except e){
     LOGE("request_StatusUpdate: %s\n", dump_error(e));
   }
-
+*/
 
   
   while(1)
