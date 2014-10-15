@@ -268,7 +268,7 @@ void cbCodeDataSelect(void *client_data, int status, void* ret)
 
 void cbRfidInfoSelectAll(void *client_data, int status, void* ret)
 {
-  LOGV("cbCodeDataSelect status:%d\n", status);
+  LOGV("cbRfidInfoSelectAll status:%d\n", status);
 }
 
 void cbRfidInfoSelect(void *client_data, int status, void* ret)
