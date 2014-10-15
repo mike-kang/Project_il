@@ -3,7 +3,7 @@ $(info current dir is ${CURDIR})
 
 PROCESSOR=$(shell uname -p)
 
-CPPFLAGS =  -g -I.
+CPPFLAGS =  -g -I. 
 
 ifeq ($(PROCESSOR), x86_64)
 else
@@ -12,7 +12,7 @@ else
   CPPFLAGS += -DCAMERA
 endif
 
-OBJS = main.o  maindelegator.o serialRfid.o serialRfid1356.o web/webservice.o hardware/gpio.o
+OBJS = main.o  maindelegator.o serialRfid.o serialRfid1356.o web/webservice.o hardware/gpio.o inih_r29/INIReader.o
 
 
 
@@ -22,7 +22,7 @@ $(CAMERA_LIB) :
 	make -C ./camera
 
 main : ${OBJS} tools/libtool.so $(CAMERA_LIB)
-	g++ -o $@ ${OBJS} -L./tools -ltool -lpthread $(CAMERA_LFLAGS)
+	g++ -o $@ ${OBJS} -L./tools -ltool -lpthread $(CAMERA_LFLAGS) -Linih_r29 -linih
 
 
 main.o : maindelegator.h tools/log.h tools/logservice.h hardware/switchgpio.h hardware/gpio.h
@@ -31,6 +31,7 @@ serialRfid.o : serialRfid.h tools/log.h tools/logservice.h
 serialRfid1356.o : serialRfid1356.h tools/log.h tools/logservice.h
 web/webservice.o : web/webservice.h tools/log.h tools/logservice.h
 hardware/gpio.o : hardware/gpio.h tools/filesystem.h tools/log.h tools/logservice.h
+inih_r29/INIReader.o : inih_r29/INIReader.h
 .PHONY : clean
 clean :
 	-rm *.o main

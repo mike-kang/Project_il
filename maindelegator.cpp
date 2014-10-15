@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "inih_r29/INIReader.h"
 
 using namespace tools;
 using namespace std;
@@ -16,8 +17,6 @@ void MainDelegator::onData(char* buf)
   LOGI("onData %s\n", buf);
   char* imgBuf = NULL;;
   int imgLength;
-  //request
-  //int fd = request_processRfidSerialData(buf, m_rfid_processMaxTime);
   
 #ifdef CAMERA
   if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
@@ -121,6 +120,37 @@ error:
 }
 
 
+bool MainDelegator::SettingInit()
+{
+  INIReader reader("config/FID.ini");
+  if (reader.ParseError() < 0) {
+     LOGE("Can't load 'FID.ini'\n");
+     return false;
+  }
+
+#ifdef CAMERA  
+  m_cameraDelayOffTime = reader.GetInteger("Camera", "DELAY_OFF_TIME", 600); //600 sec
+  m_takePictureMaxWaitTime = reader.GetInteger("Camera", "TAKEPICTURE_MAX_WAIT_TIME ", 2); // 2 sec
+#endif
+  //App
+  m_sMemcoCd = reader.Get("App", "MEMCO_CD", "MC00000003").c_str();
+  m_sSiteCd = reader.Get("App", "SITE_CD", "ST00000005").c_str();
+  m_bDatabase = reader.GetBoolean("App", "LOCAL_DATABASE", false);
+  m_sDvLoc = reader.Get("App", "DV_LOC", "0001").c_str(); // = "0001";
+  m_sDvNo = reader.Get("App", "DV_NO", "6").c_str(); // = "6";
+
+  //Action
+  m_bCapture = reader.GetBoolean("Action", "CAPTURE", true);
+  m_bRelay = reader.GetBoolean("Action", "RELAY", true);
+  m_bSound = reader.GetBoolean("Action", "SOUND", true);
+
+  //Rfid
+  m_sRfidMode = reader.Get("Rfid", "MODE", "1356M").c_str(); //="1356M";
+  m_rfidCheckInterval = reader.GetInteger("Rfid", "CHECK_INTERVAL", 300); //300 ms
+
+  return true;
+}
+
 MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
 {
   bool ret;
@@ -129,12 +159,13 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
 
   /********************************************/
   /* setting values                           */
-  m_rfid_processMaxTime = 3000; // 3 sec
-  m_rfidCheckInterval = 300; // 300 ms
-#ifdef CAMERA  
-  m_cameraDelayOffTime = 10 * 60; //10 min
-  m_takePictureMaxWaitTime = 2; // 2 sec
-#endif
+  /********************************************/
+  SettingInit();
+
+
+
+
+  
 
 
 

@@ -28,6 +28,7 @@ private:
   void run(); 
 
   void _processRfidSerialData(void* arg);
+  bool SettingInit();
 
   //static void cb_ServerTimeGet(void* arg);
   //void _cb_ServerTimeGet(void* arg);
@@ -42,9 +43,23 @@ private:
   WebService* m_ws;
   SerialRfid* m_serialRfid;  
 
+  bool m_bFirstDown;
+  bool m_bNetworkAvailable;
+
   //settings
+  //string sLog = "Y";
+  bool m_bCapture;
+  bool m_bRelay;
+  bool m_bSound; //true
+  bool m_bDatabase;
+  const char* m_sMemcoCd; // = "MC00000003";
+  const char* m_sSiteCd; //"ST00000005";
+  const char* m_sDvLoc; // = "0001";
+  const char* m_sDvNo; // = "1";
+  const char* m_sInOut; // = "I";
   int m_rfidCheckInterval; //ms
   int m_rfid_processMaxTime; //ms
+  const char* m_sRfidMode; //="1356M";
 #ifdef CAMERA  
   CameraStill* m_cameraStill;
   int m_takePictureMaxWaitTime; //sec

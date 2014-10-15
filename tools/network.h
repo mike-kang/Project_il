@@ -16,4 +16,4 @@ char* GetMacAddress(const char* if_name);
 
 }
 }
-#endif //_DATE_HEADER
+#endif //_NETWORK_HEADER
