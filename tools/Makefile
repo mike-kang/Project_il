@@ -1,7 +1,7 @@
 $(warning os: $(shell uname -s))
 $(info current dir is ${CURDIR})
 
-OBJS = property.o  filesystem.o log.o logservice.o serial.o timer.o
+OBJS = property.o  filesystem.o log.o logservice.o serial.o timer.o network.o
 LIB = libtool.so
 
 CPPFLAGS =  -fPIC -g
@@ -17,6 +17,7 @@ log.o : log.h logservice.h
 logservice.o : logservice.h property.h filesystem.h condition.h queue.h thread.h mutex.h
 date.o : date.h
 timer.o : timer.h condition.h  mutex.h
+network.o : network.h log.h logservice.h
 .PHONY : clean
 clean :
 	-rm *.o ${LIB}
