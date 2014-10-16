@@ -277,6 +277,9 @@ public:
   ~WebService(){};
   //int start();
 
+  //dump
+  static const char* dump_error(Except e);
+
 //request
   char* request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, int timelimit, CCBFunc cbfunc, void* client);
   char* request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, int timelimit)

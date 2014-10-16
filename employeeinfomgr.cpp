@@ -39,6 +39,33 @@ EmployeeInfoMgr::EmployeeInfoMgr(Settings* settings, WebService* ws): m_settings
 
 bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
 {
+  if(m_bUseLocalDB){
+    ; //todo
+    return true;
+  }
 
+  bool bNet = m_ws->request_GetNetInfo(1000);
+  if(!bNet){
+    ; //todo
+    return true;
+  }
+  try{
+
+    char* xml_buf = m_ws->request_RfidInfoSelect(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), serialNumber, 3000);
+    if(xml_buf){
+      LOGV("***RfidInfoSelect:%s\n", xml_buf);
+      delete xml_buf;
+    }
+  }
+  catch(WebService::Except e){
+    LOGE("request_RfidInfoSelect: %s\n", WebService::dump_error(e));
+  }
+  
+    
+    
+    
+      
+
+    
 }
 

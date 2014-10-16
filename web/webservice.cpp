@@ -9,6 +9,21 @@
 #define HTTP_OK 200
 #define RCVHEADERBUFSIZE 1024
 
+#define DUMP_CASE(x) case x: return #x;
+
+const char* WebService::dump_error(Except e)
+{
+  switch(e){
+    DUMP_CASE (WebService::EXCEPTION_CREATE_SOCKET)
+    DUMP_CASE (WebService::EXCEPTION_CONNECT)
+    DUMP_CASE (WebService::EXCEPTION_SEND_COMMAND)
+    DUMP_CASE (WebService::EXCEPTION_POLL_FAIL)
+    DUMP_CASE (WebService::EXCEPTION_POLL_TIMEOUT)
+    DUMP_CASE (WebService::EXCEPTION_PARSING_FAIL)
+  }
+
+}
+
 WebService::WebService(const char* ip, int port)
 {
   strcpy(m_serverIP, ip);
