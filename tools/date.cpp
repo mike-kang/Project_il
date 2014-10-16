@@ -3,6 +3,8 @@
 #ifdef _WIN32
 #include "windows.h"
 #endif
+#include <string.h>
+#include <stdlib.h>
 
 #ifdef _DEBUG
 #ifdef _WIN32
@@ -36,12 +38,38 @@ Date::Date(char* date) //data=20140101
   memcpy(buf, date, 4); buf[4] = '\0'; 
   m_year = atoi(buf);
   memcpy(buf, date+4, 2); buf[2] = '\0'; 
-  m_date = atoi(buf);
+  m_month = atoi(buf);
   memcpy(buf, date+6, 2); buf[2] = '\0'; 
   m_day = atoi(buf);
   
 }
 
+namespace tools {
+bool operator == (const Date& lh, const Date& rh)
+{
+  return (lh.m_year == rh.m_year && lh.m_month == rh.m_month && lh.m_day == rh.m_day);
+}
+bool operator != (const Date& lh, const Date& rh)
+{
+  return !(lh == rh);
+}
+bool operator > (const Date& lh, const Date& rh)
+{
+  return (lh.m_year >= rh.m_year && lh.m_month >= rh.m_month && lh.m_day > rh.m_day);
+}
+bool operator < (const Date& lh, const Date& rh)
+{
+  return (lh.m_year <= rh.m_year && lh.m_month <= rh.m_month && lh.m_day < rh.m_day);
+}
+bool operator >= (const Date& lh, const Date& rh)
+{
+  return !(lh < rh);
+}
+bool operator <= (const Date& lh, const Date& rh)
+{
+  return !(lh > rh);
+}
+}
 #endif
 
 
