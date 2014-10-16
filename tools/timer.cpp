@@ -19,10 +19,6 @@ bool Timer::IsActive()
   return m_active;
 }
 
-void Timer::reset(int count)
-{
-
-}
 
 void Timer::cancel()
 {
@@ -49,6 +45,8 @@ void* Timer::run(void* arg)
     //std::cout << "::timer count " << count << std::endl;
     timer->m_cbFunc(timer->m_clientData);
   }
+  
+  m_active = false;
   timer->mtx.unlock();
   return NULL;
 }

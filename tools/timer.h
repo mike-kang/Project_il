@@ -12,7 +12,7 @@ public:
   ~Timer(){};
   bool IsActive();
   void start();
-  void reset(int count);
+  //void reset(int count);
   void cancel();
 
 private:
