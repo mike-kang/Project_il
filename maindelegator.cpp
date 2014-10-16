@@ -11,6 +11,22 @@ using namespace std;
 
 #define LOG_TAG "MainDelegator"
 
+MainDelegator* MainDelegator::my = NULL;
+
+#ifdef SIMULATOR
+void cbTimer(void* arg)
+{
+  my->onData("253161024009");
+}
+
+void signal_handler(int signo)
+{
+  if(signo == SIGUSR1){
+      LOGI("signal_handler SIGUSR1");
+      Timer(1, cbTimer, NULL);
+}
+#endif
+
 void MainDelegator::onData(char* serialNumber)
 {
   LOGI("onData %s\n", serialNumber);
@@ -166,7 +182,7 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
   
 
 
-
+  
 
   
 
@@ -184,9 +200,13 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
 
 
 
-
+#ifdef SIMULATOR
+  signal(SIGUSR1, signal_handler);
+#endif
 
 }
+
+
 
 /*
 void MainDelegator::cb_ServerTimeGet(void* arg)

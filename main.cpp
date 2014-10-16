@@ -8,7 +8,7 @@ int main()
   log_init(TYPE_CONSOLE, NULL);
   LOGI("start main\n");
 
-  MainDelegator* md = new MainDelegator();
+  MainDelegator* md = MainDelegator::getInstance();
 
   while(1){
     LOGI("Koong\n");

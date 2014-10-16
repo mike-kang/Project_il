@@ -19,7 +19,15 @@ public:
     RET_SUCCESS,
   };
   virtual void onData(char* buf);
-  MainDelegator() ;
+  static MainDelegator* getInstance()
+  {
+    if(my){
+      return my;
+    }
+    my = new MainDelegator();
+
+    return my;
+  }   
   ~MainDelegator(){};
 
 
@@ -27,6 +35,8 @@ public:
   bool request_processRfidSerialData(char* serialnum, int timelimit);
 
 private:
+  static MainDelegator* my;
+  MainDelegator();
   void run(); 
 
   void _processRfidSerialData(void* arg);

@@ -6,6 +6,7 @@ MACHINE=$(shell uname -m)
 CPPFLAGS =  -g -I. 
 
 ifeq ($(PROCESSOR), x86_64)
+  CPPFLAGS += -DSIMULATOR
 else
   CAMERA_LIB= camera/libcamera.so
   CAMERA_LFLAGS= -lcamera -lopenmaxil -lbcm_host -L. -L/opt/vc/lib -L./camera
