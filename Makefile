@@ -5,7 +5,7 @@ MACHINE=$(shell uname -m)
 
 CPPFLAGS =  -g -I. 
 
-ifeq ($(PROCESSOR), x86_64)
+ifeq ($(MACHINE), x86_64)
   CPPFLAGS += -DSIMULATOR
 else
   CAMERA_LIB= camera/libcamera.so
