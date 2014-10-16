@@ -44,10 +44,17 @@ Settings::Settings(const char* filename)
   mapIntInsert(Camera, DELAY_OFF_TIME, 600);  //600 sec
   mapIntInsert(Camera, TAKEPICTURE_MAX_WAIT_TIME, 2);  // 2 sec
 
-  map<string, string>::iterator iter;
-  for(iter=m_mapStr.begin(); iter != m_mapStr.end(); ++iter)
-    cout << "(" << iter->first << ") " << iter->second;
-  cout << endl;
+  //Log
+  mapStrInsert(Log, CONSOLE_PATH, /dev/pts/3);
+
+  cout << "Settings start ******" << endl;
+  for(map<string, string>::iterator iter=m_mapStr.begin(); iter != m_mapStr.end(); ++iter)
+    cout << "(" << iter->first << ") " << iter->second << endl;
+  for(map<string, int>::iterator iter=m_mapInt.begin(); iter != m_mapInt.end(); ++iter)
+    cout << "(" << iter->first << ") " << iter->second << endl;
+  for(map<string, bool>::iterator iter=m_mapBool.begin(); iter != m_mapBool.end(); ++iter)
+    cout << "(" << iter->first << ") " << ((iter->second)?"true":"false") << endl;
+  cout << "Settings end ******" << endl;
 }
 
 string Settings::get(string key)

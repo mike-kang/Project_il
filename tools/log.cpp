@@ -19,9 +19,9 @@
 static LogService *logservice = NULL;
 static bool m_enabled = false;
 
-void log_init(int type, char* path)
+void log_init(int type, const char* path)
 {
-  LogService::init(LogService::TYPE_CONSOLE, NULL);
+  LogService::init(LogService::TYPE_CONSOLE, path);
 }
 
 int __log_print(int prio, const char *tag, const char *fmt, ...)

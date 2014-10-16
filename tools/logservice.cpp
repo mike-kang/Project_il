@@ -103,7 +103,7 @@ LogService* LogService::init(LogService::log_t type, char* path)
   }
 #else
   if(log_type == TYPE_CONSOLE){ //console
-      consoleOfstream.open("/dev/pts/0");
+      consoleOfstream.open(path);
   }
 
 #endif

@@ -157,6 +157,11 @@ bool MainDelegator::SettingInit()
 MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24), m_settings("config/FID.ini")
 {
   bool ret;
+
+  string console_log_path = m_settings.get("Log::CONSOLE_PATH");
+  log_init(TYPE_CONSOLE, console_log_path.c_str());
+
+
   m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
   LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 

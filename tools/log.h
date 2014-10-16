@@ -42,7 +42,7 @@ enum {
   TYPE_DEBUGCONSOLE
 };
 
-void log_init(int type, char* path);
+void log_init(int type, const char* path);
 
 
 #define printLog(prio, tag, ...) \

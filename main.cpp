@@ -2,18 +2,18 @@
 #include <iostream>
 #include "maindelegator.h"
 
+using namespace std;
+
 #define LOG_TAG "main"
 int main()
 {
-  log_init(TYPE_CONSOLE, NULL);
-  LOGI("start main\n");
-
+  cout << "start main\n" << endl;
   MainDelegator* md = MainDelegator::getInstance();
 
   while(1){
-    LOGI("Koong\n");
+    cout << "Koong" << endl;
     sleep(100);
   }
-  LOGI("ccc\n");
+  cout << "exit" << endl;
   return 0;
 }
