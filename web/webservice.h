@@ -121,14 +121,16 @@ public:
   public:
     virtual bool parsing();
     
-    RfidInfoSelectAll_WebApi(WebService* ws, char* cmd, int cmd_offset, int t, char* outFilename):WebApi(ws, cmd, cmd_offset, t)  //sync
+    RfidInfoSelectAll_WebApi(WebService* ws, char* cmd, int cmd_offset, int t, 
+    const char* outFilename):WebApi(ws, cmd, cmd_offset, t)  //sync
     {
 #ifdef DEBUG
       oOut.open("received_RfidInfoSelectAll.txt");
 #endif
       strcpy(m_filename, outFilename);
     }
-    RfidInfoSelectAll_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client, char* outFilename):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    RfidInfoSelectAll_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client, 
+    const char* outFilename):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
     {
 #ifdef DEBUG
       oOut.open("received_RfidInfoSelectAll.txt");
@@ -276,12 +278,12 @@ public:
   //int start();
 
 //request
-  char* request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, int timelimit, CCBFunc cbfunc, void* client);
-  char* request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, int timelimit)
+  char* request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, int timelimit, CCBFunc cbfunc, void* client);
+  char* request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, int timelimit)
   {
     request_CodeDataSelect(sMemcoCd, sSiteCd, sDvLoc, timelimit, NULL, NULL);
   }
-  char* request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, CCBFunc cbfunc, void* client)
+  char* request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, CCBFunc cbfunc, void* client)
   {
     request_CodeDataSelect(sMemcoCd, sSiteCd, sDvLoc, 0, cbfunc, client);
   }
@@ -295,23 +297,26 @@ public:
   {
     request_GetNetInfo(0, cbfunc, client);
   }
-  void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit, CCBFunc cbfunc, void* client, char* outFilename);
-  void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit, char* outFilename)
+  void request_RfidInfoSelectAll(const char *sMemcoCd, const char* sSiteCd, int timelimit, CCBFunc cbfunc, void* client, 
+  const char* outFilename);
+  void request_RfidInfoSelectAll(const char *sMemcoCd, const char* sSiteCd, int timelimit, 
+  const char* outFilename)
   {
     request_RfidInfoSelectAll(sMemcoCd, sSiteCd, timelimit, NULL, NULL, outFilename);
   }
-  void request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, CCBFunc cbfunc, void* client, char* outFilename)
+  void request_RfidInfoSelectAll(const char *sMemcoCd, const char* sSiteCd, CCBFunc cbfunc, void* client, 
+  const char* outFilename)
   {
     request_RfidInfoSelectAll(sMemcoCd, sSiteCd, 0, cbfunc, client, outFilename);
   }
 
-  char* request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* 
+  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* 
   client);
-  char* request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit)
+  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, int timelimit)
   {
     request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, timelimit, NULL, NULL);
   }
-  char* request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, CCBFunc cbfunc, void* 
+  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, CCBFunc cbfunc, void* 
   client)
   {
     request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, 0, cbfunc, client);
@@ -326,13 +331,13 @@ public:
     request_ServerTimeGet(0, cbfunc, client);
   }
 
-  bool request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* 
+  bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* 
   client);
-  bool request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit)
+  bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit)
   {
     request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, timelimit, NULL, NULL);
   }
-  bool request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, CCBFunc cbfunc, void* 
+  bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, CCBFunc cbfunc, void* 
   client)
   {
     request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, 0, cbfunc, client);

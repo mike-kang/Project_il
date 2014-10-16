@@ -14,8 +14,7 @@
 #endif
 #endif
 
-namespace tools {
-namespace date {
+using namespace tools;
 #ifdef _WIN32
 char* getString(char *buf, int type)
 {
@@ -30,9 +29,20 @@ char* getString(char *buf, int type)
   return buf;
 }
 #else
+Date::Date(char* date) //data=20140101
+{
+  char buf[5];
+
+  memcpy(buf, date, 4); buf[4] = '\0'; 
+  m_year = atoi(buf);
+  memcpy(buf, date+4, 2); buf[2] = '\0'; 
+  m_date = atoi(buf);
+  memcpy(buf, date+6, 2); buf[2] = '\0'; 
+  m_day = atoi(buf);
+  
+}
 
 #endif
-}
-}
+
 
 

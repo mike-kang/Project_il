@@ -10,6 +10,8 @@
 #include "camera/camerastill.h"
 #endif
 #include "hardware/switchgpio.h"
+#include "employeeinfomgr.h"
+#include "settings.h"
 
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
@@ -42,6 +44,9 @@ private:
   Mutex m_rfid_mtx;
   WebService* m_ws;
   SerialRfid* m_serialRfid;  
+  Settings m_settings;
+  EmployeeInfoMgr* m_employInfoMrg;
+  
 
   bool m_bFirstDown;
   bool m_bNetworkAvailable;

@@ -1,10 +1,22 @@
 #ifndef _DATE_HEADER
 #define _DATE_HEADER
-namespace tools {
-namespace date {
-char* getString(char*, int);
-  
+#include <iostream>
 
-}
+using namespace std;
+
+namespace tools {
+class Date {
+public:
+  Date(){}
+  Date(char* date);
+  //operator ==(
+private:
+  int m_year;
+  int m_month;
+  int m_day;
+  int m_hour;
+  int m_minute;
+  int m_second;
+};
 }
 #endif //_DATE_HEADER

@@ -233,7 +233,7 @@ bool WebService::StatusUpdate_WebApi::parsing()
 //#define SOAP_2_CODEDATASELECT //not work
 #define SOAP_HEADER_SZ 112 //except ip & length
 
-char* WebService::request_CodeDataSelect(char *sMemcoCd, char* sSiteCd, char* sDvLoc, int timelimit, CCBFunc cbfunc, void* client)
+char* WebService::request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, int timelimit, CCBFunc cbfunc, void* client)
 {
   char* ret = NULL;
   char *cmd;
@@ -345,7 +345,7 @@ bool WebService::request_GetNetInfo(int timelimit, CCBFunc cbfunc, void* client)
   return ret;
 }
 
-void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int timelimit, CCBFunc cbfunc, void* client, char* outFilename)
+void WebService::request_RfidInfoSelectAll(const char *sMemcoCd, const char* sSiteCd, int timelimit, CCBFunc cbfunc, void* client, const char* outFilename)
 {
   LOGV("request_RfidInfoSelectAll +++\n");
   char *cmd = new char[300];
@@ -384,7 +384,7 @@ void WebService::request_RfidInfoSelectAll(char *sMemcoCd, char* sSiteCd, int ti
   return;
 }
 
-char* WebService::request_RfidInfoSelect(char *sMemcoCd, char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* client)
+char* WebService::request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* client)
 {
   char* ret = NULL;
   LOGV("request_RfidInfoSelect +++\n");
@@ -463,7 +463,7 @@ char* WebService::request_ServerTimeGet(int timelimit, CCBFunc cbfunc, void* cli
   return ret;
 }
 
-bool WebService::request_StatusUpdate(char *sGateType, char* sSiteCd, char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* client)
+bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* client)
 {
   bool ret;
   LOGV("request_StatusUpdate\n");

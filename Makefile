@@ -12,7 +12,7 @@ else
   CPPFLAGS += -DCAMERA
 endif
 
-OBJS = main.o  maindelegator.o serialRfid.o serialRfid1356.o web/webservice.o hardware/gpio.o inih_r29/INIReader.o
+OBJS = main.o  maindelegator.o serialRfid.o serialRfid1356.o web/webservice.o hardware/gpio.o inih_r29/INIReader.o settings.o employeeinfomgr.o
 
 
 
@@ -26,12 +26,14 @@ main : ${OBJS} tools/libtool.so $(CAMERA_LIB)
 
 
 main.o : maindelegator.h tools/log.h tools/logservice.h hardware/switchgpio.h hardware/gpio.h
-maindelegator.o : maindelegator.h tools/condition.h tools/mutex.h tools/serial.h serialRfid.h serialRfid1356.h tools/log.h tools/logservice.h camera/camerastill.h web/webservice.h hardware/switchgpio.h hardware/gpio.h
+maindelegator.o : maindelegator.h tools/condition.h tools/mutex.h tools/serial.h serialRfid.h serialRfid1356.h tools/log.h tools/logservice.h camera/camerastill.h web/webservice.h hardware/switchgpio.h hardware/gpio.h settings.h
 serialRfid.o : serialRfid.h tools/log.h tools/logservice.h
 serialRfid1356.o : serialRfid1356.h tools/log.h tools/logservice.h
 web/webservice.o : web/webservice.h tools/log.h tools/logservice.h
 hardware/gpio.o : hardware/gpio.h tools/filesystem.h tools/log.h tools/logservice.h
 inih_r29/INIReader.o : inih_r29/INIReader.h
+settings.o : settings.h tools/log.h tools/logservice.h
+employeeinfomgr.o : employeeinfomgr.h web/webservice.h tools/log.h tools/logservice.h  settings.h
 .PHONY : clean
 clean :
 	-rm *.o main

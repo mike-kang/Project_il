@@ -5,18 +5,22 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "inih_r29/INIReader.h"
 
 using namespace tools;
 using namespace std;
 
 #define LOG_TAG "MainDelegator"
 
-void MainDelegator::onData(char* buf)
+void MainDelegator::onData(char* serialNumber)
 {
-  LOGI("onData %s\n", buf);
+  LOGI("onData %s\n", serialNumber);
   char* imgBuf = NULL;;
   int imgLength;
+  
+  EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
+  bool ret = m_employInfoMrg->getInfo(serialNumber, ei);
+
+
   
 #ifdef CAMERA
   if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
@@ -122,36 +126,31 @@ error:
 
 bool MainDelegator::SettingInit()
 {
-  INIReader reader("config/FID.ini");
-  if (reader.ParseError() < 0) {
-     LOGE("Can't load 'FID.ini'\n");
-     return false;
-  }
 
 #ifdef CAMERA  
-  m_cameraDelayOffTime = reader.GetInteger("Camera", "DELAY_OFF_TIME", 600); //600 sec
-  m_takePictureMaxWaitTime = reader.GetInteger("Camera", "TAKEPICTURE_MAX_WAIT_TIME ", 2); // 2 sec
+  m_cameraDelayOffTime = m_settings.getInt("Camera::DELAY_OFF_TIME"); //600 sec
+  m_takePictureMaxWaitTime = m_settings.getInt("Camera::TAKEPICTURE_MAX_WAIT_TIME"); // 2 sec
 #endif
   //App
-  m_sMemcoCd = reader.Get("App", "MEMCO_CD", "MC00000003").c_str();
-  m_sSiteCd = reader.Get("App", "SITE_CD", "ST00000005").c_str();
-  m_bDatabase = reader.GetBoolean("App", "LOCAL_DATABASE", false);
-  m_sDvLoc = reader.Get("App", "DV_LOC", "0001").c_str(); // = "0001";
-  m_sDvNo = reader.Get("App", "DV_NO", "6").c_str(); // = "6";
+  m_sMemcoCd = m_settings.get("App::MEMCO_CD").c_str();
+  m_sSiteCd = m_settings.get("App::SITE_CD").c_str();
+  m_sDvLoc = m_settings.get("App::DV_LOC").c_str(); // = "0001";
+  m_sDvNo = m_settings.get("App::DV_NO").c_str(); // = "6";
+  m_bDatabase = m_settings.getBool("App::LOCAL_DATABASE");
 
   //Action
-  m_bCapture = reader.GetBoolean("Action", "CAPTURE", true);
-  m_bRelay = reader.GetBoolean("Action", "RELAY", true);
-  m_bSound = reader.GetBoolean("Action", "SOUND", true);
+  m_bCapture = m_settings.getBool("Action::CAPTURE");
+  m_bRelay = m_settings.getBool("Action::RELAY");
+  m_bSound = m_settings.getBool("Action::SOUND");
 
   //Rfid
-  m_sRfidMode = reader.Get("Rfid", "MODE", "1356M").c_str(); //="1356M";
-  m_rfidCheckInterval = reader.GetInteger("Rfid", "CHECK_INTERVAL", 300); //300 ms
+  m_sRfidMode = m_settings.get("Rfid::MODE").c_str(); //="1356M";
+  m_rfidCheckInterval = m_settings.getInt("Rfid::CHECK_INTERVAL"); //300 ms
 
   return true;
 }
 
-MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
+MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24), m_settings("config/FID.ini")
 {
   bool ret;
   m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
@@ -161,6 +160,10 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
   /* setting values                           */
   /********************************************/
   SettingInit();
+  m_ws = new WebService("192.168.0.7", 8080);
+
+  m_employInfoMrg = new EmployeeInfoMgr(&m_settings, m_ws);
+  
 
 
 
@@ -182,7 +185,6 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
 
 
 
-  m_ws = new WebService("192.168.0.7", 8080);
 
 }
 
