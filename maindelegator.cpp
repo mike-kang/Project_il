@@ -5,6 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <signal.h>
+#include "tools/timer.h"
 
 using namespace tools;
 using namespace std;
@@ -12,20 +14,6 @@ using namespace std;
 #define LOG_TAG "MainDelegator"
 
 MainDelegator* MainDelegator::my = NULL;
-
-#ifdef SIMULATOR
-void cbTimer(void* arg)
-{
-  my->onData("253161024009");
-}
-
-void signal_handler(int signo)
-{
-  if(signo == SIGUSR1){
-      LOGI("signal_handler SIGUSR1");
-      Timer(1, cbTimer, NULL);
-}
-#endif
 
 void MainDelegator::onData(char* serialNumber)
 {
@@ -201,11 +189,26 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
 
 
 #ifdef SIMULATOR
-  signal(SIGUSR1, signal_handler);
+  signal(SIGUSR1, test_signal_handler);
+  mTimerForTest = new Timer(1, cbTestTimer, NULL);
 #endif
 
 }
 
+#ifdef SIMULATOR
+void MainDelegator::cbTestTimer(void* arg)
+{
+  MainDelegator::my->onData("253161024009");
+}
+
+void MainDelegator::test_signal_handler(int signo)
+{
+  if(signo == SIGUSR1){
+    LOGI("signal_handler SIGUSR1");
+    my->mTimerForTest->start();
+  }
+}
+#endif
 
 
 /*
