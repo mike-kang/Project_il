@@ -46,7 +46,7 @@ void* Timer::run(void* arg)
     timer->m_cbFunc(timer->m_clientData);
   }
   
-  m_active = false;
+  timer->m_active = false;
   timer->mtx.unlock();
   return NULL;
 }
