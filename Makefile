@@ -1,7 +1,7 @@
 $(warning os: $(shell uname -s))
 $(info current dir is ${CURDIR})
 
-PROCESSOR=$(shell uname -p)
+MACHINE=$(shell uname -m)
 
 CPPFLAGS =  -g -I. 
 
@@ -11,8 +11,8 @@ else
   CAMERA_LFLAGS= -lcamera -lopenmaxil -lbcm_host -L. -L/opt/vc/lib -L./camera
   CPPFLAGS += -DCAMERA
 endif
-INI_LIB= inih_r29/arch/$(PROCESSOR)/libinih.a
-INI_LFLAGS = -L./inih_r29/arch/$(PROCESSOR) -linih
+INI_LIB= inih_r29/arch/$(MACHINE)/libinih.a
+INI_LFLAGS = -L./inih_r29/arch/$(MACHINE) -linih
 
 OBJS = main.o  maindelegator.o serialRfid.o serialRfid1356.o web/webservice.o hardware/gpio.o inih_r29/INIReader.o settings.o employeeinfomgr.o
 
