@@ -12,6 +12,7 @@
 #include "hardware/switchgpio.h"
 #include "employeeinfomgr.h"
 #include "settings.h"
+#include "tools/timer.h"
 
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
@@ -41,7 +42,11 @@ private:
 
   void _processRfidSerialData(void* arg);
   bool SettingInit();
-
+#ifdef SIMULATOR  
+  static void cbTestTimer(void* arg);
+  static void test_signal_handler(int signo);
+  tools::Timer* mTimerForTest;
+#endif
   //static void cb_ServerTimeGet(void* arg);
   //void _cb_ServerTimeGet(void* arg);
 
