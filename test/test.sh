@@ -1,3 +1,5 @@
 #!/bin/sh
 
-LD_LIBRARY_PATH=../camera:../inih_r29/arch/x86_64/:../tools/:../ ./main
+MACHINE=`uname -m`
+
+LD_LIBRARY_PATH=../camera:../inih_r29/arch/${MACHINE}/:../tools/:../ ./main

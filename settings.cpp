@@ -11,7 +11,7 @@ using namespace std;
 #define mapBoolInsert(category, key, value) \
     m_mapBool.insert(pair<string, bool>(#category"::"#key, reader.GetBoolean(#category, #key, value)))
 #define mapIntInsert(category, key, value) \
-      m_mapInt.insert(pair<string, int>(#category"::"#key, reader.GetBoolean(#category, #key, value)))
+      m_mapInt.insert(pair<string, int>(#category"::"#key, reader.GetInteger(#category, #key, value)))
 
 Settings::Settings(const char* filename)
 {
