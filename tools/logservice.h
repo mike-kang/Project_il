@@ -54,7 +54,7 @@ public:
     TYPE_CONSOLE,
     TYPE_DEBUGCONSOLE
   };
-  static LogService* init(log_t type, char* path);
+  static LogService* init(log_t type, const char* path);
   static LogService* getService();
   static void setEnable(bool enable);
   void sendMessage(int prio, const char *tag, const char *msg);

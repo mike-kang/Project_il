@@ -37,6 +37,27 @@ EmployeeInfoMgr::EmployeeInfoMgr(Settings* settings, WebService* ws): m_settings
   
 }
 
+char* findTag(char* xml_buf, const char* tag)
+{
+  char* p;
+  char* ret = NULL;
+  int tag_len = strlen(tag);
+  char* key = new char[tag_len + 2]; // <XXXX + NULL
+  key[0] = '<';
+  strcpy(key, tag);
+  
+  if(p = strstr(xml_buf, key)){
+    ret = p+tag_len+2;
+    p = strstr(ret, "<");
+    *p = '\0';
+    return ret;
+  }
+
+  delete key;
+  
+  return NULL;
+}
+  
 bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
 {
   if(m_bUseLocalDB){
@@ -50,10 +71,20 @@ bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
     return true;
   }
   try{
-
     char* xml_buf = m_ws->request_RfidInfoSelect(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), serialNumber, 3000);
     if(xml_buf){
-      LOGV("***RfidInfoSelect:%s\n", xml_buf);
+      char *p;
+      //LOGV("***RfidInfoSelect:%s\n", xml_buf);
+      if(!(p = findTag(xml_buf, "Table"))){
+        LOGV("The Serial# is not exist!\n");
+        return false;
+      }
+      ei->in_out_gb = p = findTag(p, "IN_OUT_GB");
+      ei->zone_code = p = findTag(p, "ZONE_CODE");
+      ei->ent_co_ymd = new Date(p = findTag(p, "ENT_CO_YMD"));
+      ei->rtr_co_ymd = new Date(findTag(p, "RTR_CO_YMD"));
+      ei->utype = *findTag(p, "UTYPE");
+      
       delete xml_buf;
     }
   }

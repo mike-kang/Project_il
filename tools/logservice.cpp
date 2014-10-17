@@ -70,7 +70,7 @@ writeFunc writefunc[4] = {
   , debugoutWrite
 };
 
-LogService* LogService::init(LogService::log_t type, char* path)
+LogService* LogService::init(LogService::log_t type, const char* path)
 {
   if(type == TYPE_NULL)
     return NULL;

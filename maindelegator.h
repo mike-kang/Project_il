@@ -42,6 +42,7 @@ private:
 
   void _processRfidSerialData(void* arg);
   bool SettingInit();
+  bool checkValidate(EmployeeInfoMgr::EmployeeInfo* ei);
 #ifdef SIMULATOR  
   static void cbTestTimer(void* arg);
   static void test_signal_handler(int signo);

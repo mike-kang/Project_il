@@ -15,6 +15,32 @@ using namespace std;
 
 MainDelegator* MainDelegator::my = NULL;
 
+bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei)
+{
+  bool bAccess;
+  //IN_OUT_GB
+  if(ei->in_out_gb == "0002")
+  {
+  
+  }
+  else{
+    if(ei->in_out_gb ==  "0001"){
+      LOGE("Access Deny Standby at Work\n");
+      return false;
+    }
+    if(ei->in_out_gb == "0003"){
+      LOGE("Access Deny Retired at Work");
+      return false;
+    }
+
+    LOGE("Access Deny Check Work Status");
+    return false;
+
+  }
+
+  return true;
+}
+
 void MainDelegator::onData(char* serialNumber)
 {
   LOGI("onData %s\n", serialNumber);
@@ -24,7 +50,18 @@ void MainDelegator::onData(char* serialNumber)
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
   bool ret = m_employInfoMrg->getInfo(serialNumber, ei);
 
+  if(!ret){
+    LOGE("get employee info fail!\n");
+    return;
+  }
 
+  if(!checkValidate(ei)){
+    return;
+  }
+    
+
+  
+    
   
 #ifdef CAMERA
   if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
