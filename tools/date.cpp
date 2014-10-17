@@ -34,7 +34,7 @@ char* getString(char *buf, int type)
 Date::Date(char* date) //data=20140101
 {
   char buf[5];
-
+  if(!date) return;
   memcpy(buf, date, 4); buf[4] = '\0'; 
   m_year = atoi(buf);
   memcpy(buf, date+4, 2); buf[2] = '\0'; 

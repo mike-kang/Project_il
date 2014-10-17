@@ -37,29 +37,29 @@ EmployeeInfoMgr::EmployeeInfoMgr(Settings* settings, WebService* ws): m_settings
   
 }
 
-char* findTag(char* xml_buf, const char* tag)
+char* getData(char* xml_buf, const char* tag)
 {
   char* p;
   char* ret = NULL;
   int tag_len = strlen(tag);
   char* key = new char[tag_len + 2]; // <XXXX + NULL
   key[0] = '<';
-  strcpy(key, tag);
+  strcpy(key+1, tag);
   
   if(p = strstr(xml_buf, key)){
     ret = p+tag_len+2;
     p = strstr(ret, "<");
     *p = '\0';
-    return ret;
   }
 
   delete key;
   
-  return NULL;
+  return ret;
 }
   
 bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
 {
+  cout << "getInfo" << endl;
   if(m_bUseLocalDB){
     ; //todo
     return true;
@@ -74,19 +74,27 @@ bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
     char* xml_buf = m_ws->request_RfidInfoSelect(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), serialNumber, 3000);
     if(xml_buf){
       char *p;
+      cout << xml_buf << endl;
       //LOGV("***RfidInfoSelect:%s\n", xml_buf);
-      if(!(p = findTag(xml_buf, "Table"))){
+      if(!(p = strstr(xml_buf, "<Table"))){
         LOGV("The Serial# is not exist!\n");
         return false;
       }
-      ei->in_out_gb = p = findTag(p, "IN_OUT_GB");
-      ei->zone_code = p = findTag(p, "ZONE_CODE");
-      ei->ent_co_ymd = new Date(p = findTag(p, "ENT_CO_YMD"));
-      ei->rtr_co_ymd = new Date(findTag(p, "RTR_CO_YMD"));
-      ei->utype = *findTag(p, "UTYPE");
+      cout << "getInfo 1:" << p << endl;
+      ei->in_out_gb = p = getData(p, "IN_OUT_GB");
+      cout << "getInfo 2:" << p << endl;
+      ei->zone_code = p = getData(p + strlen(p) + 1, "ZONE_CD");
+      cout << "getInfo 3" << endl;
+      ei->ent_co_ymd = new Date(p = getData(p + strlen(p) + 1, "ENT_CO_YMD"));
+      char* rtr = getData(p, "RTR_CO_YMD");
+      if(rtr) 
+        ei->rtr_co_ymd = new Date(rtr);
+      ei->utype = *getData(p + strlen(p) + 1, "UTYPE");
       
       delete xml_buf;
+      return true;
     }
+    return false;
   }
   catch(WebService::Except e){
     LOGE("request_RfidInfoSelect: %s\n", WebService::dump_error(e));

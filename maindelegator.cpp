@@ -7,6 +7,7 @@
 #include <string>
 #include <signal.h>
 #include "tools/timer.h"
+#include "tools/media.h"
 
 using namespace tools;
 using namespace std;
@@ -19,6 +20,7 @@ bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei)
 {
   bool bAccess;
   //IN_OUT_GB
+  cout << "checkValidate" << endl;
   if(ei->in_out_gb == "0002")
   {
   
@@ -38,6 +40,8 @@ bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei)
 
   }
 
+  LOGI("checkValidate success!\n");
+
   return true;
 }
 
@@ -52,16 +56,17 @@ void MainDelegator::onData(char* serialNumber)
 
   if(!ret){
     LOGE("get employee info fail!\n");
-    return;
+    media::wavPlay("SoundFiles/fail.wav");
+    goto error;
   }
 
   if(!checkValidate(ei)){
-    return;
+    media::wavPlay("SoundFiles/fail.wav");
+    goto error;
   }
-    
 
-  
-    
+  media::wavPlay("SoundFiles/ok.wav");
+  m_greenLed.on();
   
 #ifdef CAMERA
   if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
@@ -80,7 +85,8 @@ void MainDelegator::onData(char* serialNumber)
     LOGE("take Picture fail!!!\n");
   }
 #endif  
-  system("aplay SoundFiles/ok.wav");  
+error:
+  delete ei;
   
 }
 
@@ -234,13 +240,14 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
   signal(SIGUSR1, test_signal_handler);
   mTimerForTest = new Timer(1, cbTestTimer, NULL);
 #endif
-
+  media::wavPlay("SoundFiles/start.wav");
 }
 
 #ifdef SIMULATOR
 void MainDelegator::cbTestTimer(void* arg)
 {
-  MainDelegator::my->onData("253161024009");
+  MainDelegator::my->onData("253161024009");  //validate
+  //MainDelegator::my->onData("253153215009");  //invalidate
 }
 
 void MainDelegator::test_signal_handler(int signo)
