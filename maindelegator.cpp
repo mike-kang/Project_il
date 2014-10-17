@@ -37,7 +37,6 @@ bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei)
 
     LOGE("Access Deny Check Work Status");
     return false;
-
   }
 
   LOGI("checkValidate success!\n");
@@ -197,7 +196,7 @@ bool MainDelegator::SettingInit()
   return true;
 }
 
-MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24), m_settings("config/FID.ini")
+MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24), m_settings("FID.ini")
 {
   bool ret;
 
