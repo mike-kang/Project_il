@@ -238,6 +238,25 @@ bool WebService::StatusUpdate_WebApi::parsing()
   return true;
 }
 
+bool WebService::TimeSheetInsertString_WebApi::parsing()
+{
+  char headerbuf[RCVHEADERBUFSIZE];
+  char* startContent;
+  int contentLength;
+  int readByteContent;
+
+  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
+    return false;
+
+  //contents
+  char* p;
+  p = strstr(startContent, "\n");
+  p = strstr(p, "boolean");
+  p = strstr(p, ">");
+  
+  m_ret = (*(p+1)=='t');
+  return true;
+}
 
 
 /***********************************************************************************/
@@ -494,6 +513,48 @@ bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, cons
   }
   else{
     wa = new StatusUpdate_WebApi(this, cmd, 0, timelimit);
+  
+    int status = wa->processCmd();
+
+    switch(status){
+      case RET_CREATE_SOCKET_FAIL:
+        throw EXCEPTION_CREATE_SOCKET;
+      case RET_CONNECT_FAIL:
+        throw EXCEPTION_CONNECT;
+      case RET_SEND_CMD_FAIL:
+        throw EXCEPTION_SEND_COMMAND;
+      case RET_POLL_FAIL:
+        throw EXCEPTION_POLL_FAIL;
+      case RET_POLL_TIMEOUT:
+        throw EXCEPTION_POLL_TIMEOUT;
+      case RET_PARSING_FAIL:
+        throw EXCEPTION_PARSING_FAIL;
+    }
+    
+    ret = wa->m_ret;
+    delete wa;
+  }
+  return ret;
+}
+
+bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* sPhotoImage, int timelimit, CCBFunc cbfunc, void* 
+client)
+{
+  bool ret;
+  LOGV("request_TimeSheetInsertString\n");
+  char *cmd = new char[400];
+  sprintf(cmd,"GET /WebService/ItlogService.asmx/TimeSheetInsertString?sMemcoCd=%s&sSiteCd=%s&sLabNo=%s&sInOut=%c&sGateNo=%s&sGateLoc=%s&sUtype=%c&sAttendGb=&sEventfunctionkey=&sInTime=%s&sPhotoImage= HTTP/1.1\r\nHost: %s\r\n\r\n"
+    , sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, m_serverIP);
+
+  cout << cmd << endl;
+  TimeSheetInsertString_WebApi* wa;
+
+  if(cbfunc){
+    wa = new TimeSheetInsertString_WebApi(this, cmd, 0, cbfunc, client);
+    wa->processCmd();
+  }
+  else{
+    wa = new TimeSheetInsertString_WebApi(this, cmd, 0, timelimit);
   
     int status = wa->processCmd();
 

@@ -206,6 +206,7 @@ public:
     
     StatusUpdate_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
     {
+      m_pRet = &m_ret;
 #ifdef DEBUG
       oOut.open("received_StatusUpdate.txt");
 #endif
@@ -219,7 +220,6 @@ public:
     }
     virtual ~StatusUpdate_WebApi()
     {
-      m_pRet = &m_ret;
 #ifdef DEBUG
       oOut.close();
 #endif  
@@ -228,29 +228,33 @@ public:
       bool m_ret;
   };
 
-  class TimeSheetInsert_WebApi : public WebApi {
+  class TimeSheetInsertString_WebApi : public WebApi {
   friend class WebService;
   public:
     virtual bool parsing();
     
-    TimeSheetInsert_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
+    TimeSheetInsertString_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
     {
+      m_pRet = &m_ret;
 #ifdef DEBUG
-      oOut.open("received_TimeSheetInsert.txt");
+      oOut.open("received_TimeSheetInsertString.txt");
 #endif
     }
-    TimeSheetInsert_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
+    TimeSheetInsertString_WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):WebApi(ws, cmd, cmd_offset, cbfunc, client) //async
     {
+      m_pRet = &m_ret;
 #ifdef DEBUG
-      oOut.open("received_TimeSheetInsert.txt");
+      oOut.open("received_TimeSheetInsertString.txt");
 #endif
     }
-    virtual ~TimeSheetInsert_WebApi()
+    virtual ~TimeSheetInsertString_WebApi()
     {
 #ifdef DEBUG
       oOut.close();
 #endif  
     }
+    private:
+      bool m_ret;
   };
   
 
@@ -345,7 +349,18 @@ public:
   {
     request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, 0, cbfunc, client);
   }
-
+  
+  bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* sPhotoImage, int timelimit, CCBFunc cbfunc, void* 
+  client);
+  bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* sPhotoImage, int timelimit)
+  {
+    request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, sPhotoImage, timelimit, NULL, NULL);
+  }
+  bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* sPhotoImage, CCBFunc cbfunc, void* 
+  client)
+  {
+    request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, sPhotoImage, 0, cbfunc, client);
+  }
 private:
   //void run(); 
   
