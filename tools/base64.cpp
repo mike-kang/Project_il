@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 
+namespace tools {
+namespace base64 {
+
 static const char MimeBase64[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
     'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
@@ -85,3 +88,32 @@ void base64d(const char *src, char *result, int *length){
     }
     *length = j-blank;
 }
+
+typedef union{
+    struct{
+        unsigned char c1,c2,c3;
+    };
+    struct{
+        unsigned int e3:6,e2:6,e1:6,e0:6; //little endian
+    };
+} BF2;
+
+void base64e2(const char *src, char *result, int length){
+    int i, j = 0;
+    BF2* p = (BF2*)src;
+    int sz = length / 3;
+
+    
+    for(i = 0 ; i < sz ; i++){
+      
+      result[j]   = MimeBase64[p->e0];
+      result[j++] = MimeBase64[p->e1];
+      result[j++] = MimeBase64[p->e2];
+      result[j++] = MimeBase64[p->e3];
+
+      p++;
+    }
+
+    BF2 temp;
+}
+}}
