@@ -3,6 +3,9 @@
 #include "webservice.h"
 #include <sys/poll.h> 
 #include "tools/log.h"
+#include "tools/base64.h"
+
+using namespace tools;
 
 #define LOG_TAG "WebService"
 
@@ -68,6 +71,26 @@ bool WebService::WebApi::parsingHeader(char* buf, char **startContent, int* cont
   return true;
 }
 
+bool WebService::WebApi::parsing()
+{
+  char headerbuf[RCVHEADERBUFSIZE];
+  char* startContent;
+  int contentLength;
+  int readByteContent;
+
+  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
+    return false;
+
+  //contents
+  char* p;
+  p = strstr(startContent, "\n");
+  p = strstr(p, "boolean");
+  p = strstr(p, ">");
+  
+  m_ret = (*(p+1)=='t');
+  return true;
+}
+
 /***********************************************************************************/
 /*                                                                                 */
 /*   parsing functions                                                             */
@@ -102,26 +125,6 @@ bool WebService::CodeDataSelect_WebApi::parsing()
   buf[contentLength] = '\0';
   m_pRet = buf;
 
-  return true;
-}
-
-bool WebService::GetNetInfo_WebApi::parsing()
-{
-  char headerbuf[RCVHEADERBUFSIZE];
-  char* startContent;
-  int contentLength;
-  int readByteContent;
-
-  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
-    return false;
-
-  //contents
-  char* p;
-  p = strstr(startContent, "\n");
-  p = strstr(p, "boolean");
-  p = strstr(p, ">");
-  
-  m_ret = (*(p+1)=='t');
   return true;
 }
 
@@ -215,46 +218,6 @@ bool WebService::ServerTimeGet_WebApi::parsing()
   m_pRet = new char[len+1];
   strcpy((char*)m_pRet, start);
 
-  return true;
-}
-
-bool WebService::StatusUpdate_WebApi::parsing()
-{
-  char headerbuf[RCVHEADERBUFSIZE];
-  char* startContent;
-  int contentLength;
-  int readByteContent;
-
-  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
-    return false;
-
-  //contents
-  char* p;
-  p = strstr(startContent, "\n");
-  p = strstr(p, "boolean");
-  p = strstr(p, ">");
-  
-  m_ret = (*(p+1)=='t');
-  return true;
-}
-
-bool WebService::TimeSheetInsertString_WebApi::parsing()
-{
-  char headerbuf[RCVHEADERBUFSIZE];
-  char* startContent;
-  int contentLength;
-  int readByteContent;
-
-  if(!parsingHeader(headerbuf, &startContent, &contentLength, &readByteContent))
-    return false;
-
-  //contents
-  char* p;
-  p = strstr(startContent, "\n");
-  p = strstr(p, "boolean");
-  p = strstr(p, ">");
-  
-  m_ret = (*(p+1)=='t');
   return true;
 }
 
@@ -537,16 +500,19 @@ bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, cons
   return ret;
 }
 
-bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* sPhotoImage, int timelimit, CCBFunc cbfunc, void* 
+bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* imageBuf, int imageSz, int timelimit, CCBFunc cbfunc, void* 
 client)
 {
   bool ret;
   LOGV("request_TimeSheetInsertString\n");
-  char *cmd = new char[400];
-  sprintf(cmd,"GET /WebService/ItlogService.asmx/TimeSheetInsertString?sMemcoCd=%s&sSiteCd=%s&sLabNo=%s&sInOut=%c&sGateNo=%s&sGateLoc=%s&sUtype=%c&sAttendGb=&sEventfunctionkey=&sInTime=%s&sPhotoImage= HTTP/1.1\r\nHost: %s\r\n\r\n"
-    , sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, m_serverIP);
-
-  cout << cmd << endl;
+  char *cmd = new char[400 + imageSz/3*4]; 
+  sprintf(cmd,"GET /WebService/ItlogService.asmx/TimeSheetInsertString?sMemcoCd=%s&sSiteCd=%s&sLabNo=%s&sInOut=%c&sGateNo=%s&sGateLoc=%s&sUtype=%c&sAttendGb=&sEventfunctionkey=&sInTime=%s&sPhotoImage="
+    , sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime);
+  base64::base64e(imageBuf, cmd + strlen(cmd), imageSz);
+  sprintf(cmd + strlen(cmd), " HTTP/1.1\r\nHost: %s\r\n\r\n"
+    , m_serverIP);
+  cout << cmd <<"::" << strlen(cmd)<< endl;
+  
   TimeSheetInsertString_WebApi* wa;
 
   if(cbfunc){

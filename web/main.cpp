@@ -14,6 +14,8 @@ WebService* m_ws;
 
 #define DUMP_CASE(x) case x: return #x;
 
+char* image_buffer;
+
 char* dump_error(WebService::Except e)
 {
   switch(e){
@@ -63,6 +65,13 @@ void cbServerTimeGet(void *client_data, int status, void* ret)
 void cbStatusUpdate(void *client_data, int status, void* ret)
 {
   LOGV("cbStatusUpdate status:%d, ret:%d\n", status, *((bool*)ret));
+}
+
+void cbTimeSheetInsertString(void *client_data, int status, void* ret)
+{
+  LOGV("cbTimeSheetInsertString status:%d, ret:%d\n", status, *((bool*)ret));
+  if(*((bool*)ret))
+    delete image_buffer;
 }
 
 int main()
@@ -139,10 +148,22 @@ int main()
     LOGE("request_StatusUpdate: %s\n", dump_error(e));
   }
 */
-
+  ifstream infile ("org.jpg",ofstream::binary);
+  // get size of file
+  infile.seekg (0,infile.end);
+  long size = infile.tellg();
+  infile.seekg (0);
+  // allocate memory for file content
+  image_buffer = new char[size];
+  // read content of infile
+  infile.read (image_buffer,size);
+  infile.close();
+ 
   try{
-    ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-17+09:00:00", NULL, 3000);  //blocked I/O
-    //ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-17+09:00:00", NULL, 3000);  //blocked I/O
+    ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, 3000);  //blocked I/O
+    if(ret)
+      delete image_buffer;
+    //ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, TimeSheetInsertString, NULL);  //blocked I/O
     LOGV("***TimeSheetInsertString: %d\n", ret);
   }
   catch(WebService::Except e){
