@@ -18,8 +18,6 @@
 #define PREFIX_PATH "/sys/class/gpio/gpio"
 using namespace tools;
 
-char* itoa(int val, int base);
-
 Gpio::Gpio(int num, bool out, bool init): m_number(num), m_out(out)
 {
   int fd;
@@ -63,7 +61,7 @@ Gpio::~Gpio()
     return;
 
   fd = open(UNEXPORT_PATH, O_WRONLY);
-  char* strnum = itoa(m_number, 10);
+  char* strnum = utils::itoa(m_number, 10);
   ::write(fd, strnum, strlen(strnum));
   close(fd);
 }

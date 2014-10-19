@@ -504,8 +504,6 @@ bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, cons
 bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* imageBuf, int imageSz, int timelimit, CCBFunc cbfunc, void* 
 client)
 {
-  char* itoa(int val, int base);
-
   bool ret;
   LOGV("request_TimeSheetInsertString\n");
   int encoded_buf_sz = base64::base64e2_get_needbufSize(imageSz);
