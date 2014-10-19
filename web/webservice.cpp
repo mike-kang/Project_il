@@ -503,6 +503,8 @@ bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, cons
 bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* imageBuf, int imageSz, int timelimit, CCBFunc cbfunc, void* 
 client)
 {
+  char* itoa(int val, int base);
+
   bool ret;
   LOGV("request_TimeSheetInsertString\n");
   int encoded_buf_sz = base64::base64e2_get_needbufSize(imageSz);
@@ -514,23 +516,17 @@ client)
   int base64_encoded_len = base64::base64e2(imageBuf, imageSz, cmd_content + cmd_content_prefix);
   int contentlen = cmd_content_prefix + base64_encoded_len;
 
-  //int headerlength = SOAP_HEADER_SZ + strlen(m_serverIP) + 3; // strlen(itoa(len1,10)) = 3
+  int headerlength = 140 + strlen(m_serverIP) + strlen(itoa(base64_encoded_len,10));
 
-  sprintf(cmd,"POST /WebService/ItlogService.asmx/TimeSheetInsertString HTTP/1.1\r\nHost: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d"
+  int cmd_offset = 400 - headerlength;
+ 
+  sprintf(cmd + cmd_offset,"POST /WebService/ItlogService.asmx/TimeSheetInsertString HTTP/1.1\r\nHost: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n"
     , m_serverIP, contentlen);
-  LOGV("cmd:%s :%d\n", cmd,strlen(cmd)); 
-  return true;
+  cmd[400] = 's';
 
-
-#if 0
-
-  sprintf(cmd,"GET /WebService/ItlogService.asmx/TimeSheetInsertString?sMemcoCd=%s&sSiteCd=%s&sLabNo=%s&sInOut=%c&sGateNo=%s&sGateLoc=%s&sUtype=%c&sAttendGb=&sEventfunctionkey=&sInTime=%s&sPhotoImage="
-    , sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime);
-  int base64_encoded_len = base64::base64e2(imageBuf, imageSz, cmd + strlen(cmd));
-  sprintf(cmd + strlen(cmd), " HTTP/1.1\r\nHost: %s\r\n\r\n"
-    , m_serverIP);
-  cout << cmd <<"::" << strlen(cmd) << endl;
   
+  //LOGV("cmd:%s :%d\n", cmd,strlen(cmd)); 
+
   TimeSheetInsertString_WebApi* wa;
 
   if(cbfunc){
@@ -561,7 +557,6 @@ client)
     delete wa;
   }
   return ret;
-#endif  
 }
 
 void WebService::WebApi::run()
@@ -629,5 +624,19 @@ int WebService::WebApi::processCmd()
     m_thread->detach();
   
   return m_status;
+}
+
+char* itoa(int val, int base){
+	
+	static char buf[32] = {0};
+	
+	int i = 30;
+	
+	for(; val && i ; --i, val /= base)
+	
+		buf[i] = "0123456789abcdef"[val % base];
+	
+	return &buf[i+1];
+	
 }
 
