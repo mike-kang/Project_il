@@ -130,16 +130,16 @@ int base64e2(const char *src, int length, char *result){
     if(mod == 1){
       *o++ = MimeBase64[p->c0_6];
       *o++ = MimeBase64[(p->_c0_2 << 4)];
-      *o++ - '=';
-      *o++ - '=';
+      *o++ = '=';
+      *o++ = '=';
     }
     else if(mod ==2){
       *o++ = MimeBase64[p->c0_6];
       *o++ = MimeBase64[(p->_c0_2 << 4) + p->c1_4];
       *o++ = MimeBase64[(p->_c1_4 << 2)];
-      *o++ - '=';
+      *o++ = '=';
     }
     *o = '\0';
-    return (o - src);
+    return (o - result);
 }
 }}
