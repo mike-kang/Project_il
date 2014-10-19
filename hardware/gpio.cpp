@@ -9,6 +9,7 @@
 #include "gpio.h"
 #include "tools/log.h"
 #include "tools/filesystem.h"
+#include "tools/utils.h"
 
 #define LOG_TAG "Gpio"
 
@@ -27,7 +28,7 @@ Gpio::Gpio(int num, bool out, bool init): m_number(num), m_out(out)
   sprintf(path, "%s%d", PREFIX_PATH, num);
   if(!filesystem::file_exist(path)){
     fd = open(EXPORT_PATH, O_WRONLY);
-    char* strnum = itoa(num, 10);
+    char* strnum = utils::itoa(num, 10);
     ::write(fd, strnum, strlen(strnum));
     close(fd);
   }
@@ -78,17 +79,4 @@ bool Gpio::read()
   return buf;
 }
 
-char* itoa(int val, int base){
-	
-	static char buf[32] = {0};
-	
-	int i = 30;
-	
-	for(; val && i ; --i, val /= base)
-	
-		buf[i] = "0123456789abcdef"[val % base];
-	
-	return &buf[i+1];
-	
-}
 

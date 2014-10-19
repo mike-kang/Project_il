@@ -4,6 +4,7 @@
 #include <sys/poll.h> 
 #include "tools/log.h"
 #include "tools/base64.h"
+#include "tools/utils.h"
 
 using namespace tools;
 
@@ -517,7 +518,7 @@ client)
   int contentlen = cmd_content_prefix + base64_encoded_len;
   //LOGV("base64_encoded_len: %d\n", base64_encoded_len);
 
-  int headerlength = 144 + strlen(m_serverIP) + strlen(itoa(contentlen,10));
+  int headerlength = 144 + strlen(m_serverIP) + strlen(utils::itoa(contentlen,10));
   int cmd_offset = 200 - headerlength;
   sprintf(cmd + cmd_offset,"POST /WebService/ItlogService.asmx/TimeSheetInsertString HTTP/1.1\r\nHost: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n"
     , m_serverIP, contentlen);
@@ -626,19 +627,5 @@ int WebService::WebApi::processCmd()
     m_thread->detach();
   
   return m_status;
-}
-
-char* itoa(int val, int base){
-	
-	static char buf[32] = {0};
-	
-	int i = 30;
-	
-	for(; val && i ; --i, val /= base)
-	
-		buf[i] = "0123456789abcdef"[val % base];
-	
-	return &buf[i+1];
-	
 }
 
