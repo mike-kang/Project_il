@@ -509,32 +509,34 @@ client)
   LOGV("request_TimeSheetInsertString\n");
   int encoded_buf_sz = base64::base64e2_get_needbufSize(imageSz);
   char *cmd = new char[400 + encoded_buf_sz]; 
-  char* cmd_content = cmd + 300; 
+  char* cmd_content = cmd + 200; 
   sprintf(cmd_content,"sMemcoCd=%s&sSiteCd=%s&sLabNo=%s&sInOut=%c&sGateNo=%s&sGateLoc=%s&sUtype=%c&sAttendGb=&sEventfunctionkey=&sInTime=%s&sPhotoImage="
     , sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime);
   int cmd_content_prefix = strlen(cmd_content);
   int base64_encoded_len = base64::base64e2(imageBuf, imageSz, cmd_content + cmd_content_prefix);
   int contentlen = cmd_content_prefix + base64_encoded_len;
+  //LOGV("base64_encoded_len: %d\n", base64_encoded_len);
 
-  int headerlength = 140 + strlen(m_serverIP) + strlen(itoa(base64_encoded_len,10));
-
-  int cmd_offset = 400 - headerlength;
- 
+  int headerlength = 144 + strlen(m_serverIP) + strlen(itoa(contentlen,10));
+  int cmd_offset = 200 - headerlength;
   sprintf(cmd + cmd_offset,"POST /WebService/ItlogService.asmx/TimeSheetInsertString HTTP/1.1\r\nHost: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n"
     , m_serverIP, contentlen);
-  cmd[400] = 's';
-
+  //LOGV("cmd_offset:%d, header length:%d\n", cmd_offset, strlen(cmd + cmd_offset));
   
-  //LOGV("cmd:%s :%d\n", cmd,strlen(cmd)); 
+  cmd[200] = 's';
 
+  //ofstream oOut("request_TimeSheetInsertString.txt");
+  //oOut << (cmd+ cmd_offset) << endl;
+  //oOut.close();
+  
   TimeSheetInsertString_WebApi* wa;
 
   if(cbfunc){
-    wa = new TimeSheetInsertString_WebApi(this, cmd, 0, cbfunc, client);
+    wa = new TimeSheetInsertString_WebApi(this, cmd, cmd_offset, cbfunc, client);
     wa->processCmd();
   }
   else{
-    wa = new TimeSheetInsertString_WebApi(this, cmd, 0, timelimit);
+    wa = new TimeSheetInsertString_WebApi(this, cmd, cmd_offset, timelimit);
   
     int status = wa->processCmd();
 
@@ -578,7 +580,7 @@ void WebService::WebApi::run()
   }
 
   LOGV("send command\n");
-  len = send(m_sock, m_cmd, strlen(m_cmd), 0);
+  len = send(m_sock, m_cmd + m_cmd_offset, strlen(m_cmd + m_cmd_offset), 0);
   if(len == -1){
     LOGE("RET_SEND_CMD_FAIL\n");
     m_status = RET_SEND_CMD_FAIL;

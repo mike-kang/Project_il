@@ -158,16 +158,16 @@ int main()
   // read content of infile
   infile.read (image_buffer,size);
   infile.close();
- 
+
   try{
-    ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, 3000);  //blocked I/O
+    ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, 8000);  //blocked I/O
     if(ret)
       delete image_buffer;
     //ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, TimeSheetInsertString, NULL);  //blocked I/O
-    LOGV("***TimeSheetInsertString: %d\n", ret);
+    LOGV("***request_TimeSheetInsertString: %d\n", ret);
   }
   catch(WebService::Except e){
-    LOGE("request_StatusUpdate: %s\n", dump_error(e));
+    LOGE("request_TimeSheetInsertString: %s\n", dump_error(e));
   }
 
   
