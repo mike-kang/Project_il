@@ -505,13 +505,31 @@ client)
 {
   bool ret;
   LOGV("request_TimeSheetInsertString\n");
-  char *cmd = new char[400 + imageSz/3*4]; 
+  int encoded_buf_sz = base64::base64e2_get_needbufSize(imageSz);
+  char *cmd = new char[400 + encoded_buf_sz]; 
+  char* cmd_content = cmd + 300; 
+  sprintf(cmd_content,"sMemcoCd=%s&sSiteCd=%s&sLabNo=%s&sInOut=%c&sGateNo=%s&sGateLoc=%s&sUtype=%c&sAttendGb=&sEventfunctionkey=&sInTime=%s&sPhotoImage="
+    , sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime);
+  int cmd_content_prefix = strlen(cmd_content);
+  int base64_encoded_len = base64::base64e2(imageBuf, imageSz, cmd_content + cmd_content_prefix);
+  int contentlen = cmd_content_prefix + base64_encoded_len;
+
+  //int headerlength = SOAP_HEADER_SZ + strlen(m_serverIP) + 3; // strlen(itoa(len1,10)) = 3
+
+  sprintf(cmd,"POST /WebService/ItlogService.asmx/TimeSheetInsertString HTTP/1.1\r\nHost: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d"
+    , m_serverIP, contentlen);
+  LOGV("cmd:%s :%d\n", cmd,strlen(cmd)); 
+  return true;
+
+
+#if 0
+
   sprintf(cmd,"GET /WebService/ItlogService.asmx/TimeSheetInsertString?sMemcoCd=%s&sSiteCd=%s&sLabNo=%s&sInOut=%c&sGateNo=%s&sGateLoc=%s&sUtype=%c&sAttendGb=&sEventfunctionkey=&sInTime=%s&sPhotoImage="
     , sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime);
-  base64::base64e(imageBuf, cmd + strlen(cmd), imageSz);
+  int base64_encoded_len = base64::base64e2(imageBuf, imageSz, cmd + strlen(cmd));
   sprintf(cmd + strlen(cmd), " HTTP/1.1\r\nHost: %s\r\n\r\n"
     , m_serverIP);
-  cout << cmd <<"::" << strlen(cmd)<< endl;
+  cout << cmd <<"::" << strlen(cmd) << endl;
   
   TimeSheetInsertString_WebApi* wa;
 
@@ -543,6 +561,7 @@ client)
     delete wa;
   }
   return ret;
+#endif  
 }
 
 void WebService::WebApi::run()

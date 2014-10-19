@@ -97,7 +97,12 @@ struct BF2{
     unsigned char _c1_4:4,c1_4:4;
     unsigned char _c2_6:6,c2_2:2;
 };// __attribute__((packed));
- 
+
+int base64e2_get_needbufSize(int size)
+{ 
+  int t = size / 3 * 4; 
+  return ((size % 3)? t + 4: t) + 1; 
+}
 int base64e2(const char *src, int length, char *result){
     int i, j = 0;
     int sz = length / 3;
