@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
+
+using namespace std;
 
 namespace tools {
 namespace base64 {
@@ -50,9 +53,9 @@ void base64e(const char *src, char *result, int length){
     for(i = 0 ; i < length ; i = i+3, j = j+4){
         temp.c3 = src[i];
         if((i+1) > length) temp.c2 = 0;
-        else temp.c2 = src[i+1];
+          else temp.c2 = src[i+1];
         if((i+2) > length) temp.c1 = 0;
-        else temp.c1 = src[i+2];
+          else temp.c1 = src[i+2];
  
         result[j]   = MimeBase64[temp.e4];
         result[j+1] = MimeBase64[temp.e3];
@@ -89,31 +92,49 @@ void base64d(const char *src, char *result, int *length){
     *length = j-blank;
 }
 
-typedef union{
-    struct{
-        unsigned char c1,c2,c3;
-    };
-    struct{
-        unsigned int e3:6,e2:6,e1:6,e0:6; //little endian
-    };
-} BF2;
-
-void base64e2(const char *src, char *result, int length){
+struct BF2{
+    unsigned char _c0_2:2,c0_6:6;
+    unsigned char _c1_4:4,c1_4:4;
+    unsigned char _c2_6:6,c2_2:2;
+};// __attribute__((packed));
+ 
+int base64e2(const char *src, int length, char *result){
     int i, j = 0;
-    BF2* p = (BF2*)src;
     int sz = length / 3;
-
+    BF2* p = (BF2*)src;
+    char * o = result;;
+    cout << sizeof(BF2) << endl;
+    //cout << &p->e0 << ":" << &p->e1 << endl;
     
     for(i = 0 ; i < sz ; i++){
-      
-      result[j]   = MimeBase64[p->e0];
-      result[j++] = MimeBase64[p->e1];
-      result[j++] = MimeBase64[p->e2];
-      result[j++] = MimeBase64[p->e3];
+      //printf("%x: %x: %x\n", p->c1 ,p->c2, p->c3);
+      *o++ = MimeBase64[p->c0_6];
+      //printf("%x\n", p->c0_6);
+      *o++ = MimeBase64[(p->_c0_2 << 4) + p->c1_4];
+      //printf("%x:%x\n", p->_c0_2, p->c1_4);
+      *o++ = MimeBase64[(p->_c1_4 << 2) + p->c2_2];
+      //printf("%x:%x\n", p->_c1_4, p->c2_2);
+      *o++ = MimeBase64[p->_c2_6];
+      //printf("%x\n", p->_c2_6);
 
       p++;
     }
 
-    BF2 temp;
+    int mod = length % 3;
+    
+    if(mod == 1){
+      *o++ = MimeBase64[p->c0_6];
+      *o++ = MimeBase64[(p->_c0_2 << 4)];
+      *o++ - '=';
+      *o++ - '=';
+    }
+    else if(mod ==2){
+      *o++ = MimeBase64[p->c0_6];
+      *o++ = MimeBase64[(p->_c0_2 << 4) + p->c1_4];
+      *o++ = MimeBase64[(p->_c1_4 << 2)];
+      *o++ - '=';
+    }
+    *o = '\0';
+    return (o - src);
 }
 }}

@@ -30,7 +30,7 @@ int main()
   clock_gettime(CLOCK_REALTIME, &ts);
   printf ("------------------------------------------------ %ld %ld\n", ts.tv_sec, ts.tv_nsec);
 
-  base64e2(buffer, result_buf, size);
+  base64e2(buffer, size, result_buf);
   
   clock_gettime(CLOCK_REALTIME, &ts);
   printf ("------------------------------------------------ %ld %ld\n", ts.tv_sec, ts.tv_nsec);
