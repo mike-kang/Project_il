@@ -50,6 +50,7 @@ void MainDelegator::onData(char* serialNumber)
   char* imgBuf = NULL;;
   int imgLength;
   
+  m_el->onRFSerialNumber(serialNumber);
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
   bool ret = m_employInfoMrg->getInfo(serialNumber, ei);
 
@@ -124,6 +125,7 @@ struct client_data_Rfid : client_data {
 };
 
 //blocking function
+/*
 bool MainDelegator::request_processRfidSerialData(char* serialnum, int timelimit)
 {
   bool ret = false;
@@ -155,10 +157,8 @@ void MainDelegator::_processRfidSerialData(void* arg)
   int contentsLength;
 
   m_rfid_mtx.lock();
-/*
   Gpio gpio(17, true);
   gpio.write(true);
-*/
   //request to web server
 
 
@@ -168,6 +168,7 @@ error:
   
   m_rfid_mtx.unlock();
 }
+*/
 
 
 bool MainDelegator::SettingInit()

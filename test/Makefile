@@ -13,7 +13,7 @@ else
   CAMERA_LFLAGS= -lcamera -lopenmaxil -lbcm_host -L.. -L/opt/vc/lib -L../camera
   CPPFLAGS += -DCAMERA
 endif
-INI_LIB= ../inih_r29/arch/$(MACHINE)/libinih.so
+INI_LIB= ../inih_r29/arch/$(MACHINE)/libinih.a
 INI_LFLAGS = -L../inih_r29/arch/$(MACHINE) -linih
 
 OBJS = main.o

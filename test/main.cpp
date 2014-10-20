@@ -1,10 +1,9 @@
-#include "tools/log.h"
 #include <iostream>
 #include "maindelegator.h"
 
 using namespace std;
 
-#define LOG_TAG "main"
+
 int main()
 {
   cout << "start main\n" << endl;

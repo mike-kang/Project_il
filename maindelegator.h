@@ -16,6 +16,10 @@
 
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
+  class EventListener {
+  public:
+    virtual void onRFSerialNumber(char* serial) = 0;
+  };
   enum Ret {
     RET_SUCCESS,
   };
@@ -33,7 +37,8 @@ public:
 
 
 //request
-  bool request_processRfidSerialData(char* serialnum, int timelimit);
+  //bool request_processRfidSerialData(char* serialnum, int timelimit);
+  void setEventListener(EventListener* el){ m_el = el; }
 
 private:
   static MainDelegator* my;
@@ -62,7 +67,7 @@ private:
   SerialRfid* m_serialRfid;  
   Settings m_settings;
   EmployeeInfoMgr* m_employInfoMrg;
-  
+  EventListener* m_el;
 
   bool m_bFirstDown;
   bool m_bNetworkAvailable;
