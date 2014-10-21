@@ -38,6 +38,13 @@ void MainWindow::onRFSerialNumber(char* serial)
 
 }
 
+void MainWindow::onMessage(const char* msg)
+{
+    cout << "onMessage:" << msg << endl;
+    QMetaObject::invokeMethod(ui->label, "setText", Q_ARG(QString, msg));
+
+}
+
 void MainWindow::update()
 {
     qDebug() << "update";

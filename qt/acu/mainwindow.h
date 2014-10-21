@@ -15,6 +15,8 @@ class MainWindow : public QMainWindow, public MainDelegator::EventListener
     
 public:
     virtual void onRFSerialNumber(char* serial);
+    virtual void onMessage(const char* msg);
+    
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
