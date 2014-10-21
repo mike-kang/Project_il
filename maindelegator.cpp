@@ -35,15 +35,16 @@ bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno)
   {
     if(ei->utype == 'C')
       return true;
-    //check zone
-    string auth = ei->zone_code;
-    vector<string> sarrAuth;
-    cout << "111" << endl;
-    utils::split(m_sAuthCd, ',', sarrAuth);
-    cout << "222" << endl;
-    for(vector<string>::iterator i = sarrAuth.begin(); i != sarrAuth.end(); i++)
-      cout << *i << endl;
-    cout << "333" << endl;
+    //check zone && date
+    if(!checkZone(ei->zone_code)){
+      *errno = 5;
+      return false;
+    }
+    if(!checkDate(ei->ent_co_ymd, ei->rtr_co_ymd)){
+      *errno = 6;
+      return false;
+    }
+    return true;
   }
   else{
     if(ei->in_out_gb ==  "0001"){
@@ -61,6 +62,69 @@ bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno)
 
   LOGI("checkValidate success!\n");
 
+  return true;
+}
+
+bool MainDelegator::checkZone(string& sAuth)
+{
+  string sLoc = m_sDvLoc;
+  bool bAccess;
+
+  if((sAuth=="" && sLoc == "0001") || sAuth == "0001")
+    return true;
+
+  vector<string> sarrAuth;
+  utils::split(m_sAuthCd, ',', sarrAuth);
+  //for(vector<string>::iterator i = sarrAuth.begin(); i != sarrAuth.end(); i++)
+  //  cout << *i << endl;
+  if(sarrAuth.size() > 0){
+    for(vector<string>::iterator sZone = sarrAuth.begin(); sZone != sarrAuth.end(); sZone++){
+      if(*sZone == sAuth){
+        return true;
+      }
+    }
+  }
+  else
+  {
+    if(sAuth == "0002" && (sLoc == "0001" || sLoc == "0002" || sLoc == "0003"))
+      return true;
+
+    if(sAuth == "0003" && (sLoc == "0001" || sLoc == "0004" || sLoc == "0005"))
+      return true;
+        
+    if(sAuth == "0004" &&(sLoc == "0001" || sLoc == "0004" || sLoc == "0005")) 
+      return true;
+        
+    if(sAuth == "0005" && sLoc == "0001") 
+      return true;
+
+    if(sAuth == "0006" && (sLoc == "0001" || sLoc == "0003" || sLoc == "0006")) 
+      return true;
+
+     if(sAuth == "0007" &&(sLoc == "0001" || sLoc == "0003" || sLoc == "0004" || sLoc == "0005"))
+      return true;
+
+    if(sAuth == "0008" && (sLoc == "0001" || sLoc == "0003")) 
+      return true;
+
+    if(sAuth == "0009" && (sLoc == "0001" || sLoc == "0002"  || sLoc == "0003"  || sLoc == "0004" || sLoc == "0005"))
+      return true;
+
+    if(sAuth == "0010" && (sLoc == "0001" || sLoc == "0003"  || sLoc == "0004" || sLoc == "0005" || sLoc == "0006"))
+      return true;
+  }
+  return false;
+}
+
+bool MainDelegator::checkDate(Date* start, Date* end)
+{
+  if(!start) 
+    return false;
+  Date* today = Date::now();
+  if(start > today) 
+    return false;
+  if(end && end < today) 
+    return false;
   return true;
 }
 
@@ -84,22 +148,26 @@ void MainDelegator::onData(char* serialNumber)
 
   if(!checkValidate(ei, &errno)){
     switch(errno){
-    case 1:
-      m_el->onMessage("Access Deny Standby at Work");
-      LOGE("Access Deny Standby at Work\n");
-      break;
-    case 2:
-      m_el->onMessage("Access Deny Retired at Work");
-      LOGE("Access Deny Retired at Work");
-      break;
-    case 3:
-      m_el->onMessage("Access Deny Check Work Status");
-      LOGE("Access Deny Check Work Status");
-      break;
-      
-    case 4:
-      m_el->onMessage("Access Deny Standby at Work");
-      break;
+      case 1:
+        m_el->onMessage("Access Deny Standby at Work");
+        LOGE("Access Deny Standby at Work\n");
+        break;
+      case 2:
+        m_el->onMessage("Access Deny Retired at Work");
+        LOGE("Access Deny Retired at Work");
+        break;
+      case 3:
+        m_el->onMessage("Access Deny Check Work Status");
+        LOGE("Access Deny Check Work Status");
+        break;
+        
+      case 4:
+        m_el->onMessage("Access Deny Standby at Work");
+        break;
+        
+      case 5:
+        m_el->onMessage("Authority Deny This Area");
+        break;
     }
     media::wavPlay("SoundFiles/fail.wav");
     goto error;

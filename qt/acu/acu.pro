@@ -17,11 +17,11 @@ HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
-#DEFINES = SIMULATOR
-DEFINES += CAMERA
+DEFINES = SIMULATOR
+#DEFINES += CAMERA
 INCLUDEPATH += ../../
-LIBS = -L../.. -L../../tools -lfid -ltool -L../../inih_r29/arch/armv6l -linih -lpthread -lrt
-LIBS += -L../../camera -lcamera -lopenmaxil -lbcm_host -L.. -L/opt/vc/lib 
+LIBS = -L../.. -L../../tools -L../../inih_r29 -lfid -ltool -linih -lpthread -lrt
+#LIBS += -L../../camera -lcamera -lopenmaxil -lbcm_host -L.. -L/opt/vc/lib 
 Release:DESTDIR = release
 Release:OBJECTS_DIR = release/.obj
 Release:MOC_DIR = release/.moc

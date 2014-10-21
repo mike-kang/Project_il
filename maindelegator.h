@@ -41,6 +41,8 @@ private:
   void _processRfidSerialData(void* arg);
   bool SettingInit();
   bool checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno);
+  bool checkZone(string& sAuth);
+  bool checkDate(Date* start, Date* end);
 #ifdef SIMULATOR  
   static void cbTestTimer(void* arg);
   static void test_signal_handler(int signo);

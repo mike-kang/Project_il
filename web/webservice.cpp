@@ -5,6 +5,8 @@
 #include "tools/log.h"
 #include "tools/base64.h"
 #include "tools/utils.h"
+#include <fcntl.h>
+#include <errno.h>
 
 using namespace tools;
 
@@ -572,9 +574,26 @@ void WebService::WebApi::run()
   }
 
   LOGV("connect\n");
-  if(connect(m_sock, (struct sockaddr *)&m_ws->m_remote, sizeof(struct sockaddr)) < 0){
+  fcntl(m_sock, F_SETFL, O_NONBLOCK | fcntl(m_sock, F_GETFL));
+  (void)connect(m_sock, (struct sockaddr *)&m_ws->m_remote, sizeof(struct sockaddr));
+  
+  if(errno != EINPROGRESS){
     LOGE("RET_CONNECT_FAIL\n");
     m_status = RET_CONNECT_FAIL;
+    goto error;
+  }
+  //poll
+  struct pollfd fds;
+  
+  fds.fd = m_sock;
+  fds.events = POLLIN;
+  ret = poll(&fds, 1, 1000);
+  if(ret == -1){
+    LOGE("RET_POLL_FAIL\n");
+    goto error;
+  }
+  else if(ret == 0){
+    LOGE("RET_POLL_TIMEOUT\n");
     goto error;
   }
 
@@ -587,7 +606,7 @@ void WebService::WebApi::run()
   }
 
   //poll
-  struct pollfd fds;
+  //struct pollfd fds;
   
   fds.fd = m_sock;
   fds.events = POLLIN;

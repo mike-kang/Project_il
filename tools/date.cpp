@@ -5,6 +5,7 @@
 #endif
 #include <string.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #ifdef _DEBUG
 #ifdef _WIN32
@@ -42,6 +43,17 @@ Date::Date(char* date) //data=20140101
   memcpy(buf, date+6, 2); buf[2] = '\0'; 
   m_day = atoi(buf);
   
+}
+
+Date* Date::now()
+{
+  struct timeval  tv;
+  struct tm _tm;
+	gettimeofday(&tv, NULL);
+  localtime_r(&tv.tv_sec, &_tm);
+
+  Date* date = new Date(_tm.tm_year, _tm.tm_mon, _tm.tm_mday);
+  return date;  
 }
 
 namespace tools {

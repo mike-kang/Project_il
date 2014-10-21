@@ -15,7 +15,9 @@ class Date {
 public:
   Date(){}
   Date(char* date);
+  Date(int y, int m, int d):m_year(y), m_month(m), m_day(d){}
   //operator ==(
+  static Date* now();
 private:
   int m_year;
   int m_month;

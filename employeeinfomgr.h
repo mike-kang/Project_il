@@ -4,6 +4,7 @@
 
 #include "tools/date.h"
 #include <vector>
+#include <string>
 
 class WebService;
 class Settings;
@@ -12,24 +13,34 @@ class EmployeeInfoMgr {
 public:
   struct EmployeeInfo {
     char serial_number[16]; //rfcard
-    string in_out_gb;
+    std::string in_out_gb;
     char utype;
-    string zone_code;
     tools::Date* ent_co_ymd;
     tools::Date* rtr_co_ymd;
+    std::string zone_code;
+    //display
+    std::string company_name;
+    std::string name;
+    std::string pin_no;
+    EmployeeInfo(): ent_co_ymd(NULL), rtr_co_ymd(NULL){}
   };
   EmployeeInfoMgr(Settings* settings, WebService* ws);
   virtual ~EmployeeInfoMgr(){}
 
+  bool updateDB();
   bool getInfo(char* serialNumber, EmployeeInfo* ei);
   
 private:  
+  int fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& elems);
+  bool fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei);
+  EmployeeInfo* searchDB(char* serialNumber);
+
   bool m_bUseLocalDB;
   string m_sMemcoCd; // = "MC00000003";
   string m_sSiteCd; //"ST00000005";
   WebService* m_ws;
   Settings* m_settings;
-  std::vector<EmployeeInfo> m_vectorEmployeeInfo;
+  std::vector<EmployeeInfo*> m_vectorEmployeeInfo;
 };
 
 
