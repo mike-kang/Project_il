@@ -6,7 +6,9 @@
 
 class Settings {
 public:
-  static const int EXCEPTION_NO_EXIST_KEY = 0;
+  enum Exception {
+    EXCEPTION_NO_EXIST_KEY,
+  };
   Settings(const char* filename);
   virtual ~Settings(){}
 
@@ -15,6 +17,8 @@ public:
   int getInt(std::string key);
   
 private:  
+  void dump();
+  
   std::map<std::string, std::string> m_mapStr;
   std::map<std::string, bool> m_mapBool;
   std::map<std::string, int> m_mapInt;
