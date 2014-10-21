@@ -65,11 +65,19 @@ bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
     return true;
   }
 
-  bool bNet = m_ws->request_GetNetInfo(1000);
-  if(!bNet){
+  bool bNetAvailable = false;
+  try{
+    bNetAvailable = m_ws->request_GetNetInfo(1000);
+  }
+  catch(WebService::Except e){
+    LOGE("request_GetNetInfo: %s\n", WebService::dump_error(e));
+  }
+  if(!bNetAvailable){
     ; //todo
     return true;
   }
+  
+  
   try{
     char* xml_buf = m_ws->request_RfidInfoSelect(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), serialNumber, 3000);
     if(xml_buf){

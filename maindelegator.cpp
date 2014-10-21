@@ -16,11 +16,20 @@ using namespace std;
 
 MainDelegator* MainDelegator::my = NULL;
 
+MainDelegator* MainDelegator::getInstance()
+{
+  if(my){
+    return my;
+  }
+  my = new MainDelegator();
+  return my;
+}   
+
 bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei)
 {
   bool bAccess;
   //IN_OUT_GB
-  cout << "checkValidate" << endl;
+  LOGV("checkValidate\n");
   if(ei->in_out_gb == "0002")
   {
   
@@ -49,6 +58,7 @@ void MainDelegator::onData(char* serialNumber)
   LOGI("onData %s\n", serialNumber);
   char* imgBuf = NULL;;
   int imgLength;
+  //printf("onData: %x\n", m_el);
   
   m_el->onRFSerialNumber(serialNumber);
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
@@ -173,48 +183,47 @@ error:
 
 bool MainDelegator::SettingInit()
 {
+  m_settings = new Settings("FID.ini");
 
 #ifdef CAMERA  
-  m_cameraDelayOffTime = m_settings.getInt("Camera::DELAY_OFF_TIME"); //600 sec
-  m_takePictureMaxWaitTime = m_settings.getInt("Camera::TAKEPICTURE_MAX_WAIT_TIME"); // 2 sec
+  m_cameraDelayOffTime = m_settings->getInt("Camera::DELAY_OFF_TIME"); //600 sec
+  m_takePictureMaxWaitTime = m_settings->getInt("Camera::TAKEPICTURE_MAX_WAIT_TIME"); // 2 sec
 #endif
   //App
-  m_sMemcoCd = m_settings.get("App::MEMCO_CD").c_str();
-  m_sSiteCd = m_settings.get("App::SITE_CD").c_str();
-  m_sDvLoc = m_settings.get("App::DV_LOC").c_str(); // = "0001";
-  m_sDvNo = m_settings.get("App::DV_NO").c_str(); // = "6";
-  m_bDatabase = m_settings.getBool("App::LOCAL_DATABASE");
+  m_sMemcoCd = m_settings->get("App::MEMCO_CD").c_str();
+  m_sSiteCd = m_settings->get("App::SITE_CD").c_str();
+  m_sDvLoc = m_settings->get("App::DV_LOC").c_str(); // = "0001";
+  m_sDvNo = m_settings->get("App::DV_NO").c_str(); // = "6";
+  m_bDatabase = m_settings->getBool("App::LOCAL_DATABASE");
 
   //Action
-  m_bCapture = m_settings.getBool("Action::CAPTURE");
-  m_bRelay = m_settings.getBool("Action::RELAY");
-  m_bSound = m_settings.getBool("Action::SOUND");
+  m_bCapture = m_settings->getBool("Action::CAPTURE");
+  m_bRelay = m_settings->getBool("Action::RELAY");
+  m_bSound = m_settings->getBool("Action::SOUND");
 
   //Rfid
-  m_sRfidMode = m_settings.get("Rfid::MODE").c_str(); //="1356M";
-  m_rfidCheckInterval = m_settings.getInt("Rfid::CHECK_INTERVAL"); //300 ms
+  m_sRfidMode = m_settings->get("Rfid::MODE").c_str(); //="1356M";
+  m_rfidCheckInterval = m_settings->getInt("Rfid::CHECK_INTERVAL"); //300 ms
 
   return true;
 }
 
-MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24), m_settings("FID.ini")
+MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
 {
   bool ret;
 
-  string console_log_path = m_settings.get("Log::CONSOLE_PATH");
+  SettingInit();
+
+  string console_log_path = m_settings->get("Log::CONSOLE_PATH");
   log_init(TYPE_CONSOLE, console_log_path.c_str());
 
 
   m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
   LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 
-  /********************************************/
-  /* setting values                           */
-  /********************************************/
-  SettingInit();
   m_ws = new WebService("192.168.0.7", 8080);
 
-  m_employInfoMrg = new EmployeeInfoMgr(&m_settings, m_ws);
+  m_employInfoMrg = new EmployeeInfoMgr(m_settings, m_ws);
   
 
 
@@ -234,13 +243,13 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
 
   m_serialRfid->start(m_rfidCheckInterval, this); //interval=300ms  
 
-
-
 #ifdef SIMULATOR
   signal(SIGUSR1, test_signal_handler);
   mTimerForTest = new Timer(1, cbTestTimer, NULL);
 #endif
   media::wavPlay("SoundFiles/start.wav");
+
+  LOGV("MainDelegator ---\n");
 }
 
 #ifdef SIMULATOR

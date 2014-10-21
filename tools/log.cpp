@@ -16,7 +16,7 @@
 #endif
 #endif
 
-static LogService *logservice = NULL;
+//static LogService *logservice = NULL;
 static bool m_enabled = false;
 
 void log_init(int type, const char* path)

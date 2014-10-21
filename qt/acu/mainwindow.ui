@@ -52,7 +52,8 @@
    </layout>
   </widget>
  </widget>
- <layoutdefault spacing="6" margin="11"/>
+ <layoutDefault spacing="6" margin="11" />
+ <pixmapfunction></pixmapfunction>
  <resources/>
  <connections/>
 </ui>

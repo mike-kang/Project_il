@@ -273,21 +273,21 @@ public:
   char* request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, int timelimit, CCBFunc cbfunc, void* client);
   char* request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, int timelimit)
   {
-    request_CodeDataSelect(sMemcoCd, sSiteCd, sDvLoc, timelimit, NULL, NULL);
+    return request_CodeDataSelect(sMemcoCd, sSiteCd, sDvLoc, timelimit, NULL, NULL);
   }
   char* request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, CCBFunc cbfunc, void* client)
   {
-    request_CodeDataSelect(sMemcoCd, sSiteCd, sDvLoc, 0, cbfunc, client);
+    return request_CodeDataSelect(sMemcoCd, sSiteCd, sDvLoc, 0, cbfunc, client);
   }
 
   bool request_GetNetInfo(int timelimit, CCBFunc cbfunc, void* client);
   bool request_GetNetInfo(int timelimit)
   {
-    request_GetNetInfo(timelimit, NULL, NULL);
+    return request_GetNetInfo(timelimit, NULL, NULL);
   }
   bool request_GetNetInfo(CCBFunc cbfunc, void* client)
   {
-    request_GetNetInfo(0, cbfunc, client);
+    return request_GetNetInfo(0, cbfunc, client);
   }
   void request_RfidInfoSelectAll(const char *sMemcoCd, const char* sSiteCd, int timelimit, CCBFunc cbfunc, void* client, 
   const char* outFilename);
@@ -306,46 +306,46 @@ public:
   client);
   char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, int timelimit)
   {
-    request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, timelimit, NULL, NULL);
+    return request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, timelimit, NULL, NULL);
   }
   char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, CCBFunc cbfunc, void* 
   client)
   {
-    request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, 0, cbfunc, client);
+    return request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, 0, cbfunc, client);
   }
   char* request_ServerTimeGet(int timelimit, CCBFunc cbfunc, void* client);
   char* request_ServerTimeGet(int timelimit)
   {
-    request_ServerTimeGet(timelimit, NULL, NULL);
+    return request_ServerTimeGet(timelimit, NULL, NULL);
   }
   char* request_ServerTimeGet(CCBFunc cbfunc, void* client)
   {
-    request_ServerTimeGet(0, cbfunc, client);
+    return request_ServerTimeGet(0, cbfunc, client);
   }
 
   bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* 
   client);
   bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit)
   {
-    request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, timelimit, NULL, NULL);
+    return request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, timelimit, NULL, NULL);
   }
   bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, CCBFunc cbfunc, void* 
   client)
   {
-    request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, 0, cbfunc, client);
+    return request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, 0, cbfunc, client);
   }
   
   bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* imageBuf, int imageSz, int timelimit, CCBFunc cbfunc, void* 
   client);
   bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* imageBuf, int imageSz, int timelimit)
   {
-    request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, 
+    return request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, 
     imageBuf, imageSz, timelimit, NULL, NULL);
   }
   bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* imageBuf, int imageSz, CCBFunc cbfunc, void* 
   client)
   {
-    request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, imageBuf, imageSz, 0, cbfunc, client);
+    return request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, imageBuf, imageSz, 0, cbfunc, client);
   }
 private:
   //void run(); 

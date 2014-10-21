@@ -24,16 +24,8 @@ public:
     RET_SUCCESS,
   };
   virtual void onData(char* buf);
-  static MainDelegator* getInstance()
-  {
-    if(my){
-      return my;
-    }
-    my = new MainDelegator();
-
-    return my;
-  }   
-  ~MainDelegator(){};
+  static MainDelegator* getInstance();
+  ~MainDelegator(){}; 
 
 
 //request
@@ -65,7 +57,7 @@ private:
   Mutex m_rfid_mtx;
   WebService* m_ws;
   SerialRfid* m_serialRfid;  
-  Settings m_settings;
+  Settings* m_settings;
   EmployeeInfoMgr* m_employInfoMrg;
   EventListener* m_el;
 
