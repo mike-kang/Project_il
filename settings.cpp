@@ -27,6 +27,7 @@ Settings::Settings(const char* filename)
      cout << "Can't load " << filename << endl;
      //default settings
      //App
+     mapStrInsert(App, AUTH_CD, );
      mapStrInsert(App, MEMCO_CD, MC00000003);
      mapStrInsert(App, SITE_CD, ST00000005);
      mapStrInsert(App, DV_LOC, 0001);
@@ -54,6 +55,7 @@ Settings::Settings(const char* filename)
   }
 
   //App
+  mapStrInsertFormReader(App, AUTH_CD, );
   mapStrInsertFormReader(App, MEMCO_CD, MC00000003);
   mapStrInsertFormReader(App, SITE_CD, ST00000005);
   mapStrInsertFormReader(App, DV_LOC, 0001);
@@ -92,11 +94,11 @@ void Settings::dump()
   cout << "Settings contents end ******" << endl;
 }
 
-string Settings::get(string key)
+string& Settings::get(string key)
 {
   map<string, string>::iterator iter = m_mapStr.find(key);
   if(iter == m_mapStr.end()){
-    LOGE("%s key is not exist\n", key.c_str());
+    cout << key << " key is not exist" << endl;
     throw EXCEPTION_NO_EXIST_KEY;
   }
   return iter->second;
@@ -105,7 +107,7 @@ bool Settings::getBool(string key)
 { 
   map<string, bool>::iterator iter = m_mapBool.find(key);
   if(iter == m_mapBool.end()){
-    LOGE("%s key is not exist\n", key.c_str());
+    cout << key << " key is not exist" << endl;
     throw EXCEPTION_NO_EXIST_KEY;
   }
   return iter->second;
@@ -114,7 +116,7 @@ int Settings::getInt(string key)
 { 
   map<string, int>::iterator iter = m_mapInt.find(key);
   if(iter == m_mapInt.end()){
-    LOGE("%s key is not exist\n", key.c_str());
+    cout << key << " key is not exist" << endl;
     throw EXCEPTION_NO_EXIST_KEY;
   }
   return iter->second;

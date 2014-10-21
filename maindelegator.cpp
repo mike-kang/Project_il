@@ -8,6 +8,7 @@
 #include <signal.h>
 #include "tools/timer.h"
 #include "tools/media.h"
+#include "tools/utils.h"
 
 using namespace tools;
 using namespace std;
@@ -25,26 +26,36 @@ MainDelegator* MainDelegator::getInstance()
   return my;
 }   
 
-bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei)
+bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno)
 {
   bool bAccess;
   //IN_OUT_GB
   LOGV("checkValidate\n");
   if(ei->in_out_gb == "0002")
   {
-  
+    if(ei->utype == 'C')
+      return true;
+    //check zone
+    string auth = ei->zone_code;
+    vector<string> sarrAuth;
+    cout << "111" << endl;
+    utils::split(m_sAuthCd, ',', sarrAuth);
+    cout << "222" << endl;
+    for(vector<string>::iterator i = sarrAuth.begin(); i != sarrAuth.end(); i++)
+      cout << *i << endl;
+    cout << "333" << endl;
   }
   else{
     if(ei->in_out_gb ==  "0001"){
-      LOGE("Access Deny Standby at Work\n");
+      *errno = 1;
       return false;
     }
     if(ei->in_out_gb == "0003"){
-      LOGE("Access Deny Retired at Work");
+      *errno = 2;
       return false;
     }
 
-    LOGE("Access Deny Check Work Status");
+    *errno = 3;
     return false;
   }
 
@@ -58,6 +69,7 @@ void MainDelegator::onData(char* serialNumber)
   LOGI("onData %s\n", serialNumber);
   char* imgBuf = NULL;;
   int imgLength;
+  int errno = 0;
   //printf("onData: %x\n", m_el);
   
   m_el->onRFSerialNumber(serialNumber);
@@ -70,7 +82,25 @@ void MainDelegator::onData(char* serialNumber)
     goto error;
   }
 
-  if(!checkValidate(ei)){
+  if(!checkValidate(ei, &errno)){
+    switch(errno){
+    case 1:
+      m_el->onMessage("Access Deny Standby at Work");
+      LOGE("Access Deny Standby at Work\n");
+      break;
+    case 2:
+      m_el->onMessage("Access Deny Retired at Work");
+      LOGE("Access Deny Retired at Work");
+      break;
+    case 3:
+      m_el->onMessage("Access Deny Check Work Status");
+      LOGE("Access Deny Check Work Status");
+      break;
+      
+    case 4:
+      m_el->onMessage("Access Deny Standby at Work");
+      break;
+    }
     media::wavPlay("SoundFiles/fail.wav");
     goto error;
   }
@@ -190,11 +220,13 @@ bool MainDelegator::SettingInit()
   m_takePictureMaxWaitTime = m_settings->getInt("Camera::TAKEPICTURE_MAX_WAIT_TIME"); // 2 sec
 #endif
   //App
-  m_sMemcoCd = m_settings->get("App::MEMCO_CD").c_str();
-  m_sSiteCd = m_settings->get("App::SITE_CD").c_str();
-  m_sDvLoc = m_settings->get("App::DV_LOC").c_str(); // = "0001";
-  m_sDvNo = m_settings->get("App::DV_NO").c_str(); // = "6";
+  m_sAuthCd = m_settings->get("App::AUTH_CD");
+  m_sMemcoCd = m_settings->get("App::MEMCO_CD");
+  m_sSiteCd = m_settings->get("App::SITE_CD");
+  m_sDvLoc = m_settings->get("App::DV_LOC"); // = "0001";
+  m_sDvNo = m_settings->get("App::DV_NO"); // = "6";
   m_bDatabase = m_settings->getBool("App::LOCAL_DATABASE");
+  
 
   //Action
   m_bCapture = m_settings->getBool("Action::CAPTURE");
@@ -202,7 +234,7 @@ bool MainDelegator::SettingInit()
   m_bSound = m_settings->getBool("Action::SOUND");
 
   //Rfid
-  m_sRfidMode = m_settings->get("Rfid::MODE").c_str(); //="1356M";
+  m_sRfidMode = m_settings->get("Rfid::MODE"); //="1356M";
   m_rfidCheckInterval = m_settings->getInt("Rfid::CHECK_INTERVAL"); //300 ms
 
   return true;

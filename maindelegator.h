@@ -19,6 +19,7 @@ public:
   class EventListener {
   public:
     virtual void onRFSerialNumber(char* serial) = 0;
+    virtual void onMessage(const char* msg) = 0;
   };
   enum Ret {
     RET_SUCCESS,
@@ -39,7 +40,7 @@ private:
 
   void _processRfidSerialData(void* arg);
   bool SettingInit();
-  bool checkValidate(EmployeeInfoMgr::EmployeeInfo* ei);
+  bool checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno);
 #ifdef SIMULATOR  
   static void cbTestTimer(void* arg);
   static void test_signal_handler(int signo);
@@ -70,14 +71,15 @@ private:
   bool m_bRelay;
   bool m_bSound; //true
   bool m_bDatabase;
-  const char* m_sMemcoCd; // = "MC00000003";
-  const char* m_sSiteCd; //"ST00000005";
-  const char* m_sDvLoc; // = "0001";
-  const char* m_sDvNo; // = "1";
-  const char* m_sInOut; // = "I";
+  string m_sAuthCd; 
+  string m_sMemcoCd; // = "MC00000003";
+  string m_sSiteCd; //"ST00000005";
+  string m_sDvLoc; // = "0001";
+  string m_sDvNo; // = "1";
+  string m_sInOut; // = "I";
   int m_rfidCheckInterval; //ms
   int m_rfid_processMaxTime; //ms
-  const char* m_sRfidMode; //="1356M";
+  string m_sRfidMode; //="1356M";
 #ifdef CAMERA  
   CameraStill* m_cameraStill;
   int m_takePictureMaxWaitTime; //sec

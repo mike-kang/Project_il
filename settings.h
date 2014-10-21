@@ -12,7 +12,7 @@ public:
   Settings(const char* filename);
   virtual ~Settings(){}
 
-  std::string get(std::string key);
+  std::string& get(std::string key);
   bool getBool(std::string key);
   int getInt(std::string key);
   
