@@ -115,7 +115,19 @@ localDB:
   EmployeeInfo* t = searchDB(serialNumber);
   printf("searchDB %x\n", t);
   if(!t) return false;
-  memcpy(ei, t, sizeof(EmployeeInfo));
+  //memcpy(ei, t, sizeof(EmployeeInfo));
+  strcpy(ei->serial_number, t->serial_number);
+  ei->company_name = t->company_name;
+  if(t->ent_co_ymd)
+    ei->ent_co_ymd = new Date(t->ent_co_ymd);
+  if(t->rtr_co_ymd)
+    ei->rtr_co_ymd = new Date(t->rtr_co_ymd);
+  ei->in_out_gb = t->in_out_gb;
+  ei->name = t->name;
+  ei->pin_no = t->pin_no;
+  ei->utype = t->utype;
+  ei->zone_code = t->zone_code;
+  
   return true;
     
 }
