@@ -121,9 +121,9 @@ bool MainDelegator::checkDate(Date* start, Date* end)
   if(!start) 
     return false;
   Date* today = Date::now();
-  if(start > today) 
+  if(*start > *today) 
     return false;
-  if(end && end < today) 
+  if(end && *end < *today) 
     return false;
   return true;
 }
@@ -154,19 +154,23 @@ void MainDelegator::onData(char* serialNumber)
         break;
       case 2:
         m_el->onMessage("Access Deny Retired at Work");
-        LOGE("Access Deny Retired at Work");
+        LOGE("Access Deny Retired at Work\n");
         break;
       case 3:
         m_el->onMessage("Access Deny Check Work Status");
-        LOGE("Access Deny Check Work Status");
+        LOGE("Access Deny Check Work Status\n");
         break;
-        
       case 4:
         m_el->onMessage("Access Deny Standby at Work");
+        LOGE("Access Deny Standby at Work\n");
         break;
-        
       case 5:
         m_el->onMessage("Authority Deny This Area");
+        LOGE("Authority Deny This Area\n");
+        break;
+      case 6:
+        m_el->onMessage("Date\n");
+        LOGE("Date\n;
         break;
     }
     media::wavPlay("SoundFiles/fail.wav");
@@ -321,8 +325,8 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
   m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
   LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 
-  m_ws = new WebService("192.168.0.7", 8080);
-
+  //m_ws = new WebService("192.168.0.7", 8080);
+  m_ws = new WebService("112.216.243.146", 8080);
   m_employInfoMrg = new EmployeeInfoMgr(m_settings, m_ws);
   
 

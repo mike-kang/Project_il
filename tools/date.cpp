@@ -49,10 +49,9 @@ Date* Date::now()
 {
   struct timeval  tv;
   struct tm _tm;
-	gettimeofday(&tv, NULL);
-  localtime_r(&tv.tv_sec, &_tm);
-
-  Date* date = new Date(_tm.tm_year, _tm.tm_mon, _tm.tm_mday);
+  time_t t = time(NULL);
+  localtime_r(&t, &_tm);
+  Date* date = new Date(_tm.tm_year + 1900, _tm.tm_mon + 1, _tm.tm_mday);
   return date;  
 }
 
@@ -67,11 +66,11 @@ bool operator != (const Date& lh, const Date& rh)
 }
 bool operator > (const Date& lh, const Date& rh)
 {
-  return (lh.m_year >= rh.m_year && lh.m_month >= rh.m_month && lh.m_day > rh.m_day);
+  return (lh.m_year > rh.m_year) || (lh.m_year == rh.m_year && lh.m_month > rh.m_month) || (lh.m_year == rh.m_year && lh.m_month == rh.m_month && lh.m_day > rh.m_day);
 }
 bool operator < (const Date& lh, const Date& rh)
 {
-  return (lh.m_year <= rh.m_year && lh.m_month <= rh.m_month && lh.m_day < rh.m_day);
+  return (lh.m_year < rh.m_year) || (lh.m_year == rh.m_year && lh.m_month < rh.m_month) || (lh.m_year == rh.m_year && lh.m_month == rh.m_month && lh.m_day < rh.m_day);
 }
 bool operator >= (const Date& lh, const Date& rh)
 {

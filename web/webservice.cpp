@@ -33,10 +33,12 @@ const char* WebService::dump_error(Except e)
 WebService::WebService(const char* ip, int port)
 {
   strcpy(m_serverIP, ip);
-  m_port = port;
-  m_remote.sin_family = AF_INET;
   inet_pton(AF_INET, m_serverIP, (void *)(&(m_remote.sin_addr.s_addr)));
+
+  m_port = port;
   m_remote.sin_port = htons(m_port);
+
+  m_remote.sin_family = AF_INET;
 }
 
 bool WebService::WebApi::parsingHeader(char* buf, char **startContent, int* contentLength, int* readByteContent)
@@ -566,6 +568,7 @@ void WebService::WebApi::run()
 {
   int len;
   int ret;
+  int flags;
   
   if((m_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0){
     LOGE("RET_CREATE_SOCKET_FAIL\n");
@@ -574,7 +577,8 @@ void WebService::WebApi::run()
   }
 
   LOGV("connect\n");
-  fcntl(m_sock, F_SETFL, O_NONBLOCK | fcntl(m_sock, F_GETFL));
+  flags = fcntl(m_sock, F_GETFL);
+  fcntl(m_sock, F_SETFL, O_NONBLOCK | flags);
   (void)connect(m_sock, (struct sockaddr *)&m_ws->m_remote, sizeof(struct sockaddr));
   
   if(errno != EINPROGRESS){
@@ -586,16 +590,19 @@ void WebService::WebApi::run()
   struct pollfd fds;
   
   fds.fd = m_sock;
-  fds.events = POLLIN;
+  fds.events = POLLOUT;
   ret = poll(&fds, 1, 1000);
   if(ret == -1){
     LOGE("RET_POLL_FAIL\n");
+    m_status = RET_POLL_FAIL;
     goto error;
   }
   else if(ret == 0){
     LOGE("RET_POLL_TIMEOUT\n");
+    m_status = RET_POLL_TIMEOUT;
     goto error;
   }
+  fcntl(m_sock, F_SETFL, flags);
 
   LOGV("send command\n");
   len = send(m_sock, m_cmd + m_cmd_offset, strlen(m_cmd + m_cmd_offset), 0);
@@ -613,17 +620,19 @@ void WebService::WebApi::run()
   ret = poll(&fds, 1, timelimit);
   if(ret == -1){
     LOGE("RET_POLL_FAIL\n");
+    m_status = RET_POLL_FAIL;
     goto error;
   }
   else if(ret == 0){
     LOGE("RET_POLL_TIMEOUT\n");
+    m_status = RET_POLL_TIMEOUT;
     goto error;
   }
 
   //receive & parsing
   if(!parsing()){
     m_status = RET_PARSING_FAIL;
-      goto error;
+    goto error;
   }
   m_status = RET_SUCCESS;
 
