@@ -31,6 +31,7 @@ bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno)
   bool bAccess;
   //IN_OUT_GB
   LOGV("checkValidate\n");
+  cout << "in_out_gb:" << ei->in_out_gb << endl;
   if(ei->in_out_gb == "0002")
   {
     if(ei->utype == 'C')
@@ -134,7 +135,7 @@ void MainDelegator::onData(char* serialNumber)
   char* imgBuf = NULL;;
   int imgLength;
   int errno = 0;
-  //printf("onData: %x\n", m_el);
+  printf("onData: %s\n", serialNumber);
   
   m_el->onRFSerialNumber(serialNumber);
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
@@ -170,7 +171,7 @@ void MainDelegator::onData(char* serialNumber)
         break;
       case 6:
         m_el->onMessage("Date\n");
-        LOGE("Date\n;
+        LOGE("Date\n");
         break;
     }
     media::wavPlay("SoundFiles/fail.wav");
@@ -325,8 +326,8 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
   m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
   LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 
-  //m_ws = new WebService("192.168.0.7", 8080);
-  m_ws = new WebService("112.216.243.146", 8080);
+  m_ws = new WebService("192.168.0.7", 8080);
+  //m_ws = new WebService("112.216.243.146", 8080);
   m_employInfoMrg = new EmployeeInfoMgr(m_settings, m_ws);
   
 

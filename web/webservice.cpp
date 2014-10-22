@@ -41,6 +41,15 @@ WebService::WebService(const char* ip, int port)
   m_remote.sin_family = AF_INET;
 }
 
+WebService::WebApi::~WebApi()
+{
+  LOGV("~WebApi+++\n");
+  close(m_sock);
+  delete m_thread;
+  delete m_cmd;
+  LOGV("~WebApi---\n");
+}
+
 bool WebService::WebApi::parsingHeader(char* buf, char **startContent, int* contentLength, int* readByteContent)
 {
   int readlen = recv(m_sock, buf, RCVHEADERBUFSIZE - 1, 0);
@@ -325,25 +334,30 @@ bool WebService::request_GetNetInfo(int timelimit, CCBFunc cbfunc, void* client)
     wa = new GetNetInfo_WebApi(this, cmd, 0, timelimit);
   
     int status = wa->processCmd();
-
-    switch(status){
-      case RET_CREATE_SOCKET_FAIL:
-        throw EXCEPTION_CREATE_SOCKET;
-      case RET_CONNECT_FAIL:
-        throw EXCEPTION_CONNECT;
-      case RET_SEND_CMD_FAIL:
-        throw EXCEPTION_SEND_COMMAND;
-      case RET_POLL_FAIL:
-        throw EXCEPTION_POLL_FAIL;
-      case RET_POLL_TIMEOUT:
-        throw EXCEPTION_POLL_TIMEOUT;
-      case RET_PARSING_FAIL:
-        throw EXCEPTION_PARSING_FAIL;
+    if(status != RET_SUCCESS){
+      printf("delete webapi\n");
+      delete wa;
+      switch(status){
+        case RET_CREATE_SOCKET_FAIL:
+          throw EXCEPTION_CREATE_SOCKET;
+        case RET_CONNECT_FAIL:
+          throw EXCEPTION_CONNECT;
+        case RET_SEND_CMD_FAIL:
+          throw EXCEPTION_SEND_COMMAND;
+        case RET_POLL_FAIL:
+          throw EXCEPTION_POLL_FAIL;
+        case RET_POLL_TIMEOUT:
+          throw EXCEPTION_POLL_TIMEOUT;
+        case RET_PARSING_FAIL:
+          throw EXCEPTION_PARSING_FAIL;
+      }
     }
-    
     ret = wa->m_ret;
+    printf("delete webapi\n");
     delete wa;
   }
+
+  
   return ret;
 }
 
@@ -578,7 +592,11 @@ void WebService::WebApi::run()
 
   LOGV("connect\n");
   flags = fcntl(m_sock, F_GETFL);
-  fcntl(m_sock, F_SETFL, O_NONBLOCK | flags);
+  if(fcntl(m_sock, F_SETFL, O_NONBLOCK | flags) < 0){
+    LOGE("RET_FCNTL_FAIL\n");
+    m_status = RET_FCNTL_FAIL;
+    goto error;
+  }
   (void)connect(m_sock, (struct sockaddr *)&m_ws->m_remote, sizeof(struct sockaddr));
   
   if(errno != EINPROGRESS){
@@ -602,12 +620,16 @@ void WebService::WebApi::run()
     m_status = RET_POLL_TIMEOUT;
     goto error;
   }
-  fcntl(m_sock, F_SETFL, flags);
+  if(fcntl(m_sock, F_SETFL, flags) < 0){
+    LOGE("RET_FCNTL_FAIL\n");
+    m_status = RET_FCNTL_FAIL;
+    goto error;
+  }
 
   LOGV("send command\n");
   len = send(m_sock, m_cmd + m_cmd_offset, strlen(m_cmd + m_cmd_offset), 0);
   if(len == -1){
-    LOGE("RET_SEND_CMD_FAIL\n");
+    LOGE("RET_SEND_CMD_FAIL :%s\n", strerror(errno));
     m_status = RET_SEND_CMD_FAIL;
     goto error;
   }
@@ -639,6 +661,7 @@ void WebService::WebApi::run()
 error:
   if(m_cbfunc){
     m_cbfunc(m_client, m_status, m_pRet); 
+    printf("delete webapi\n");
     delete this;
   }
 }

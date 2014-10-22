@@ -30,6 +30,6 @@ settings.o : settings.h tools/log.h tools/logservice.h
 employeeinfomgr.o : employeeinfomgr.h web/webservice.h tools/log.h tools/logservice.h  settings.h
 .PHONY : clean
 clean :
-	-rm *.o main web/*.o hardware/*.o inih_r29/*.o
+	-rm *.o web/*.o hardware/*.o inih_r29/*.o
 
 

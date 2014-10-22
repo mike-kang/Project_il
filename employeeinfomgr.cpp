@@ -82,15 +82,12 @@ char* getData(char* xml_buf, const char* tag)
   
 bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
 {
+  bool bNetAvailable = false;
   //cout << "getInfo" << endl;
   if(m_bUseLocalDB){
-    EmployeeInfo* t = searchDB(serialNumber);
-    if(!t) return false;
-    memcpy(ei, t, sizeof(EmployeeInfo));
-    return true;
+    goto localDB;
   }
 
-  bool bNetAvailable = false;
   try{
     bNetAvailable = m_ws->request_GetNetInfo(1000);
   }
@@ -98,10 +95,7 @@ bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
     LOGE("request_GetNetInfo: %s\n", WebService::dump_error(e));
   }
   if(!bNetAvailable){
-    EmployeeInfo* t = searchDB(serialNumber);
-    if(!t) return false;
-    memcpy(ei, t, sizeof(EmployeeInfo));
-    return true;
+    goto localDB;
   }
   
   try{
@@ -116,6 +110,13 @@ bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
   catch(WebService::Except e){
     LOGE("request_RfidInfoSelect: %s\n", WebService::dump_error(e));
   }
+
+localDB:
+  EmployeeInfo* t = searchDB(serialNumber);
+  printf("searchDB %x\n", t);
+  if(!t) return false;
+  memcpy(ei, t, sizeof(EmployeeInfo));
+  return true;
     
 }
 
@@ -250,9 +251,11 @@ EmployeeInfoMgr::EmployeeInfo* EmployeeInfoMgr::searchDB(char* serialNumber)
 {
   for(vector<EmployeeInfo*>::size_type i=0; i< m_vectorEmployeeInfo.size(); i++)
   {
-    cout << m_vectorEmployeeInfo[i]->serial_number << endl;
-    if(!strcmp(m_vectorEmployeeInfo[i]->serial_number, serialNumber))
+    //cout << m_vectorEmployeeInfo[i]->serial_number << endl;
+    if(!strcmp(m_vectorEmployeeInfo[i]->serial_number, serialNumber)){
+      cout << "searchDB:" <<  m_vectorEmployeeInfo[i]->in_out_gb << endl;
       return m_vectorEmployeeInfo[i];
+    }
   }
   return NULL;
 } 

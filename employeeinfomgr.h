@@ -23,6 +23,10 @@ public:
     std::string name;
     std::string pin_no;
     EmployeeInfo(): ent_co_ymd(NULL), rtr_co_ymd(NULL){}
+    ~EmployeeInfo(){
+      if(ent_co_ymd) delete ent_co_ymd;
+      if(rtr_co_ymd) delete rtr_co_ymd;
+    }
   };
   EmployeeInfoMgr(Settings* settings, WebService* ws);
   virtual ~EmployeeInfoMgr(){}

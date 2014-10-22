@@ -47,7 +47,7 @@ void MainWindow::onMessage(const char* msg)
 
 void MainWindow::update()
 {
-    qDebug() << "update";
+    //qDebug() << "update";
     QDateTime curDate = QDateTime::currentDateTime();
     QString date_string = curDate.toString("yyyy-MM-dd hh:mm:ss");
     ui->label->setText(date_string);

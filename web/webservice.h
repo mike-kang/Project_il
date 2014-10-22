@@ -28,13 +28,7 @@ public:
     WebApi(WebService* ws, char* cmd, int cmd_offset, int t):m_ws(ws), m_cmd(cmd), m_cmd_offset(cmd_offset), 
     timelimit(t), m_pRet(&m_ret) { m_cbfunc=NULL;} //sync
     WebApi(WebService* ws, char* cmd, int cmd_offset, CCBFunc cbfunc, void* client):m_ws(ws), m_cmd(cmd), m_cmd_offset(cmd_offset), m_cbfunc(cbfunc), m_client(client), m_pRet(&m_ret){timelimit=-1;};  //async
-    virtual ~WebApi()
-    {
-      close(m_sock);
-      delete m_thread;
-      delete m_cmd;
-    }
-
+    virtual ~WebApi();
     virtual bool parsing();
     
     bool parsingHeader(char* buf, char **startContent, int* contentLength, int* readByteContent);
@@ -257,6 +251,7 @@ public:
     RET_CREATE_SOCKET_FAIL,
     RET_CONNECT_FAIL,
     RET_SEND_CMD_FAIL,
+    RET_FCNTL_FAIL,
     RET_POLL_FAIL,
     RET_POLL_TIMEOUT,
     RET_PARSING_FAIL
