@@ -12,7 +12,9 @@ else
   CPPFLAGS += -DCAMERA
 endif
 
-OBJS =  maindelegator.o serialRfid.o serialRfid1356.o web/webservice.o hardware/gpio.o settings.o employeeinfomgr.o
+
+SRCS =  maindelegator.cpp serialRfid.cpp serialRfid1356.cpp web/webservice.cpp hardware/gpio.cpp settings.cpp employeeinfomgr.cpp timesheetmgr.cpp
+OBJS = $(SRCS:.cpp=.o)
 
 all : $(LIB)
  
@@ -20,16 +22,13 @@ all : $(LIB)
 $(LIB) : ${OBJS} 
 	g++ -shared -o $@ ${OBJS} 
 	
-main.o : maindelegator.h tools/log.h tools/logservice.h hardware/switchgpio.h hardware/gpio.h
-maindelegator.o : maindelegator.h tools/condition.h tools/mutex.h tools/serial.h serialRfid.h serialRfid1356.h tools/log.h tools/logservice.h camera/camerastill.h web/webservice.h hardware/switchgpio.h hardware/gpio.h settings.h
-serialRfid.o : serialRfid.h tools/log.h tools/logservice.h
-serialRfid1356.o : serialRfid1356.h tools/log.h tools/logservice.h
-web/webservice.o : web/webservice.h tools/log.h tools/logservice.h
-hardware/gpio.o : hardware/gpio.h tools/filesystem.h tools/log.h tools/logservice.h
-settings.o : settings.h tools/log.h tools/logservice.h
-employeeinfomgr.o : employeeinfomgr.h web/webservice.h tools/log.h tools/logservice.h  settings.h
+depend : $(SRCS)
+	g++ -MM $(CPPFLAGS) $^ > $@
+
 .PHONY : clean
 clean :
 	-rm *.o web/*.o hardware/*.o inih_r29/*.o
 
+
+-include depend
 
