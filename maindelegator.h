@@ -10,9 +10,12 @@
 #include "camera/camerastill.h"
 #endif
 #include "hardware/switchgpio.h"
-#include "employeeinfomgr.h"
+#include "tools/date.h"
 #include "settings.h"
 #include "tools/timer.h"
+#include "employeeinfomgr.h"
+
+class TimeSheetMgr;
 
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
@@ -62,6 +65,7 @@ private:
   SerialRfid* m_serialRfid;  
   Settings* m_settings;
   EmployeeInfoMgr* m_employInfoMrg;
+  TimeSheetMgr* m_timeSheetMgr;
   EventListener* m_el;
 
   bool m_bFirstDown;

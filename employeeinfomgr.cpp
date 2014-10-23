@@ -123,7 +123,8 @@ localDB:
   if(t->rtr_co_ymd)
     ei->rtr_co_ymd = new Date(t->rtr_co_ymd);
   ei->in_out_gb = t->in_out_gb;
-  ei->name = t->name;
+  ei->lab_no = t->lab_no;
+  ei->lab_name = t->lab_name;
   ei->pin_no = t->pin_no;
   ei->utype = t->utype;
   ei->zone_code = t->zone_code;
@@ -150,7 +151,12 @@ int EmployeeInfoMgr::fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& el
     }
     catch(int e){}
     try {
-      ei->name = p = getData(p, "LAB_NM");
+      ei->lab_no = p = getData(p, "LAB_NO");
+      p += strlen(p) + 1;
+    }
+    catch(int e){}
+    try {
+      ei->lab_name = p = getData(p, "LAB_NM");
       p += strlen(p) + 1;
     }
     catch(int e){}
@@ -214,7 +220,12 @@ bool EmployeeInfoMgr::fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei)
   }
   catch(int e){}
   try {
-    ei->name = p = getData(p, "LAB_NM");
+    ei->lab_no = p = getData(p, "LAB_NO");
+    p += strlen(p) + 1;
+  }
+  catch(int e){}
+  try {
+    ei->lab_name = p = getData(p, "LAB_NM");
     p += strlen(p) + 1;
   }
   catch(int e){}

@@ -519,8 +519,8 @@ bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, cons
   return ret;
 }
 
-bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, char* sGateNo, char* sGateLoc, char cUtype, char* sInTime, char* imageBuf, int imageSz, int timelimit, CCBFunc cbfunc, void* 
-client)
+bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, const char* sGateNo, const char* sGateLoc, char cUtype, const char* sInTime, char* imageBuf, int imageSz, int timelimit, CCBFunc cbfunc, void* 
+  client)
 {
   bool ret;
   LOGV("request_TimeSheetInsertString\n");

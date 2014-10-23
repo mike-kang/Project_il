@@ -9,6 +9,7 @@
 #include "tools/timer.h"
 #include "tools/media.h"
 #include "tools/utils.h"
+#include "timesheetmgr.h"
 
 using namespace tools;
 using namespace std;
@@ -131,7 +132,7 @@ bool MainDelegator::checkDate(Date* start, Date* end)
 
 void MainDelegator::onData(char* serialNumber)
 {
-  LOGI("onData %s\n", serialNumber);
+  LOGI("onData %s +++\n", serialNumber);
   char* imgBuf = NULL;;
   int imgLength;
   int errno = 0;
@@ -198,8 +199,11 @@ void MainDelegator::onData(char* serialNumber)
     LOGE("take Picture fail!!!\n");
   }
 #endif  
+  m_timeSheetMgr->insert(ei->lab_no,ei->utype, imgBuf ,imgLength);
+
 error:
   delete ei;
+  LOGI("onData %s ---\n");
   
 }
 
@@ -299,7 +303,7 @@ bool MainDelegator::SettingInit()
   m_sDvLoc = m_settings->get("App::DV_LOC"); // = "0001";
   m_sDvNo = m_settings->get("App::DV_NO"); // = "6";
   m_bDatabase = m_settings->getBool("App::LOCAL_DATABASE");
-  
+  m_sInOut = m_settings->get("App::IN_OUT");
 
   //Action
   m_bCapture = m_settings->getBool("Action::CAPTURE");
@@ -330,13 +334,7 @@ MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23),
   //m_ws = new WebService("112.216.243.146", 8080);
   m_employInfoMrg = new EmployeeInfoMgr(m_settings, m_ws);
   
-
-
-  
-
-  
-
-
+  m_timeSheetMgr = new TimeSheetMgr(m_settings, m_ws);
 
 #ifdef CAMERA  
   m_cameraStill = new CameraStill(m_cameraDelayOffTime);
@@ -367,7 +365,7 @@ void MainDelegator::cbTestTimer(void* arg)
 void MainDelegator::test_signal_handler(int signo)
 {
   if(signo == SIGUSR1){
-    LOGI("signal_handler SIGUSR1");
+    LOGI("signal_handler SIGUSR1\n");
     my->mTimerForTest->start();
   }
 }

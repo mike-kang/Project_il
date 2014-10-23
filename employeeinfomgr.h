@@ -20,8 +20,10 @@ public:
     std::string zone_code;
     //display
     std::string company_name;
-    std::string name;
+    std::string lab_no;
+    std::string lab_name;
     std::string pin_no;
+    
     EmployeeInfo(): ent_co_ymd(NULL), rtr_co_ymd(NULL){}
     ~EmployeeInfo(){
       if(ent_co_ymd) delete ent_co_ymd;

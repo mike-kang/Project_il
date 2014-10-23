@@ -16,8 +16,7 @@ public:
   Date(){}
   Date(char* date);
   Date(int y, int m, int d):m_year(y), m_month(m), m_day(d){}
-  Date(Date* date):m_year(date->m_year), m_month(date->m_month), 
-  m_day(date->m_day){}
+  Date(Date* date):m_year(date->m_year), m_month(date->m_month), m_day(date->m_day){}
   //operator ==(
   static Date* now();
 private:

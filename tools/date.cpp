@@ -47,7 +47,7 @@ Date::Date(char* date) //data=20140101
 
 Date* Date::now()
 {
-  struct timeval  tv;
+  //struct timeval  tv;
   struct tm _tm;
   time_t t = time(NULL);
   localtime_r(&t, &_tm);

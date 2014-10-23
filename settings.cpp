@@ -33,6 +33,7 @@ Settings::Settings(const char* filename)
      mapStrInsert(App, DV_LOC, 0001);
      mapStrInsert(App, DV_NO, 6);
      mapBoolInsert(App, LOCAL_DATABASE, false);
+     mapStrInsert(App, IN_OUT, I);
      
      //Action
      mapBoolInsert(Action, CAPTURE, true);
@@ -61,6 +62,7 @@ Settings::Settings(const char* filename)
   mapStrInsertFormReader(App, DV_LOC, 0001);
   mapStrInsertFormReader(App, DV_NO, 6);
   mapBoolInsertFormReader(App, LOCAL_DATABASE, false);
+  mapStrInsertFormReader(App, IN_OUT, I);
   
   //Action
   mapBoolInsertFormReader(Action, CAPTURE, true);
