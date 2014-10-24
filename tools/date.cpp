@@ -55,6 +55,15 @@ Date* Date::now()
   return date;  
 }
 
+string Date::toString()
+{
+  string ret;
+  char buf[30];
+  sprintf(buf, "%4d-%02d-%02d", m_year + 1900, m_month + 1, m_day);
+  ret = buf;
+  return ret;  
+}
+
 namespace tools {
 bool operator == (const Date& lh, const Date& rh)
 {

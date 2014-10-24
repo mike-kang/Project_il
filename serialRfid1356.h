@@ -4,10 +4,11 @@
 #include "serialRfid.h"
 
 #define RECEIVE_BUF_SIZE 100
-#define SERIALNUMBER_BUF_SIZE 13 //3*4 +1
+//#define SERIALNUMBER_BUF_SIZE 13 //3*4 +1
 
 class SerialRfid1356 : public SerialRfid{
 public:
+  static const int SERIALNUMBER_BUF_SIZE = 13; //3*4 +1
   SerialRfid1356(const char* path):SerialRfid(path, Serial::SB38400)
   {
     m_reciveBuf = new char[RECEIVE_BUF_SIZE];

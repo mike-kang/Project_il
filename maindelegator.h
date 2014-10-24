@@ -19,17 +19,22 @@ class TimeSheetMgr;
 
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
+  enum Exception {
+    EXCEPTION_RFID_OPEN_FAIL,
+  };
   class EventListener {
   public:
-    virtual void onRFSerialNumber(char* serial) = 0;
-    virtual void onMessage(const char* msg) = 0;
+    //virtual void onRFSerialNumber(char* serial) = 0;
+    virtual void onMessage(std::string tag, std::string data) = 0;
+    virtual void onEmployeeInfo(std::string CoName, std::string Name, std::string PinNo, char* img_buf, int img_sz) = 0;
+    virtual void onStatus(std::string status) = 0;
   };
   enum Ret {
     RET_SUCCESS,
   };
-  virtual void onData(char* buf);
-  static MainDelegator* getInstance();
-  ~MainDelegator(){}; 
+  virtual void onData(const char* buf);
+  static MainDelegator* createInstance(EventListener* el);
+  ~MainDelegator(); 
 
 
 //request
@@ -38,19 +43,23 @@ public:
 
 private:
   static MainDelegator* my;
-  MainDelegator();
+  MainDelegator(EventListener* el);
   void run(); 
 
-  void _processRfidSerialData(void* arg);
+  //void _processRfidSerialData(void* arg);
+  string getLocationName();
   bool SettingInit();
-  bool checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno);
+  bool checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, string& msg);
   bool checkZone(string& sAuth);
-  bool checkDate(Date* start, Date* end);
+  bool checkDate(Date* start, Date* end, string& msg);
+  void checkNetwork();
 #ifdef SIMULATOR  
   static void cbTestTimer(void* arg);
   static void test_signal_handler(int signo);
   tools::Timer* mTimerForTest;
+  std::string m_test_serial_number;
 #endif
+  static void cbTimer(void* arg);
   //static void cb_ServerTimeGet(void* arg);
   //void _cb_ServerTimeGet(void* arg);
 
@@ -66,6 +75,7 @@ private:
   Settings* m_settings;
   EmployeeInfoMgr* m_employInfoMrg;
   TimeSheetMgr* m_timeSheetMgr;
+  tools::Timer* m_timer;  //check network, upload status, download db, upload timesheet
   EventListener* m_el;
 
   bool m_bFirstDown;
@@ -77,6 +87,7 @@ private:
   bool m_bRelay;
   bool m_bSound; //true
   bool m_bDatabase;
+  string m_sUrl; 
   string m_sAuthCd; 
   string m_sMemcoCd; // = "MC00000003";
   string m_sSiteCd; //"ST00000005";
@@ -86,6 +97,8 @@ private:
   int m_rfidCheckInterval; //ms
   int m_rfid_processMaxTime; //ms
   string m_sRfidMode; //="1356M";
+  string m_sRfid1356Port; // /dev/ttyAMA0
+  string m_sRfid900Port; // /dev/ttyUSB0
 #ifdef CAMERA  
   CameraStill* m_cameraStill;
   int m_takePictureMaxWaitTime; //sec

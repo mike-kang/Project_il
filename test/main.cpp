@@ -7,7 +7,7 @@ using namespace std;
 int main()
 {
   cout << "start main\n" << endl;
-  MainDelegator* md = MainDelegator::getInstance();
+  MainDelegator* md = MainDelegator::createInstance(NULL);
 
   while(1){
     cout << "Koong" << endl;

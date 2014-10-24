@@ -19,6 +19,7 @@ public:
   Date(Date* date):m_year(date->m_year), m_month(date->m_month), m_day(date->m_day){}
   //operator ==(
   static Date* now();
+  string toString();
 private:
   int m_year;
   int m_month;

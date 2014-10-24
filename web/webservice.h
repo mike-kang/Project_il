@@ -297,13 +297,13 @@ public:
     request_RfidInfoSelectAll(sMemcoCd, sSiteCd, 0, cbfunc, client, outFilename);
   }
 
-  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* 
+  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, const char* serialnum, int timelimit, CCBFunc cbfunc, void* 
   client);
-  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, int timelimit)
+  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, const char* serialnum, int timelimit)
   {
     return request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, timelimit, NULL, NULL);
   }
-  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, CCBFunc cbfunc, void* 
+  char* request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, const char* serialnum, CCBFunc cbfunc, void* 
   client)
   {
     return request_RfidInfoSelect(sMemcoCd, sSiteCd, serialnum, 0, cbfunc, client);

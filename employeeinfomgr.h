@@ -23,23 +23,26 @@ public:
     std::string lab_no;
     std::string lab_name;
     std::string pin_no;
+    char* img_buf;
+    int img_size;
     
-    EmployeeInfo(): ent_co_ymd(NULL), rtr_co_ymd(NULL){}
+    EmployeeInfo(): ent_co_ymd(NULL), rtr_co_ymd(NULL), img_buf(NULL){}
     ~EmployeeInfo(){
       if(ent_co_ymd) delete ent_co_ymd;
       if(rtr_co_ymd) delete rtr_co_ymd;
+      if(img_buf) delete img_buf;
     }
   };
   EmployeeInfoMgr(Settings* settings, WebService* ws);
   virtual ~EmployeeInfoMgr(){}
 
   bool updateDB();
-  bool getInfo(char* serialNumber, EmployeeInfo* ei);
+  bool getInfo(const char* serialNumber, EmployeeInfo* ei);
   
 private:  
   int fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& elems);
   bool fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei);
-  EmployeeInfo* searchDB(char* serialNumber);
+  EmployeeInfo* searchDB(const char* serialNumber);
 
   bool m_bUseLocalDB;
   string m_sMemcoCd; // = "MC00000003";

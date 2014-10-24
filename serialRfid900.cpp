@@ -1,5 +1,6 @@
 #include "serialRfid900.h"
 #include "tools/log.h"
+#include <stdio.h>
 
 #define LOG_TAG "SerialRfid900"
 
@@ -27,7 +28,7 @@ bool SerialRfid900::requestData()
   int len = m_serial.read(m_reciveBuf, RECEIVE_BUF_SIZE);
   if(len < 27)
     return false;
-  if(m_reciveBuf[0] == 0x7E && m_reciveBuf[26] == 0xFF && m_reciveBuf[5] == 0xA0)
+  if(m_reciveBuf[0] == 0x7E && m_reciveBuf[26] == 0xFF && m_reciveBuf[5] == 0xA0){
     time_t t = time(NULL);
     sprintf(m_serialnumberBuf, "%02x%02x", m_reciveBuf[18],m_reciveBuf[19]);
     if((t - shadowTime < 6) && !strncmp(m_serialnumberBuf, m_serialnumberShadowBuf, SERIALNUMBER_BUF_SIZE-1)){

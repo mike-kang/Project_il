@@ -1,6 +1,7 @@
 #include "maindelegator.h"
 #include "tools/log.h"
 #include "serialRfid1356.h"
+#include "serialRfid900.h"
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -18,16 +19,16 @@ using namespace std;
 
 MainDelegator* MainDelegator::my = NULL;
 
-MainDelegator* MainDelegator::getInstance()
+MainDelegator* MainDelegator::createInstance(EventListener* el)
 {
   if(my){
     return my;
   }
-  my = new MainDelegator();
+  my = new MainDelegator(el);
   return my;
 }   
 
-bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno)
+bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, string& msg)
 {
   bool bAccess;
   //IN_OUT_GB
@@ -39,26 +40,29 @@ bool MainDelegator::checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, int* errno)
       return true;
     //check zone && date
     if(!checkZone(ei->zone_code)){
-      *errno = 5;
+      LOGE("Authority Deny This Area\n");
+      msg = "Authority Deny This Area";
       return false;
     }
-    if(!checkDate(ei->ent_co_ymd, ei->rtr_co_ymd)){
-      *errno = 6;
+    if(!checkDate(ei->ent_co_ymd, ei->rtr_co_ymd, msg)){
       return false;
     }
     return true;
   }
   else{
     if(ei->in_out_gb ==  "0001"){
-      *errno = 1;
+      LOGE("Access Deny Standby at Work\n");
+      msg= "Access Deny Standby at Work";
       return false;
     }
     if(ei->in_out_gb == "0003"){
-      *errno = 2;
+      LOGE("Access Deny Retired at Work\n");
+      msg = "Access Deny Retired at Work";
       return false;
     }
 
-    *errno = 3;
+    LOGE("Access Deny Check Work Status\n");
+    msg = "Access Deny Check Work Status";
     return false;
   }
 
@@ -118,70 +122,64 @@ bool MainDelegator::checkZone(string& sAuth)
   return false;
 }
 
-bool MainDelegator::checkDate(Date* start, Date* end)
+bool MainDelegator::checkDate(Date* start, Date* end, string& msg)
 {
-  if(!start) 
+  if(!start){ 
+    LOGE("Access Deny: No Date information\n");
+    msg = "Access Deny: No Date information";
     return false;
+  }
+  
   Date* today = Date::now();
-  if(*start > *today) 
+  if(*start > *today){ 
+    msg = "Access Deny start date:" + start->toString();
+    LOGE((msg+"\n").c_str());
     return false;
-  if(end && *end < *today) 
+  }
+  if(end && *end < *today){ 
+    msg = "Access Deny work Until:" + end->toString();
+    LOGE((msg+"\n").c_str());
     return false;
+  }
+  msg = "Checked Success ";
+  if(end)
+    msg += "at Work Until " + end->toString();
   return true;
 }
 
-void MainDelegator::onData(char* serialNumber)
+void MainDelegator::onData(const char* serialNumber)
 {
   LOGI("onData %s +++\n", serialNumber);
   char* imgBuf = NULL;;
   int imgLength;
-  int errno = 0;
+  string msg;
   printf("onData: %s\n", serialNumber);
   
-  m_el->onRFSerialNumber(serialNumber);
+  m_el->onMessage("RfidNo", serialNumber);
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
   bool ret = m_employInfoMrg->getInfo(serialNumber, ei);
 
   if(!ret){
     LOGE("get employee info fail!\n");
+    m_el->onEmployeeInfo("", "", "", NULL, 0);
     media::wavPlay("SoundFiles/fail.wav");
+    m_el->onMessage("Result", "FAIL");
+    m_el->onMessage("Msg", "NO DATA");
     goto error;
   }
-
-  if(!checkValidate(ei, &errno)){
-    switch(errno){
-      case 1:
-        m_el->onMessage("Access Deny Standby at Work");
-        LOGE("Access Deny Standby at Work\n");
-        break;
-      case 2:
-        m_el->onMessage("Access Deny Retired at Work");
-        LOGE("Access Deny Retired at Work\n");
-        break;
-      case 3:
-        m_el->onMessage("Access Deny Check Work Status");
-        LOGE("Access Deny Check Work Status\n");
-        break;
-      case 4:
-        m_el->onMessage("Access Deny Standby at Work");
-        LOGE("Access Deny Standby at Work\n");
-        break;
-      case 5:
-        m_el->onMessage("Authority Deny This Area");
-        LOGE("Authority Deny This Area\n");
-        break;
-      case 6:
-        m_el->onMessage("Date\n");
-        LOGE("Date\n");
-        break;
-    }
+  m_el->onEmployeeInfo(ei->company_name, ei->lab_name, ei->pin_no, ei->img_buf, ei->img_size);
+  if(!checkValidate(ei, msg)){
     media::wavPlay("SoundFiles/fail.wav");
+    m_el->onMessage("Result", "FAIL");
+    m_el->onMessage("Msg", msg);
     goto error;
   }
 
   media::wavPlay("SoundFiles/ok.wav");
   m_greenLed.on();
-  
+  m_el->onMessage("Msg", msg);
+  m_el->onMessage("Result", "OK");
+
 #ifdef CAMERA
   if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
   {
@@ -198,12 +196,12 @@ void MainDelegator::onData(char* serialNumber)
   else{
     LOGE("take Picture fail!!!\n");
   }
-#endif  
+#endif
   m_timeSheetMgr->insert(ei->lab_no,ei->utype, imgBuf ,imgLength);
 
 error:
   delete ei;
-  LOGI("onData %s ---\n");
+  LOGI("onData ---\n");
   
 }
 
@@ -287,6 +285,58 @@ error:
 }
 */
 
+//check network, upload status, download db, upload timesheet
+void MainDelegator::cbTimer(void* arg)
+{
+  MainDelegator* md = (MainDelegator*)arg;
+
+  static int count = 0;
+  bool ret = false;
+  
+  LOGV("cbTimer count=%d\n", count);
+  switch(count){
+    case 3:
+      md->checkNetwork();
+      break;
+
+    case 1:
+    case 6:
+      break;
+
+    case 8:
+      break;
+      
+    case 9:
+      count = -1;
+      break;
+
+    default:
+      break;
+  }
+  count++;
+  
+}
+
+void MainDelegator::checkNetwork()
+{
+  bool ret = false;
+  try{
+    ret = m_ws->request_GetNetInfo(2000);  //blocked I/O
+  }
+  catch(WebService::Except e){
+    LOGE("request_GetNetInfo: %s\n", WebService::dump_error(e));
+  }
+  if(ret){
+    LOGV("Server ON\n");
+    m_el->onMessage("Server", "Server ON");
+    m_yellowLed.on();
+  }
+  else{
+    LOGV("Server OFF\n");
+    m_el->onMessage("Server", "Server OFF");
+    m_yellowLed.off();
+  }
+}
 
 bool MainDelegator::SettingInit()
 {
@@ -313,64 +363,135 @@ bool MainDelegator::SettingInit()
   //Rfid
   m_sRfidMode = m_settings->get("Rfid::MODE"); //="1356M";
   m_rfidCheckInterval = m_settings->getInt("Rfid::CHECK_INTERVAL"); //300 ms
+  m_sRfid1356Port = m_settings->get("Rfid::RFID1356_PORT"); // /dev/ttyAMA0
+  m_sRfid900Port = m_settings->get("Rfid::RFID800_PORT"); // /dev/ttyUSB0
 
+  //Server
+  m_sUrl = m_settings->get("Server::URL");
+  
   return true;
 }
 
-MainDelegator::MainDelegator() : m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
+MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
 {
   bool ret;
-
+  cout << "start" << endl;
+  el->onStatus("System Start");
   SettingInit();
 
   string console_log_path = m_settings->get("Log::CONSOLE_PATH");
   log_init(TYPE_CONSOLE, console_log_path.c_str());
 
 
-  m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
-  LOGV("MainDelegator tid=%lu\n", m_thread->getId());
-
-  m_ws = new WebService("192.168.0.7", 8080);
-  //m_ws = new WebService("112.216.243.146", 8080);
-  m_employInfoMrg = new EmployeeInfoMgr(m_settings, m_ws);
+  //m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
+  //LOGV("MainDelegator tid=%lu\n", m_thread->getId());
+#ifndef SIMULATOR
+  if(m_sRfidMode == "1356M")
+    m_serialRfid = new SerialRfid1356(m_sRfid1356Port.c_str());
+  else if(m_sRfidMode == "1356M2")
+    m_serialRfid = new SerialRfid1356_(m_sRfid1356Port.c_str());
+  else if(m_sRfidMode == "900M")
+    m_serialRfid = new SerialRfid900(m_sRfid1356Port.c_str());
   
+  ret = m_serialRfid->open();
+  if(!ret){
+    LOGE("SerialRfid open fail!\n");
+    delete m_serialRfid;
+    delete m_settings;
+    throw EXCEPTION_RFID_OPEN_FAIL;
+  }
+  m_serialRfid->start(m_rfidCheckInterval, this); //interval=300ms  
+#endif  
+  m_el->onMessage("Rfid", m_sRfidMode + " ON");
+
+  m_el->onStatus("WebService Url:" + m_sUrl);
+  //m_ws = new WebService("192.168.0.7", 8080);
+  m_ws = new WebService("112.216.243.146", 8080);
+  checkNetwork();
+  m_employInfoMrg = new EmployeeInfoMgr(m_settings, m_ws);
   m_timeSheetMgr = new TimeSheetMgr(m_settings, m_ws);
 
 #ifdef CAMERA  
   m_cameraStill = new CameraStill(m_cameraDelayOffTime);
 #endif
-  m_serialRfid = new SerialRfid1356("/dev/ttyAMA0");
-  ret = m_serialRfid->open();
-  if(!ret)
-    LOGE("SerialRfid open fail!\n");
-
-  m_serialRfid->start(m_rfidCheckInterval, this); //interval=300ms  
 
 #ifdef SIMULATOR
   signal(SIGUSR1, test_signal_handler);
-  mTimerForTest = new Timer(1, cbTestTimer, NULL);
+  signal(SIGUSR2, test_signal_handler);
+  mTimerForTest = new Timer(1, cbTestTimer, this);
 #endif
+  string locationName = getLocationName();
+  m_el->onMessage("GateLoc", locationName);
+  m_el->onMessage("GateNo", "No." + m_sDvNo);
+
   media::wavPlay("SoundFiles/start.wav");
+  m_timer = new Timer(60, cbTimer, this, true);
+  m_timer->start();
 
   LOGV("MainDelegator ---\n");
 }
 
+MainDelegator::~MainDelegator()
+{
+  m_timer->stop();
+} 
+
 #ifdef SIMULATOR
 void MainDelegator::cbTestTimer(void* arg)
 {
-  MainDelegator::my->onData("253161024009");  //validate
-  //MainDelegator::my->onData("253153215009");  //invalidate
-}
+   my->onData(my->m_test_serial_number.c_str());
+ }
 
 void MainDelegator::test_signal_handler(int signo)
 {
   if(signo == SIGUSR1){
     LOGI("signal_handler SIGUSR1\n");
+    my->m_test_serial_number = "253161024009"; //validate
+    my->mTimerForTest->start();
+  }
+  else if(signo == SIGUSR2){
+    LOGI("signal_handler SIGUSR2\n");
+    my->m_test_serial_number = "253153215009"; //invalidate
     my->mTimerForTest->start();
   }
 }
 #endif
 
+string MainDelegator::getLocationName()
+{
+  string locationName;
+  try{
+    char* xml_buf = m_ws->request_CodeDataSelect(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), m_sDvLoc.c_str(), 3000);  //blocked I/O
+    //xml_buf = m_ws->request_CodeDataSelect("MC00000003", "ST00000005", "0001", cbCodeDataSelect, NULL);  //blocked I/O
+    if(xml_buf){
+      try{
+        char* name = utils::getElementData(xml_buf, "EN_CODE_NM");
+        locationName = name;
+        return locationName;
+      }
+      catch(int e){}
+      delete xml_buf;
+    }
+  }
+  catch(WebService::Except e){
+    LOGE("request_CodeDataSelect: %s\n", WebService::dump_error(e));
+  }
+  
+  if(m_sDvLoc == "0001")
+    locationName = "Main Gate";
+  else if(m_sDvLoc == "0002")
+    locationName = "A Camp";
+  else if(m_sDvLoc == "0003")
+    locationName = "Office";
+  else if(m_sDvLoc == "0004")
+    locationName = "C Camp 400";
+  else if(m_sDvLoc == "0005")
+    locationName = "C Camp 800";
+  else if(m_sDvLoc == "0006")
+    locationName = "F Camp";
+
+  return locationName;
+}
 
 /*
 void MainDelegator::cb_ServerTimeGet(void* arg)

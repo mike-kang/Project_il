@@ -85,7 +85,7 @@ bool CameraStill::takePicture(char** buf, int* len, int maxWaitTime)
   LOGV("takePicture\n");
   mtx.lock();
   if(m_timer->IsActive())
-    m_timer->cancel();
+    m_timer->stop();
   takePictureReady();
   m_camera_component->capture(true);
   m_encoder_component->capture();

@@ -9,7 +9,7 @@ class SerialRfid {
 public:
   class SerialRfidDataNoti {
   public:
-    virtual void onData(char* buf) = 0;
+    virtual void onData(const char* buf) = 0;
   };
 
 

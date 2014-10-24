@@ -34,6 +34,7 @@ Settings::Settings(const char* filename)
      mapStrInsert(App, DV_NO, 6);
      mapBoolInsert(App, LOCAL_DATABASE, false);
      mapStrInsert(App, IN_OUT, I);
+     mapStrInsert(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
      
      //Action
      mapBoolInsert(Action, CAPTURE, true);
@@ -43,6 +44,8 @@ Settings::Settings(const char* filename)
      //Rfid
      mapStrInsert(Rfid, MODE, 1356M); 
      mapIntInsert(Rfid, CHECK_INTERVAL, 300);  // 300 ms
+     mapStrInsert(Rfid, RFID1356_PORT, /dev/ttyAMA0); 
+     mapStrInsert(Rfid, RFID800_PORT, /dev/ttyUSB0); 
      
      //Camera
      mapIntInsert(Camera, DELAY_OFF_TIME, 600);  //600 sec
@@ -72,6 +75,8 @@ Settings::Settings(const char* filename)
   //Rfid
   mapStrInsertFormReader(Rfid, MODE, 1356M); 
   mapIntInsertFormReader(Rfid, CHECK_INTERVAL, 300);  // 300 ms
+  mapStrInsertFormReader(Rfid, RFID1356_PORT, /dev/ttyAMA0); 
+  mapStrInsertFormReader(Rfid, RFID800_PORT, /dev/ttyUSB0); 
 
   //Camera
   mapIntInsertFormReader(Camera, DELAY_OFF_TIME, 600);  //600 sec
@@ -79,6 +84,9 @@ Settings::Settings(const char* filename)
 
   //Log
   mapStrInsertFormReader(Log, CONSOLE_PATH, /dev/pts/3);
+
+  //Server
+  mapStrInsertFormReader(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
 
   dump();
 }

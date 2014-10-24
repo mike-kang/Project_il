@@ -400,7 +400,7 @@ void WebService::request_RfidInfoSelectAll(const char *sMemcoCd, const char* sSi
   return;
 }
 
-char* WebService::request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, char* serialnum, int timelimit, CCBFunc cbfunc, void* client)
+char* WebService::request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, const char* serialnum, int timelimit, CCBFunc cbfunc, void* client)
 {
   char* ret = NULL;
   LOGV("request_RfidInfoSelect +++\n");

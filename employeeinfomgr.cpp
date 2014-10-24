@@ -4,6 +4,7 @@
 #include "web/webservice.h"
 #include "settings.h"
 #include <fstream>
+#include "tools/utils.h"
 
 #define LOG_TAG "EmployInfoMgr"
 
@@ -58,29 +59,7 @@ bool EmployeeInfoMgr::updateDB()
   return true;
 }
 
-static const int EXCEPTION_NOT_FOUND = 0;
-char* getData(char* xml_buf, const char* tag)
-{
-  char* p;
-  char* ret = NULL;
-  int tag_len = strlen(tag);
-  char* key = new char[tag_len + 2]; // <XXXX + NULL
-  key[0] = '<';
-  strcpy(key+1, tag);
-  if(p = strstr(xml_buf, key)){
-    ret = p+tag_len+2;
-    p = strstr(ret, "<");
-    *p = '\0';
-  }
-  else{
-    delete key;
-    throw EXCEPTION_NOT_FOUND;
-  }
-  delete key;
-  return ret;
-}
-  
-bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
+bool EmployeeInfoMgr::getInfo(const char* serialNumber, EmployeeInfo* ei)
 {
   bool bNetAvailable = false;
   //cout << "getInfo" << endl;
@@ -95,6 +74,7 @@ bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
     LOGE("request_GetNetInfo: %s\n", WebService::dump_error(e));
   }
   if(!bNetAvailable){
+    LOGE("nwtwork not available\n");
     goto localDB;
   }
   
@@ -112,8 +92,8 @@ bool EmployeeInfoMgr::getInfo(char* serialNumber, EmployeeInfo* ei)
   }
 
 localDB:
+  LOGI("Local DB check!\n");
   EmployeeInfo* t = searchDB(serialNumber);
-  printf("searchDB %x\n", t);
   if(!t) return false;
   //memcpy(ei, t, sizeof(EmployeeInfo));
   strcpy(ei->serial_number, t->serial_number);
@@ -146,53 +126,53 @@ int EmployeeInfoMgr::fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& el
     EmployeeInfo* ei = new EmployeeInfo;
 
     try {
-      ei->pin_no = getData(p, "PIN_NO");
+      ei->pin_no = utils::getElementData(p, "PIN_NO");
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      ei->lab_no = p = getData(p, "LAB_NO");
+      ei->lab_no = p = utils::getElementData(p, "LAB_NO");
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      ei->lab_name = p = getData(p, "LAB_NM");
+      ei->lab_name = p = utils::getElementData(p, "LAB_NM");
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      ei->company_name = p = getData(p, "CO_NM");
+      ei->company_name = p = utils::getElementData(p, "CO_NM");
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      p = getData(p, "RFID_CAR");
+      p = utils::getElementData(p, "RFID_CAR");
       strcpy(ei->serial_number, p); 
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      ei->in_out_gb = p = getData(p, "IN_OUT_GB");
+      ei->in_out_gb = p = utils::getElementData(p, "IN_OUT_GB");
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      ei->zone_code = p = getData(p, "ZONE_CD");
+      ei->zone_code = p = utils::getElementData(p, "ZONE_CD");
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      ei->ent_co_ymd = new Date(p = getData(p, "ENT_CO_YMD"));
+      ei->ent_co_ymd = new Date(p = utils::getElementData(p, "ENT_CO_YMD"));
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      ei->ent_co_ymd = new Date(p = getData(p, "RTR_CO_YMD"));
+      ei->ent_co_ymd = new Date(p = utils::getElementData(p, "RTR_CO_YMD"));
       p += strlen(p) + 1;
     }
     catch(int e){}
     try {
-      ei->utype = *getData(p, "UTYPE");
+      ei->utype = *utils::getElementData(p, "UTYPE");
     }
     catch(int e){}
 
@@ -215,62 +195,62 @@ bool EmployeeInfoMgr::fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei)
   }
   //cout << "getInfo 1:" << p << endl;
   try {
-    ei->pin_no = getData(p, "PIN_NO");
+    ei->pin_no = utils::getElementData(p, "PIN_NO");
     p += strlen(p) + 1;
   }
   catch(int e){}
   try {
-    ei->lab_no = p = getData(p, "LAB_NO");
+    ei->lab_no = p = utils::getElementData(p, "LAB_NO");
     p += strlen(p) + 1;
   }
   catch(int e){}
   try {
-    ei->lab_name = p = getData(p, "LAB_NM");
+    ei->lab_name = p = utils::getElementData(p, "LAB_NM");
     p += strlen(p) + 1;
   }
   catch(int e){}
   try {
-    ei->company_name = p = getData(p, "CO_NM");
+    ei->company_name = p = utils::getElementData(p, "CO_NM");
     p += strlen(p) + 1;
   }
   catch(int e){}
 /*  
   try {
-    p = getData(p, "RFID_CAR");
+    p = utils::getElementData(p, "RFID_CAR");
     strcpy(ei->serial_number, p); 
     p += strlen(p) + 1;
   }
   catch(int e){}
 */
   try {
-    ei->in_out_gb = p = getData(p, "IN_OUT_GB");
+    ei->in_out_gb = p = utils::getElementData(p, "IN_OUT_GB");
     p += strlen(p) + 1;
   }
   catch(int e){}
   try {
-    ei->zone_code = p = getData(p, "ZONE_CD");
+    ei->zone_code = p = utils::getElementData(p, "ZONE_CD");
     p += strlen(p) + 1;
   }
   catch(int e){}
   try {
-    ei->ent_co_ymd = new Date(p = getData(p, "ENT_CO_YMD"));
+    ei->ent_co_ymd = new Date(p = utils::getElementData(p, "ENT_CO_YMD"));
     p += strlen(p) + 1;
   }
   catch(int e){}
   try {
-    ei->ent_co_ymd = new Date(p = getData(p, "RTR_CO_YMD"));
+    ei->ent_co_ymd = new Date(p = utils::getElementData(p, "RTR_CO_YMD"));
     p += strlen(p) + 1;
   }
   catch(int e){}
   try {
-    ei->utype = *getData(p, "UTYPE");
+    ei->utype = *utils::getElementData(p, "UTYPE");
   }
   catch(int e){}
 
   return true;
 }
 
-EmployeeInfoMgr::EmployeeInfo* EmployeeInfoMgr::searchDB(char* serialNumber)
+EmployeeInfoMgr::EmployeeInfo* EmployeeInfoMgr::searchDB(const char* serialNumber)
 {
   for(vector<EmployeeInfo*>::size_type i=0; i< m_vectorEmployeeInfo.size(); i++)
   {
