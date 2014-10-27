@@ -49,15 +49,19 @@ void SerialRfid::registerDataNoti(SerialRfidDataNoti* dn)
 
 void SerialRfid::run()
 {
-  bool ret;
+  int interval = m_interval * 1000;
+  bool bNeedInterval = true;
+  
   while(m_running){
-    usleep(m_interval * 1000);
-    ret = requestData();
-    if(!ret){
+    if(bNeedInterval) 
+      usleep(interval);
+    if(!requestData()){
       //LOGE("requestData fail\n");
+      bNeedInterval = true;
       continue;
     }
     m_dn->onData(m_serialnumberBuf);
+    bNeedInterval = false;
   }
 
 }

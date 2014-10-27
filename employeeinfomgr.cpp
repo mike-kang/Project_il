@@ -26,11 +26,14 @@ EmployeeInfoMgr::EmployeeInfoMgr(Settings* settings, WebService* ws): m_settings
     m_sMemcoCd = "MC00000003";
     m_sSiteCd = "ST00000005";
   }
-  updateDB();
+  createLocalDB();
 }
 
-bool EmployeeInfoMgr::updateDB()
+bool EmployeeInfoMgr::createLocalDB()
 {
+  if(m_vectorEmployeeInfo.size() > 0)
+    return true;
+
   if(!filesystem::file_exist(DB_FILE)){
     LOGV("download %s\n", DB_FILE);
     try{
@@ -119,6 +122,7 @@ int EmployeeInfoMgr::fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& el
   char *end;
   //cout << xml_buf << endl;
   //LOGV("***fillEmployeeInfo:%s\n", xml_buf);
+  mtx.lock();
   while(p = strstr(p, "<Table")){
     //printf("start %x\n", p);
     end = strstr(p+7, "</Table");
@@ -180,7 +184,7 @@ int EmployeeInfoMgr::fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& el
     
     p = end + 8;
   }
-  
+  mtx.unlock();
   return elems.size();
 }
 
@@ -252,14 +256,18 @@ bool EmployeeInfoMgr::fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei)
 
 EmployeeInfoMgr::EmployeeInfo* EmployeeInfoMgr::searchDB(const char* serialNumber)
 {
+  mtx.lock();
+
   for(vector<EmployeeInfo*>::size_type i=0; i< m_vectorEmployeeInfo.size(); i++)
   {
     //cout << m_vectorEmployeeInfo[i]->serial_number << endl;
     if(!strcmp(m_vectorEmployeeInfo[i]->serial_number, serialNumber)){
       cout << "searchDB:" <<  m_vectorEmployeeInfo[i]->in_out_gb << endl;
+      mtx.unlock();
       return m_vectorEmployeeInfo[i];
     }
   }
+  mtx.unlock();
   return NULL;
 } 
 

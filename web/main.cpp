@@ -78,14 +78,13 @@ int main()
 {
   log_init(TYPE_CONSOLE, "/dev/pts/3");
 
-
-  m_ws = new WebService("192.168.0.7", 8080);
-  //m_ws->start();
+  
+  m_ws = new WebService("112.216.243.146", 8080);
+  //m_ws = new WebService("192.168.0.7", 8080);
 
   bool ret;
   char* xml_buf;
   char* time_buf;
- /*
   try{
     //xml_buf = m_ws->request_CodeDataSelect("MC00000003", "ST00000005", "0001", 3000);  //blocked I/O
     xml_buf = m_ws->request_CodeDataSelect("MC00000003", "ST00000005", "0001", cbCodeDataSelect, NULL);  //blocked I/O
@@ -97,7 +96,7 @@ int main()
   catch(WebService::Except e){
     LOGE("request_CodeDataSelect: %s\n", dump_error(e));
   }
-
+/*
   try{
     //ret = m_ws->request_GetNetInfo(3000);  //blocked I/O
     ret = m_ws->request_GetNetInfo(cbGetNetInfo, NULL);  //blocked I/O
@@ -126,7 +125,7 @@ int main()
   catch(WebService::Except e){
     LOGE("request_RfidInfoSelect: %s\n", dump_error(e));
   }
-/*
+*/
   try{
     time_buf = m_ws->request_ServerTimeGet(3000);  //blocked I/O
     //time_buf = m_ws->request_ServerTimeGet(cbServerTimeGet, NULL);  //blocked I/O
@@ -138,7 +137,7 @@ int main()
   catch(WebService::Except e){
     LOGE("request_ServerTimeGet: %s\n", dump_error(e));
   }
-
+/*
   try{
     ret = m_ws->request_StatusUpdate("IN", "ST00000005", "0001", "1", "192.168.190.130", "00-0c-29-95-30-24", 3000);  //blocked I/O
     //ret = m_ws->request_StatusUpdate("IN", "ST00000005", "0001", "1", "192.168.190.130", "00-0c-29-95-30-24", cbStatusUpdate, NULL);  //blocked I/O
@@ -147,7 +146,6 @@ int main()
   catch(WebService::Except e){
     LOGE("request_StatusUpdate: %s\n", dump_error(e));
   }
-*/
   ifstream infile ("org.jpg",ofstream::binary);
   // get size of file
   infile.seekg (0,infile.end);
@@ -160,15 +158,16 @@ int main()
   infile.close();
 
   try{
-    ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, 8000);  //blocked I/O
+    ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, 8000, "timesheets");  //blocked I/O
     if(ret)
       delete image_buffer;
-    //ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, TimeSheetInsertString, NULL);  //blocked I/O
+    //ret = m_ws->request_TimeSheetInsertString("MC00000003", "ST00000005", "LM00000811", 'I', "1", "0001",'L', "2014-10-18+09:00:00", image_buffer, size, TimeSheetInsertString, NULL, "timesheets");  //blocked I/O
     LOGV("***request_TimeSheetInsertString: %d\n", ret);
   }
   catch(WebService::Except e){
     LOGE("request_TimeSheetInsertString: %s\n", dump_error(e));
   }
+  */
 
   
   while(1)

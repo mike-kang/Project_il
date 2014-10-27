@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <list>
+#include "tools/mutex.h"
 
 class WebService;
 class Settings;
@@ -33,6 +34,7 @@ private:
   std::string m_sDvLoc; // = "0001";
   std::string m_sDvNo; // = "1";
   char m_cInOut; // = "I";
+  Mutex mtx;
 };
 
 #endif  //_TIMESHEETMGR_HEADER

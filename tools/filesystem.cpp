@@ -1,12 +1,16 @@
 #include "filesystem.h"
 #include <iostream>
+#include <stdio.h>
 #ifdef _WIN32
 #include "io.h"
 #include "windows.h"
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
 #endif
 
 #ifdef _DEBUG_MEMORY_LEAK
@@ -76,6 +80,38 @@ int file_size(const char* path)
     return -1;
   }
   return fileStats.st_size;
+}
+
+void getList(const char* directory, vector<string*>& arr)
+{
+  DIR* dir;
+  struct dirent *entry;
+  dir = opendir(directory);
+  errno = 0;
+
+  while((entry = readdir(dir)) != NULL){
+    if(strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")){
+      string* s = new string(entry->d_name);
+      arr.push_back(s);
+    }
+  }
+  
+  for(vector<string*>::size_type i; i < arr.size(); i++){
+    cout << "list:" << *arr[i] << endl;
+  }
+  if(!entry && errno){
+    for(vector<string*>::size_type i; i < arr.size(); i++){
+      delete arr[i];
+    }
+    throw EXCEPTION_EBADF;
+  }
+}
+
+bool file_delete(const char* path)
+{
+  if(remove(path) < 0)
+    return false;
+  return true;
 }
 #endif
 }

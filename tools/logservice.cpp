@@ -32,6 +32,7 @@ static bool log_file_type_flush_per_line = false; //FILE_TYPE_FLUSH_PER_LINE
 static HANDLE hOut = INVALID_HANDLE_VALUE;  //console handle
 #else
 std::ofstream consoleOfstream;
+std::ofstream fileOfstream;
 #endif
 FILE* fp;
 
@@ -45,6 +46,8 @@ void consoleWrite(const char *buf)
 #else  
   consoleOfstream << buf;
   consoleOfstream.flush();
+  fileOfstream << buf;
+  fileOfstream.flush();
 #endif
 }
 
@@ -104,6 +107,7 @@ LogService* LogService::init(LogService::log_t type, const char* path)
 #else
   if(log_type == TYPE_CONSOLE){ //console
       consoleOfstream.open(path);
+      fileOfstream.open("log.txt");
   }
 
 #endif
@@ -127,6 +131,7 @@ LogService::~LogService()
 #else
   if(log_type == TYPE_CONSOLE){ //console
       consoleOfstream.close();
+      fileOfstream.close();
   }
 #endif
 }
@@ -155,6 +160,7 @@ void LogService::run()
     if(e){
       sprintf(buf, "[%s][%lu][%s] %s", e->m_tag, e->m_threadID, e->m_t->toString(), e->m_msg);
       writefunc[log_type](buf);
+      
       delete e;
     }
     else{

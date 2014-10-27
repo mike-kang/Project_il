@@ -18,6 +18,7 @@ public:
   typedef  void (*CCBFunc)(void *client_data, int status, void* ret);
 
   class WebApi {
+  friend class WebService;
   public:
     enum Exception{
       Exception_Parsing,
@@ -58,7 +59,7 @@ public:
   };
   
   class CodeDataSelect_WebApi : public WebApi {
-  friend class WebService;
+  //friend class WebService;
   public:
     virtual bool parsing();
     
@@ -83,7 +84,7 @@ public:
 
   };
   class GetNetInfo_WebApi : public WebApi {
-  friend class WebService;
+  //friend class WebService;
   public:
     GetNetInfo_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
     {
@@ -108,7 +109,7 @@ public:
   };
 
   class RfidInfoSelectAll_WebApi : public WebApi {
-  friend class WebService;
+  //friend class WebService;
   public:
     virtual bool parsing();
     
@@ -141,7 +142,7 @@ public:
   };
 
   class RfidInfoSelect_WebApi : public WebApi {
-  friend class WebService;
+  //friend class WebService;
   public:
     virtual bool parsing();
     
@@ -166,7 +167,7 @@ public:
   };
 
   class ServerTimeGet_WebApi : public WebApi {
-  friend class WebService;
+  //friend class WebService;
   public:
     virtual bool parsing();
     
@@ -191,7 +192,7 @@ public:
   };
   
   class StatusUpdate_WebApi : public WebApi {
-  friend class WebService;
+  //friend class WebService;
   public:
     StatusUpdate_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
     {
@@ -214,7 +215,7 @@ public:
   };
 
   class TimeSheetInsertString_WebApi : public WebApi {
-  friend class WebService;
+  //friend class WebService;
   public:
     TimeSheetInsertString_WebApi(WebService* ws, char* cmd, int cmd_offset, int t):WebApi(ws, cmd, cmd_offset, t)  //sync
     {
@@ -318,29 +319,39 @@ public:
     return request_ServerTimeGet(0, cbfunc, client);
   }
 
-  bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* 
+  bool request_StatusUpdate(const char *sGateType, const char* sSiteCd, const char* sDvLoc, const char* sdvNo, const char* sIpAddress, const char* sMacAddress, int timelimit, CCBFunc cbfunc, void* 
   client);
-  bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit)
+  bool request_StatusUpdate(const char *sGateType, const char* sSiteCd, const char* sDvLoc, const char* sdvNo, const char* sIpAddress, const char* sMacAddress, int timelimit)
   {
     return request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, timelimit, NULL, NULL);
   }
-  bool request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, CCBFunc cbfunc, void* 
+  bool request_StatusUpdate(const char *sGateType, const char* sSiteCd, const char* sDvLoc, const char* sdvNo, const char* sIpAddress, const char* sMacAddress, CCBFunc cbfunc, void* 
   client)
   {
     return request_StatusUpdate(sGateType, sSiteCd, sDvLoc, sdvNo, sIpAddress, sMacAddress, 0, cbfunc, client);
   }
   
   bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, const char* sGateNo, const char* sGateLoc, char cUtype, const char* sInTime, char* imageBuf, int imageSz, int timelimit, CCBFunc cbfunc, void* 
-  client);
-  bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, const char* sGateNo, const char* sGateLoc, char cUtype, const char* sInTime, char* imageBuf, int imageSz, int timelimit)
+  client, const char* outDirectory);
+  bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, const char* sGateNo, const char* sGateLoc, char cUtype, const char* sInTime, char* imageBuf, int imageSz, int timelimit, const char* outDirectory)
   {
     return request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, 
-    imageBuf, imageSz, timelimit, NULL, NULL);
+    imageBuf, imageSz, timelimit, NULL, NULL, outDirectory);
   }
   bool request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, const char* sGateNo, const char* sGateLoc, char cUtype, const char* sInTime, char* imageBuf, int imageSz, CCBFunc cbfunc, void* 
-  client)
+  client, const char* outDirectory)
   {
-    return request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, imageBuf, imageSz, 0, cbfunc, client);
+    return request_TimeSheetInsertString(sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime, imageBuf, imageSz, 0, cbfunc, 
+    client, outDirectory);
+  }
+  bool request_SendFile(const char *filename, int timelimit, CCBFunc cbfunc, void* client);
+  bool request_SendFile(const char *filename, int timelimit)
+  {
+    return request_SendFile(filename, timelimit, NULL, NULL);
+  }
+  bool request_SendFile(const char *filename, CCBFunc cbfunc, void* client)
+  {
+    return request_SendFile(filename, 0, cbfunc, client);
   }
 private:
   //void run(); 

@@ -108,7 +108,7 @@ int base64e2(const char *src, int length, char *result){
     int sz = length / 3;
     BF2* p = (BF2*)src;
     char * o = result;;
-    cout << sizeof(BF2) << endl;
+    //cout << sizeof(BF2) << endl;
     //cout << &p->e0 << ":" << &p->e1 << endl;
     
     for(i = 0 ; i < sz ; i++){

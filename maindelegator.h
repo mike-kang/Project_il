@@ -59,6 +59,7 @@ private:
   tools::Timer* mTimerForTest;
   std::string m_test_serial_number;
 #endif
+  static void cbStatusUpdate(void *client_data, int status, void* ret);
   static void cbTimer(void* arg);
   //static void cb_ServerTimeGet(void* arg);
   //void _cb_ServerTimeGet(void* arg);
@@ -104,6 +105,9 @@ private:
   int m_takePictureMaxWaitTime; //sec
   int m_cameraDelayOffTime; //sec
 #endif
+  string m_sLocalIP;
+  string m_sLocalMacAddr;
+  bool m_bProcessingRfidData;
 
   //Led
   SwitchGpio m_yellowLed;

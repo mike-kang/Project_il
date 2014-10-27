@@ -5,6 +5,7 @@
 #include "tools/date.h"
 #include <vector>
 #include <string>
+#include "tools/mutex.h"
 
 class WebService;
 class Settings;
@@ -36,7 +37,7 @@ public:
   EmployeeInfoMgr(Settings* settings, WebService* ws);
   virtual ~EmployeeInfoMgr(){}
 
-  bool updateDB();
+  bool createLocalDB();
   bool getInfo(const char* serialNumber, EmployeeInfo* ei);
   
 private:  
@@ -50,6 +51,7 @@ private:
   WebService* m_ws;
   Settings* m_settings;
   std::vector<EmployeeInfo*> m_vectorEmployeeInfo;
+  Mutex mtx;
 };
 
 

@@ -10,6 +10,7 @@
 #include "tools/timer.h"
 #include "tools/media.h"
 #include "tools/utils.h"
+#include "tools/network.h"
 #include "timesheetmgr.h"
 
 using namespace tools;
@@ -153,6 +154,7 @@ void MainDelegator::onData(const char* serialNumber)
   char* imgBuf = NULL;;
   int imgLength;
   string msg;
+  m_bProcessingRfidData = true;
   printf("onData: %s\n", serialNumber);
   
   m_el->onMessage("RfidNo", serialNumber);
@@ -202,7 +204,7 @@ void MainDelegator::onData(const char* serialNumber)
 error:
   delete ei;
   LOGI("onData ---\n");
-  
+  m_bProcessingRfidData = false;
 }
 
 void MainDelegator::run()
@@ -285,6 +287,12 @@ error:
 }
 */
 
+//static
+void MainDelegator::cbStatusUpdate(void *client_data, int status, void* ret)
+{
+  LOGV("cbStatusUpdate status:%d, ret:%d\n", status, *((bool*)ret));
+}
+
 //check network, upload status, download db, upload timesheet
 void MainDelegator::cbTimer(void* arg)
 {
@@ -294,23 +302,50 @@ void MainDelegator::cbTimer(void* arg)
   bool ret = false;
   
   LOGV("cbTimer count=%d\n", count);
+  if(md->m_bProcessingRfidData){
+    LOGV("cbTimer returned by processing card\n");
+    return;
+  }
   switch(count){
+/*    
     case 3:
       md->checkNetwork();
       break;
 
     case 1:
     case 6:
+      if(md->m_sLocalIP == ""){
+        try{
+          char* p = network::GetIpAddress("eth0");  // or lo
+          md->m_sLocalIP = p;
+        }
+        catch(Exception e)
+        {
+          md->m_sLocalIP = "";
+        }
+      }
+      try{
+        //ret = m_ws->request_StatusUpdate((m_sInOut == "I")?"IN":"OUT", m_sSiteCd, m_sDvLoc, m_sDvNo, m_sLocalIP, m_sLocalMacAddr, 8000);  //blocked I/O
+        //LOGV("***StatusUpdate: %d\n", ret);
+        md->m_ws->request_StatusUpdate((md->m_sInOut == "I")?"IN":"OUT", md->m_sSiteCd.c_str(), md->m_sDvLoc.c_str(), md->m_sDvNo.c_str(), md->m_sLocalIP.c_str()
+          , md->m_sLocalMacAddr.c_str(), cbStatusUpdate, NULL);  //blocked I/O
+      }
+      catch(WebService::Except e){
+        LOGE("request_StatusUpdate: %s\n", WebService::dump_error(e));
+      }
       break;
 
     case 8:
+      md->m_employInfoMrg->createLocalDB();
       break;
       
     case 9:
       count = -1;
       break;
-
+*/
     default:
+      //upload timesheet
+      md->m_timeSheetMgr->upload();
       break;
   }
   count++;
@@ -368,11 +403,22 @@ bool MainDelegator::SettingInit()
 
   //Server
   m_sUrl = m_settings->get("Server::URL");
-  
+
+  //Local IP.Mac Address
+  try{
+    char* p = network::GetIpAddress("eth0");  // or lo
+    m_sLocalIP = p;
+  }
+  catch(Exception e)
+  {
+    m_sLocalIP = "";
+  }
+
+  m_sLocalMacAddr = network::GetMacAddress("eth0");
   return true;
 }
 
-MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
+MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidData(false), m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
 {
   bool ret;
   cout << "start" << endl;
@@ -504,20 +550,19 @@ void MainDelegator::cb_ServerTimeGet(void* arg)
   return;
 }
 
-void MainDelegator::_cb_ServerTimeGet(void* arg)
+void MainDelegator::getSeverTime(void* arg)
 {
   LOGV("_cb_ServerTimeGet\n");
-  WebService::req_data* rd = (WebService::req_data*)arg;
-  if(rd->retval != WebService::RET_SUCCESS){
-    LOGE("cb_ServerTimeGet fail!\n");
-    delete rd;
-    return;
+  try{
+    char* time_buf = m_ws->request_ServerTimeGet(3000);  //blocked I/O
+    //time_buf = m_ws->request_ServerTimeGet(cbServerTimeGet, NULL);  //blocked I/O
+    if(time_buf){
+      cout << "***ServerTimeGet: " << time_buf << endl;
+      delete time_buf;
+    }
   }
-
-  char buf[4096];
-  recv(rd->fd, buf, 4096, 0);
-  LOGV("%s\n", buf);
-  delete rd;
+  catch(WebService::Except e){
+    LOGE("request_ServerTimeGet: %s\n", WebService::dump_error(e));
+  }
 }
 */
-

@@ -244,6 +244,21 @@ bool WebService::ServerTimeGet_WebApi::parsing()
 //#define SOAP_2_CODEDATASELECT //not work
 #define SOAP_HEADER_SZ 112 //except ip & length
 
+#define THROW_EXCEPTION(status)   switch(status){                  \
+                                    case RET_CREATE_SOCKET_FAIL:    \
+                                      throw EXCEPTION_CREATE_SOCKET;  \
+                                    case RET_CONNECT_FAIL:          \
+                                      throw EXCEPTION_CONNECT;      \
+                                    case RET_SEND_CMD_FAIL:         \
+                                      throw EXCEPTION_SEND_COMMAND; \
+                                    case RET_POLL_FAIL:             \
+                                      throw EXCEPTION_POLL_FAIL;    \
+                                    case RET_POLL_TIMEOUT:          \
+                                      throw EXCEPTION_POLL_TIMEOUT; \
+                                    case RET_PARSING_FAIL:          \
+                                      throw EXCEPTION_PARSING_FAIL; \
+                                  }
+
 char* WebService::request_CodeDataSelect(const char *sMemcoCd, const char* sSiteCd, const char* sDvLoc, int timelimit, CCBFunc cbfunc, void* client)
 {
   char* ret = NULL;
@@ -295,22 +310,11 @@ char* WebService::request_CodeDataSelect(const char *sMemcoCd, const char* sSite
     wa = new CodeDataSelect_WebApi(this, cmd, cmd_offset, timelimit);
   
     int status = wa->processCmd();
-
-    switch(status){
-      case RET_CREATE_SOCKET_FAIL:
-        throw EXCEPTION_CREATE_SOCKET;
-      case RET_CONNECT_FAIL:
-        throw EXCEPTION_CONNECT;
-      case RET_SEND_CMD_FAIL:
-        throw EXCEPTION_SEND_COMMAND;
-      case RET_POLL_FAIL:
-        throw EXCEPTION_POLL_FAIL;
-      case RET_POLL_TIMEOUT:
-        throw EXCEPTION_POLL_TIMEOUT;
-      case RET_PARSING_FAIL:
-        throw EXCEPTION_PARSING_FAIL;
+    if(status != RET_SUCCESS){
+      delete wa;
+      THROW_EXCEPTION(status);
     }
-    
+
     ret = (char*)wa->m_pRet;
     delete wa;
   }
@@ -335,22 +339,8 @@ bool WebService::request_GetNetInfo(int timelimit, CCBFunc cbfunc, void* client)
   
     int status = wa->processCmd();
     if(status != RET_SUCCESS){
-      printf("delete webapi\n");
       delete wa;
-      switch(status){
-        case RET_CREATE_SOCKET_FAIL:
-          throw EXCEPTION_CREATE_SOCKET;
-        case RET_CONNECT_FAIL:
-          throw EXCEPTION_CONNECT;
-        case RET_SEND_CMD_FAIL:
-          throw EXCEPTION_SEND_COMMAND;
-        case RET_POLL_FAIL:
-          throw EXCEPTION_POLL_FAIL;
-        case RET_POLL_TIMEOUT:
-          throw EXCEPTION_POLL_TIMEOUT;
-        case RET_PARSING_FAIL:
-          throw EXCEPTION_PARSING_FAIL;
-      }
+      THROW_EXCEPTION(status);
     }
     ret = wa->m_ret;
     printf("delete webapi\n");
@@ -378,22 +368,10 @@ void WebService::request_RfidInfoSelectAll(const char *sMemcoCd, const char* sSi
     wa = new RfidInfoSelectAll_WebApi(this, cmd, 0, timelimit, outFilename);
   
     int status = wa->processCmd();
-
-    switch(status){
-      case RET_CREATE_SOCKET_FAIL:
-        throw EXCEPTION_CREATE_SOCKET;
-      case RET_CONNECT_FAIL:
-        throw EXCEPTION_CONNECT;
-      case RET_SEND_CMD_FAIL:
-        throw EXCEPTION_SEND_COMMAND;
-      case RET_POLL_FAIL:
-        throw EXCEPTION_POLL_FAIL;
-      case RET_POLL_TIMEOUT:
-        throw EXCEPTION_POLL_TIMEOUT;
-      case RET_PARSING_FAIL:
-        throw EXCEPTION_PARSING_FAIL;
+    if(status != RET_SUCCESS){
+      delete wa;
+      THROW_EXCEPTION(status);
     }
-    
     delete wa;
   }
   LOGV("request_RfidInfoSelectAll ---\n");
@@ -418,20 +396,9 @@ char* WebService::request_RfidInfoSelect(const char *sMemcoCd, const char* sSite
     wa = new RfidInfoSelect_WebApi(this, cmd, 0, timelimit);
   
     int status = wa->processCmd();
-
-    switch(status){
-      case RET_CREATE_SOCKET_FAIL:
-        throw EXCEPTION_CREATE_SOCKET;
-      case RET_CONNECT_FAIL:
-        throw EXCEPTION_CONNECT;
-      case RET_SEND_CMD_FAIL:
-        throw EXCEPTION_SEND_COMMAND;
-      case RET_POLL_FAIL:
-        throw EXCEPTION_POLL_FAIL;
-      case RET_POLL_TIMEOUT:
-        throw EXCEPTION_POLL_TIMEOUT;
-      case RET_PARSING_FAIL:
-        throw EXCEPTION_PARSING_FAIL;
+    if(status != RET_SUCCESS){
+      delete wa;
+      THROW_EXCEPTION(status);
     }
     
     ret = (char*)wa->m_pRet;
@@ -457,20 +424,9 @@ char* WebService::request_ServerTimeGet(int timelimit, CCBFunc cbfunc, void* cli
     wa = new ServerTimeGet_WebApi(this, cmd, 0, timelimit);
   
     int status = wa->processCmd();
-
-    switch(status){
-      case RET_CREATE_SOCKET_FAIL:
-        throw EXCEPTION_CREATE_SOCKET;
-      case RET_CONNECT_FAIL:
-        throw EXCEPTION_CONNECT;
-      case RET_SEND_CMD_FAIL:
-        throw EXCEPTION_SEND_COMMAND;
-      case RET_POLL_FAIL:
-        throw EXCEPTION_POLL_FAIL;
-      case RET_POLL_TIMEOUT:
-        throw EXCEPTION_POLL_TIMEOUT;
-      case RET_PARSING_FAIL:
-        throw EXCEPTION_PARSING_FAIL;
+    if(status != RET_SUCCESS){
+      delete wa;
+      THROW_EXCEPTION(status);
     }
     
     ret = (char*)wa->m_pRet;
@@ -479,7 +435,7 @@ char* WebService::request_ServerTimeGet(int timelimit, CCBFunc cbfunc, void* cli
   return ret;
 }
 
-bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, const char* sDvLoc, char* sdvNo, char* sIpAddress, char* sMacAddress, int timelimit, CCBFunc cbfunc, void* client)
+bool WebService::request_StatusUpdate(const char *sGateType, const char* sSiteCd, const char* sDvLoc, const char* sdvNo, const char* sIpAddress, const char* sMacAddress, int timelimit, CCBFunc cbfunc, void* client)
 {
   bool ret;
   LOGV("request_StatusUpdate\n");
@@ -497,20 +453,9 @@ bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, cons
     wa = new StatusUpdate_WebApi(this, cmd, 0, timelimit);
   
     int status = wa->processCmd();
-
-    switch(status){
-      case RET_CREATE_SOCKET_FAIL:
-        throw EXCEPTION_CREATE_SOCKET;
-      case RET_CONNECT_FAIL:
-        throw EXCEPTION_CONNECT;
-      case RET_SEND_CMD_FAIL:
-        throw EXCEPTION_SEND_COMMAND;
-      case RET_POLL_FAIL:
-        throw EXCEPTION_POLL_FAIL;
-      case RET_POLL_TIMEOUT:
-        throw EXCEPTION_POLL_TIMEOUT;
-      case RET_PARSING_FAIL:
-        throw EXCEPTION_PARSING_FAIL;
+    if(status != RET_SUCCESS){
+      delete wa;
+      THROW_EXCEPTION(status);
     }
     
     ret = wa->m_ret;
@@ -520,7 +465,7 @@ bool WebService::request_StatusUpdate(char *sGateType, const char* sSiteCd, cons
 }
 
 bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char* sSiteCd, const char* sLabNo, char cInOut, const char* sGateNo, const char* sGateLoc, char cUtype, const char* sInTime, char* imageBuf, int imageSz, int timelimit, CCBFunc cbfunc, void* 
-  client)
+  client, const char* outDirectory)
 {
   bool ret;
   LOGV("request_TimeSheetInsertString\n");
@@ -556,25 +501,59 @@ bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char*
     wa = new TimeSheetInsertString_WebApi(this, cmd, cmd_offset, timelimit);
   
     int status = wa->processCmd();
-
-    switch(status){
-      case RET_CREATE_SOCKET_FAIL:
-        throw EXCEPTION_CREATE_SOCKET;
-      case RET_CONNECT_FAIL:
-        throw EXCEPTION_CONNECT;
-      case RET_SEND_CMD_FAIL:
-        throw EXCEPTION_SEND_COMMAND;
-      case RET_POLL_FAIL:
-        throw EXCEPTION_POLL_FAIL;
-      case RET_POLL_TIMEOUT:
-        throw EXCEPTION_POLL_TIMEOUT;
-      case RET_PARSING_FAIL:
-        throw EXCEPTION_PARSING_FAIL;
+    if(status != RET_SUCCESS){
+      char filename[255];
+      sprintf(filename, "%s/%s", outDirectory, sInTime);
+      LOGV("save file: %s\n", filename);
+      ofstream oRet(filename);
+      oRet << (cmd + cmd_offset);
+      oRet.close();
+      delete wa;
+      THROW_EXCEPTION(status);
     }
     
     ret = wa->m_ret;
     delete wa;
   }
+  return ret;
+}
+
+bool WebService::request_SendFile(const char *filename, int timelimit, CCBFunc cbfunc, void* client)
+{
+  bool ret = false;
+  LOGV("request_SendFile\n");
+
+  ifstream infile (filename);
+  // get size of file
+  infile.seekg (0,infile.end);
+  long size = infile.tellg();
+  infile.seekg (0);
+  // allocate memory for file content
+  cout << "size:" << size << endl;
+  char* cmd = new char[size];
+  // read content of infile
+  infile.read (cmd, size);
+  infile.close();
+
+  WebApi* wa;
+
+  if(cbfunc){
+    wa = new WebApi(this, cmd, 0, cbfunc, client);
+    wa->processCmd();
+  }
+  else{
+    wa = new WebApi(this, cmd, 0, timelimit);
+  
+    int status = wa->processCmd();
+    if(status != RET_SUCCESS){
+      delete wa;
+      THROW_EXCEPTION(status);
+    }
+    ret = wa->m_ret;
+    printf("delete webapi %d\n", ret);
+    delete wa;
+  }
+  
   return ret;
 }
 
@@ -665,6 +644,8 @@ error:
     delete this;
   }
 }
+
+
 
 int WebService::WebApi::processCmd()
 {
