@@ -307,7 +307,6 @@ void MainDelegator::cbTimer(void* arg)
     return;
   }
   switch(count){
-/*    
     case 3:
       md->checkNetwork();
       break;
@@ -342,7 +341,6 @@ void MainDelegator::cbTimer(void* arg)
     case 9:
       count = -1;
       break;
-*/
     default:
       //upload timesheet
       md->m_timeSheetMgr->upload();
@@ -471,8 +469,9 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   m_el->onMessage("GateNo", "No." + m_sDvNo);
 
   media::wavPlay("SoundFiles/start.wav");
-  m_timer = new Timer(60, cbTimer, this, true);
+  m_timer = new Timer(10, cbTimer, this, true);
   m_timer->start();
+  getSeverTime();
 
   LOGV("MainDelegator ---\n");
 }
@@ -492,7 +491,8 @@ void MainDelegator::test_signal_handler(int signo)
 {
   if(signo == SIGUSR1){
     LOGI("signal_handler SIGUSR1\n");
-    my->m_test_serial_number = "253161024009"; //validate
+    //my->m_test_serial_number = "253161024009"; //validate
+    my->m_test_serial_number = "253178087009"; //validate + Photo image
     my->mTimerForTest->start();
   }
   else if(signo == SIGUSR2){
@@ -549,15 +549,29 @@ void MainDelegator::cb_ServerTimeGet(void* arg)
   md->m_eventQ.push(e);
   return;
 }
+*/
 
-void MainDelegator::getSeverTime(void* arg)
+void MainDelegator::getSeverTime()
 {
-  LOGV("_cb_ServerTimeGet\n");
+  LOGV("getSeverTime\n");
   try{
     char* time_buf = m_ws->request_ServerTimeGet(3000);  //blocked I/O
     //time_buf = m_ws->request_ServerTimeGet(cbServerTimeGet, NULL);  //blocked I/O
     if(time_buf){
-      cout << "***ServerTimeGet: " << time_buf << endl;
+      LOGV("getSeverTime %s\n", time_buf);
+      char * tok = strtok(time_buf, "-T:");
+      int t[10];
+      int i = 0;
+      t[i++] = atoi(tok);
+      while((tok = strtok(NULL, "-T:"))){
+        t[i++] = atoi(tok);
+        if(i > 5)
+          break;
+      }
+      if(i == 6){ //ok
+        printf("date %d %d %d %d %d %d\n", t[0], t[1], t[2], t[3], t[4], t[5]);
+      }
+        
       delete time_buf;
     }
   }
@@ -565,4 +579,4 @@ void MainDelegator::getSeverTime(void* arg)
     LOGE("request_ServerTimeGet: %s\n", WebService::dump_error(e));
   }
 }
-*/
+

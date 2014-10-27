@@ -16,6 +16,7 @@ public:
     char* m_photo_img;
     int m_imgSz;
     TimeSheet(std::string lab_no, char utype, char* img, int img_sz);
+    ~TimeSheet();
   };
   TimeSheetMgr(Settings* settings, WebService* ws);
   virtual ~TimeSheetMgr();

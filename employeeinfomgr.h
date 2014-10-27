@@ -24,7 +24,7 @@ public:
     std::string lab_no;
     std::string lab_name;
     std::string pin_no;
-    char* img_buf;
+    unsigned char* img_buf;
     int img_size;
     
     EmployeeInfo(): ent_co_ymd(NULL), rtr_co_ymd(NULL), img_buf(NULL){}

@@ -26,7 +26,7 @@ public:
   public:
     //virtual void onRFSerialNumber(char* serial) = 0;
     virtual void onMessage(std::string tag, std::string data) = 0;
-    virtual void onEmployeeInfo(std::string CoName, std::string Name, std::string PinNo, char* img_buf, int img_sz) = 0;
+    virtual void onEmployeeInfo(std::string CoName, std::string Name, std::string PinNo, const unsigned char* img_buf, int img_sz) = 0;
     virtual void onStatus(std::string status) = 0;
   };
   enum Ret {
@@ -53,6 +53,7 @@ private:
   bool checkZone(string& sAuth);
   bool checkDate(Date* start, Date* end, string& msg);
   void checkNetwork();
+  void getSeverTime();
 #ifdef SIMULATOR  
   static void cbTestTimer(void* arg);
   static void test_signal_handler(int signo);

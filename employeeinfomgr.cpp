@@ -5,6 +5,7 @@
 #include "settings.h"
 #include <fstream>
 #include "tools/utils.h"
+#include "tools/base64.h"
 
 #define LOG_TAG "EmployInfoMgr"
 
@@ -234,6 +235,15 @@ bool EmployeeInfoMgr::fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei)
   try {
     ei->zone_code = p = utils::getElementData(p, "ZONE_CD");
     p += strlen(p) + 1;
+  }
+  catch(int e){}
+  try {
+    printf("img_buf\n"); 
+    p = utils::getElementData(p, "PHOTO_IMAGE");  //base64 encoded
+    ei->img_buf = new unsigned char[strlen(p)];
+    base64::base64d(p, (char*)(ei->img_buf), &ei->img_size);
+    printf("img_buf:%x\n", ei->img_buf); 
+    p += ei->img_size + 1;
   }
   catch(int e){}
   try {

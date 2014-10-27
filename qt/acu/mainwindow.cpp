@@ -46,11 +46,13 @@ MainWindow::MainWindow(QWidget *parent) :
     //QDate* date = new QDate();
     QDateTime curDate = QDateTime::currentDateTime();   // 시스템에서 현재 날짜 가져오기
     QString date_string = curDate.toString("yyyy-MM-dd hh:mm:ss"); // QDate 타입을 QString 타입으로 변환
-    qDebug() << date_string;
+    qDebug() << "current DateTime:" << date_string;
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateTime()));
     timer->start(1000);
+    
+    connect(this, SIGNAL(employeeInfo()), this, SLOT(updateEmployeeInfo()));
     
 
 
@@ -62,12 +64,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onEmployeeInfo(std::string CoName, std::string Name, std::string PinNo, char* img_buf, int img_sz)
+void MainWindow::onEmployeeInfo(std::string CoName, std::string Name, std::string PinNo, const unsigned char* img_buf, int img_sz)
 {
+/*
     QMetaObject::invokeMethod(ui->labelCoName, "setText", Q_ARG(QString, CoName.c_str()));
     QMetaObject::invokeMethod(ui->labelName, "setText", Q_ARG(QString, Name.c_str()));
     QMetaObject::invokeMethod(ui->labelPinNo, "setText", Q_ARG(QString, PinNo.c_str()));
-
+    QPixmap pix;
+    pix.loadFromData(img_buf, img_sz, "JPG");
+    QMetaObject::invokeMethod(ui->labelPhoto, "setPixmap", Q_ARG(QPixmap, pix));
+*/m_CoName = CoName.c_str();
+  m_Name = Name.c_str();
+  m_PinNo = PinNo.c_str();
+  m_img_buf = (unsigned char*)img_buf;
+  m_img_sz = img_sz;
+    
+  emit employeeInfo();
 }
 
 void MainWindow::onMessage(std::string tag, std::string data)
@@ -94,3 +106,15 @@ void MainWindow::updateTime()
     QString date_string = curDate.toString("yyyy-MM-dd hh:mm:ss");
     ui->labelTime->setText(date_string);
 }
+
+void MainWindow::updateEmployeeInfo()
+{
+  ui->labelCoName->setText(m_CoName);
+  ui->labelName->setText(m_Name);
+  //QMetaObject::invokeMethod(ui->labelPinNo, "setText", Q_ARG(QString, PinNo.c_str()));
+  QPixmap pix;
+  qDebug() << m_img_buf;
+  pix.loadFromData(m_img_buf, m_img_sz, "JPG");
+  ui->labelPhoto->setPixmap(pix);
+}
+

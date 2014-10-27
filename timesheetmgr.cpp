@@ -32,7 +32,7 @@ TimeSheetMgr::~TimeSheetMgr()
 }
 
 TimeSheetMgr::TimeSheet::TimeSheet(string lab_no, char utype, char* img, int img_sz)
-  :m_lab_no(lab_no), m_utype(utype), m_photo_img(img), m_imgSz(img_sz)
+  :m_lab_no(lab_no), m_utype(utype), m_imgSz(img_sz)
 {
   struct tm _tm;
   time_t t = time(NULL);
@@ -41,8 +41,15 @@ TimeSheetMgr::TimeSheet::TimeSheet(string lab_no, char utype, char* img, int img
   sprintf(buf, "%d-%02d-%02d %02d:%02d:%02d", _tm.tm_year + 1900, _tm.tm_mon + 1, _tm.tm_mday
     , _tm.tm_hour, _tm.tm_min, _tm.tm_sec);
   m_time = buf;
+  m_photo_img = new char[img_sz];
+  memcpy(m_photo_img, img, img_sz);
 }
 
+TimeSheetMgr::TimeSheet::~TimeSheet()
+{
+  if(m_photo_img)
+    delete m_photo_img;
+}
 
 void TimeSheetMgr::insert(string lab_no, char utype, char* img, int img_sz)
 {
@@ -101,6 +108,7 @@ bool TimeSheetMgr::upload()
 
   mtx.lock();
   for(vector<list<TimeSheet*>::iterator>::size_type i=0; i< vector_erase.size(); i++){
+    delete *vector_erase[i];
     m_listTS.erase(vector_erase[i]);
   }
   mtx.unlock();
