@@ -11,6 +11,7 @@
 #include "tools/utils.h"
 #include "tools/network.h"
 #include "timesheetmgr.h"
+#include <errno.h>
 
 using namespace tools;
 using namespace std;
@@ -568,7 +569,22 @@ void MainDelegator::getSeverTime()
           break;
       }
       if(i == 6){ //ok
-        printf("date %d %d %d %d %d %d\n", t[0], t[1], t[2], t[3], t[4], t[5]);
+        struct tm tm;
+        tm.tm_year = t[0] - 1900;
+        tm.tm_mon = t[1] - 1;
+        tm.tm_mday = t[2];
+        tm.tm_hour = t[3];
+        tm.tm_min = t[4];
+        tm.tm_sec = t[5];
+        time_t tt = mktime(&tm);
+        if (tt < 0){
+          LOGE("mktime error: %d %d %d %d %d %d\n", t[0], t[1], t[2], t[3], t[4], t[5]);
+          delete time_buf;
+          return;
+        }
+        if(stime(&tt) < 0){
+          LOGE("stime error: %s", strerror(errno));
+        }
       }
         
       delete time_buf;
