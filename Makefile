@@ -29,6 +29,16 @@ depend : $(SRCS)
 clean :
 	-rm *.o web/*.o hardware/*.o inih_r29/*.o
 
-
+INSTALL_DIR = /home/pi/acu
+install:
+	cp libfid.so $(INSTALL_DIR)/libs/
+	cp tools/libtool.so $(INSTALL_DIR)/libs/
+	-cp camera/libcamera.so $(INSTALL_DIR)/libs/
+	cp inih_r29/libinih.so $(INSTALL_DIR)/libs/
+	cp qt/acu/acu $(INSTALL_DIR)
+	cp qt/acu/start.sh $(INSTALL_DIR)
+	cp qt/acu/start_sa.sh $(INSTALL_DIR)
+	cp config/FID.ini $(INSTALL_DIR)
+	
 -include depend
 
