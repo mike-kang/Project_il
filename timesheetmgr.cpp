@@ -78,8 +78,15 @@ bool TimeSheetMgr::upload()
       char path[256];
       sprintf(path, "%s/%s", STORE_DIRECTORY, filelist[i]->c_str());
       bool ret = m_ws->request_SendFile(path, 3000);
-      if(ret)
+      //cout << "result:" << ret << endl;
+      if(ret){
+        LOGV("file_delete: %s\n", path);
         filesystem::file_delete(path);
+      }
+      else{
+        LOGE("request_SendFile fail\n");
+      }
+        
     }
     catch(WebService::Except e){
       LOGE("request_SendFile: %s\n", WebService::dump_error(e));

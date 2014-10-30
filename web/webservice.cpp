@@ -97,6 +97,7 @@ bool WebService::WebApi::parsing()
 
   //contents
   char* p;
+  //cout << "parsing:" << startContent << endl;
   p = strstr(startContent, "\n");
   p = strstr(p, "boolean");
   p = strstr(p, ">");
@@ -196,6 +197,7 @@ bool WebService::RfidInfoSelect_WebApi::parsing()
 #ifdef DEBUG
     buf[readByteContent + readlen] = '\0';
     oOut << buf + readByteContent;
+    cout << buf + readByteContent;
 #endif
     nleaved -= readlen;
     readByteContent += readlen;
@@ -381,19 +383,28 @@ void WebService::request_RfidInfoSelectAll(const char *sMemcoCd, const char* sSi
 char* WebService::request_RfidInfoSelect(const char *sMemcoCd, const char* sSiteCd, const char* serialnum, int timelimit, CCBFunc cbfunc, void* client)
 {
   char* ret = NULL;
-  LOGV("request_RfidInfoSelect +++\n");
-  char *cmd = new char[300];
-  sprintf(cmd,"GET /WebService/ItlogService.asmx/RfidInfoSelect?sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=R&sSearchValue=RFID_CAR='%s' HTTP/1.1\r\nHost: %s\r\n\r\n"
-    , sMemcoCd, sSiteCd, serialnum, m_serverIP);
+  LOGV("request_RfidInfoSelect\n");
+  char *cmd = new char[400]; 
+  char* cmd_content = cmd + 200; 
+  sprintf(cmd_content,"sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=R&sSearchValue=RFID_CAR='%s", sMemcoCd, sSiteCd, serialnum);
+  int contentlen = strlen(cmd_content);
 
+  int headerlength = 137 + strlen(m_serverIP) + strlen(utils::itoa(contentlen,10));
+  int cmd_offset = 200 - headerlength;
+  sprintf(cmd + cmd_offset,"POST /WebService/ItlogService.asmx/RfidInfoSelect HTTP/1.1\r\nHost: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n"
+    , m_serverIP, contentlen);
+  //LOGV("cmd_offset:%d, header length:%d\n", cmd_offset, strlen(cmd + cmd_offset));
+  
+  cmd[200] = 's';
+  printf("\ncmd:%s\n\n", cmd + cmd_offset);
   RfidInfoSelect_WebApi* wa;
 
   if(cbfunc){
-    wa = new RfidInfoSelect_WebApi(this, cmd, 0, cbfunc, client);
+    wa = new RfidInfoSelect_WebApi(this, cmd, cmd_offset, cbfunc, client);
     wa->processCmd();
   }
   else{
-    wa = new RfidInfoSelect_WebApi(this, cmd, 0, timelimit);
+    wa = new RfidInfoSelect_WebApi(this, cmd, cmd_offset, timelimit);
   
     int status = wa->processCmd();
     if(status != RET_SUCCESS){

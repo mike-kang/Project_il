@@ -8,7 +8,6 @@
 #include <string>
 #include <signal.h>
 #include "tools/timer.h"
-#include "tools/media.h"
 #include "tools/utils.h"
 #include "tools/network.h"
 #include "timesheetmgr.h"
@@ -156,7 +155,7 @@ void MainDelegator::onData(const char* serialNumber)
   string msg;
   m_bProcessingRfidData = true;
   printf("onData: %s\n", serialNumber);
-  
+  m_wp->stop();
   m_el->onMessage("RfidNo", serialNumber);
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
   bool ret = m_employInfoMrg->getInfo(serialNumber, ei);
@@ -164,20 +163,20 @@ void MainDelegator::onData(const char* serialNumber)
   if(!ret){
     LOGE("get employee info fail!\n");
     m_el->onEmployeeInfo("", "", "", NULL, 0);
-    media::wavPlay("SoundFiles/fail.wav");
+    m_wp->play("SoundFiles/fail.wav");
     m_el->onMessage("Result", "FAIL");
     m_el->onMessage("Msg", "NO DATA");
     goto error;
   }
   m_el->onEmployeeInfo(ei->company_name, ei->lab_name, ei->pin_no, ei->img_buf, ei->img_size);
   if(!checkValidate(ei, msg)){
-    media::wavPlay("SoundFiles/fail.wav");
+    m_wp->play("SoundFiles/fail.wav");
     m_el->onMessage("Result", "FAIL");
     m_el->onMessage("Msg", msg);
     goto error;
   }
 
-  media::wavPlay("SoundFiles/ok.wav");
+  m_wp->play("SoundFiles/ok.wav");
   m_greenLed.on();
   m_el->onMessage("Msg", msg);
   m_el->onMessage("Result", "OK");
@@ -467,12 +466,12 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   string locationName = getLocationName();
   m_el->onMessage("GateLoc", locationName);
   m_el->onMessage("GateNo", "No." + m_sDvNo);
-
-  media::wavPlay("SoundFiles/start.wav");
-  m_timer = new Timer(10, cbTimer, this, true);
+  
+  m_wp = media::WavPlayer::createInstance(); 
+  m_wp->play("SoundFiles/start.wav");
+  m_timer = new Timer(60, cbTimer, this, true);
   m_timer->start();
   getSeverTime();
-
   LOGV("MainDelegator ---\n");
 }
 

@@ -13,10 +13,10 @@
 #include "tools/date.h"
 #include "settings.h"
 #include "tools/timer.h"
+#include "tools/wavplayer.h"
 #include "employeeinfomgr.h"
 
 class TimeSheetMgr;
-
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
   enum Exception {
@@ -78,6 +78,7 @@ private:
   EmployeeInfoMgr* m_employInfoMrg;
   TimeSheetMgr* m_timeSheetMgr;
   tools::Timer* m_timer;  //check network, upload status, download db, upload timesheet
+  tools::media::WavPlayer* m_wp;
   EventListener* m_el;
 
   bool m_bFirstDown;

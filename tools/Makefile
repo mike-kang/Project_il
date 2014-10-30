@@ -1,28 +1,24 @@
 $(warning os: $(shell uname -s))
 $(info current dir is ${CURDIR})
 
-OBJS = filesystem.o log.o logservice.o serial.o timer.o network.o date.o base64.o utils.o
+SRCS = filesystem.cpp log.cpp logservice.cpp serial.cpp timer.cpp network.cpp date.cpp base64.cpp utils.cpp wavplayer.cpp
+OBJS = $(SRCS:.cpp=.o)
+
 LIB = libtool.so
 
-CPPFLAGS =  -fPIC -g
+CPPFLAGS =  -fPIC -g -I.
 
 all : ${LIB} 
 
 ${LIB} : ${OBJS} 
 	g++ -shared -o ${LIB} ${OBJS} 
+
+depend : $(SRCS)
+	g++ -MM $(CPPFLAGS) $^ > $@
 	
-filesystem.o : filesystem.h
-log.o : log.h logservice.h
-logservice.o : logservice.h property.h filesystem.h condition.h queue.h thread.h mutex.h
-date.o : date.h
-timer.o : timer.h condition.h  mutex.h
-network.o : network.h log.h logservice.h
-date.o : date.h
-base64.o : base64.h
-utils.o : utils.h
 
 .PHONY : clean
 clean :
 	-rm *.o ${LIB}
 
-
+-include depend

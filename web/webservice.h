@@ -12,6 +12,8 @@
 #include <string.h>
 #include <fstream>
 
+//#define DEBUG
+
 class WebService {
 public:
   static const int MAX_POLL_TIME = 3000;
