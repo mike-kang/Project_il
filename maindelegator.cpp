@@ -472,7 +472,7 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   strncpy(ip, m_sServerURL.c_str() + 7, 20);
   for(int i=0;i<21;i++){
     if(ip[i] == ':'){
-      ip[i] - '\0';
+      ip[i] = '\0';
       break;
     }
   }
