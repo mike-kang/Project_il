@@ -33,6 +33,7 @@ public:
     RET_SUCCESS,
   };
   virtual void onData(const char* buf);
+  virtual void onSameData();
   static MainDelegator* createInstance(EventListener* el);
   ~MainDelegator(); 
 

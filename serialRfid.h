@@ -10,6 +10,7 @@ public:
   class SerialRfidDataNoti {
   public:
     virtual void onData(const char* buf) = 0;
+    virtual void onSameData() = 0;
   };
 
 
@@ -28,7 +29,7 @@ public:
   virtual void start(int interval, SerialRfidDataNoti* dn);
   virtual void stop();
   
-  virtual bool requestData() = 0;
+  virtual int requestData() = 0; //-1:fail 0:same 1:success
   
   void registerDataNoti(SerialRfidDataNoti* dn);
 

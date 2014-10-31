@@ -18,7 +18,7 @@ public:
   }
 
   virtual bool open();
-  virtual bool requestData();
+  virtual int requestData();
 
 private:
   char* m_serialnumberShadowBuf;

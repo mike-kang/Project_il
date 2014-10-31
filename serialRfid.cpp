@@ -51,17 +51,22 @@ void SerialRfid::run()
 {
   int interval = m_interval * 1000;
   bool bNeedInterval = true;
-  
+  int ret;
   while(m_running){
     if(bNeedInterval) 
       usleep(interval);
-    if(!requestData()){
-      //LOGE("requestData fail\n");
+    ret = requestData();
+    if(ret == -1){  //fail
       bNeedInterval = true;
-      continue;
     }
-    m_dn->onData(m_serialnumberBuf);
-    bNeedInterval = false;
+    else if(!ret){ //same
+      m_dn->onSameData();
+      bNeedInterval = true;
+    }
+    else{
+      m_dn->onData(m_serialnumberBuf);
+      bNeedInterval = false;
+    }
   }
 
 }

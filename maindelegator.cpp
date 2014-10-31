@@ -214,6 +214,11 @@ error:
   LOGI("onData ---\n");
   m_bProcessingRfidData = false;
 }
+void MainDelegator::onSameData()
+{
+  LOGI("onSameData\n");
+  m_el->onMessage("Msg", "Same Card");
+}
 
 void MainDelegator::run()
 {
