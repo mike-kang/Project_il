@@ -656,7 +656,8 @@ void MainDelegator::setRebootTimer(const char* time_buf)
   int diff = (hour - now.tm_hour)*60*60 + (min - now.tm_min)*60 - now.tm_sec;
   if(diff <= 0)
     diff += (24*60*60);
-
+  LOGV("Reboot after:%d sec\n", diff);
   m_RebootTimer = new Timer(diff, cbRebootTimer, this);
+  m_RebootTimer->start();
 
 }
