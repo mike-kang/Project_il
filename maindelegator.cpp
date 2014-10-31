@@ -385,7 +385,7 @@ bool MainDelegator::checkNetwork()
 
 bool MainDelegator::SettingInit()
 {
-  m_settings = new Settings("FID.ini");
+  m_settings = new Settings("/etc/acu/FID.ini");
 
 #ifdef CAMERA  
   m_cameraDelayOffTime = m_settings->getInt("Camera::DELAY_OFF_TIME"); //600 sec
