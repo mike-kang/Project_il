@@ -112,9 +112,11 @@ void MainWindow::updateEmployeeInfo()
   ui->labelCoName->setText(m_CoName);
   ui->labelName->setText(m_Name);
   //QMetaObject::invokeMethod(ui->labelPinNo, "setText", Q_ARG(QString, PinNo.c_str()));
-  QPixmap pix;
   qDebug() << m_img_buf;
-  pix.loadFromData(m_img_buf, m_img_sz, "JPG");
-  ui->labelPhoto->setPixmap(pix);
+  if(m_img_buf){
+    QPixmap pix;
+    pix.loadFromData(m_img_buf, m_img_sz, "JPG");
+    ui->labelPhoto->setPixmap(pix);
+  }
 }
 

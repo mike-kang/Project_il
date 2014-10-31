@@ -153,7 +153,7 @@ void MainDelegator::onData(const char* serialNumber)
 {
   LOGI("onData %s +++\n", serialNumber);
   char* imgBuf = NULL;;
-  int imgLength;
+  int imgLength = 0;
   string msg;
   m_bProcessingRfidData = true;
   printf("onData: %s\n", serialNumber);
@@ -165,39 +165,46 @@ void MainDelegator::onData(const char* serialNumber)
   if(!ret){
     LOGE("get employee info fail!\n");
     m_el->onEmployeeInfo("", "", "", NULL, 0);
-    m_wp->play("SoundFiles/fail.wav");
+    if(m_bSound)
+      m_wp->play("SoundFiles/fail.wav");
     m_el->onMessage("Result", "FAIL");
     m_el->onMessage("Msg", "NO DATA");
     goto error;
   }
   m_el->onEmployeeInfo(ei->company_name, ei->lab_name, ei->pin_no, ei->img_buf, ei->img_size);
   if(!checkValidate(ei, msg)){
-    m_wp->play("SoundFiles/fail.wav");
+    if(m_bSound)
+      m_wp->play("SoundFiles/fail.wav");
     m_el->onMessage("Result", "FAIL");
     m_el->onMessage("Msg", msg);
     goto error;
   }
 
-  m_wp->play("SoundFiles/ok.wav");
+  if(m_bSound)
+    m_wp->play("SoundFiles/ok.wav");
   m_greenLed.on();
   m_el->onMessage("Msg", msg);
   m_el->onMessage("Result", "OK");
 
 #ifdef CAMERA
-  if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
-  {
-    //for test
-    if(imgLength < 0)
-      fprintf(stderr, "takePicture error!\n");
-    else{
-      //LOGV("takePicture %x %d\n", imgBuf, imgLength);
-      FILE* fp = fopen("test.jpeg", "wb");
-      fwrite(imgBuf, 1, imgLength, fp);
-      fclose(fp);
+  if(m_bCapture){
+    if(m_cameraStill->takePicture(&imgBuf, &imgLength, m_takePictureMaxWaitTime))
+    {
+      //for debuf
+      if(m_bSavePictureFile){
+        if(imgLength < 0)
+          fprintf(stderr, "takePicture error!\n");
+        else{
+          //LOGV("takePicture %x %d\n", imgBuf, imgLength);
+          FILE* fp = fopen("test.jpeg", "wb");
+          fwrite(imgBuf, 1, imgLength, fp);
+          fclose(fp);
+        }
+      }
     }
-  }
-  else{
-    LOGE("take Picture fail!!!\n");
+    else{
+      LOGE("take Picture fail!!!\n");
+    }
   }
 #endif
   m_timeSheetMgr->insert(ei->lab_no,ei->utype, imgBuf ,imgLength);
@@ -383,6 +390,7 @@ bool MainDelegator::SettingInit()
 #ifdef CAMERA  
   m_cameraDelayOffTime = m_settings->getInt("Camera::DELAY_OFF_TIME"); //600 sec
   m_takePictureMaxWaitTime = m_settings->getInt("Camera::TAKEPICTURE_MAX_WAIT_TIME"); // 2 sec
+  m_bSavePictureFile = m_settings->getBool("Camera::SAVE_PICTURE_FILE");
 #endif
   //App
   m_sAuthCd = m_settings->get("App::AUTH_CD");
@@ -395,7 +403,7 @@ bool MainDelegator::SettingInit()
 
   //Action
   m_bCapture = m_settings->getBool("Action::CAPTURE");
-  m_bRelay = m_settings->getBool("Action::RELAY");
+  //m_bRelay = m_settings->getBool("Action::RELAY");
   m_bSound = m_settings->getBool("Action::SOUND");
 
   //Rfid
@@ -458,7 +466,18 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
 
   m_el->onStatus("WebService Url:" + m_sUrl);
   //m_ws = new WebService("192.168.0.7", 8080);
-  m_ws = new WebService("112.216.243.146", 8080);
+  m_sServerURL = m_settings->get("Server::URL");
+  LOGV("m_sServerURL= %s\n", m_sServerURL.c_str()); 
+  char ip[21];
+  strncpy(ip, m_sServerURL.c_str() + 7, 20);
+  for(int i=0;i<21;i++){
+    if(ip[i] == ':'){
+      ip[i] - '\0';
+      break;
+    }
+  }
+  LOGV("Server IP: %s\n", ip);
+  m_ws = new WebService(ip, 8080);
   checkNetwork();
   m_employInfoMrg = new EmployeeInfoMgr(m_settings, m_ws);
   m_timeSheetMgr = new TimeSheetMgr(m_settings, m_ws);
@@ -482,6 +501,7 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   m_timer->start();
   m_bTimeAvailable = getSeverTime();
   string reboot_time = m_settings->get("App::REBOOT_TIME");
+  LOGV("reboot time= %s\n", reboot_time.c_str()); 
   if(reboot_time != "")
     setRebootTimer(reboot_time.c_str());
   LOGV("MainDelegator ---\n");
@@ -564,7 +584,7 @@ void MainDelegator::cb_ServerTimeGet(void* arg)
 
 bool MainDelegator::getSeverTime()
 {
-  LOGV("getSeverTime\n");
+  LOGV("getServerTime\n");
   try{
     char* time_buf = m_ws->request_ServerTimeGet(3000);  //blocked I/O
     //time_buf = m_ws->request_ServerTimeGet(cbServerTimeGet, NULL);  //blocked I/O

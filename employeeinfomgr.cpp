@@ -20,6 +20,7 @@ EmployeeInfoMgr::EmployeeInfoMgr(Settings* settings, WebService* ws): m_settings
     m_bUseLocalDB = settings->getBool("App::LOCAL_DATABASE");
     m_sMemcoCd = m_settings->get("App::MEMCO_CD");
     m_sSiteCd = m_settings->get("App::SITE_CD");
+    m_bDisplayPhoto = settings->getBool("App::DISPLAY_PHOTO");
   }
   catch(int e)
   {
@@ -237,15 +238,17 @@ bool EmployeeInfoMgr::fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei)
     p += strlen(p) + 1;
   }
   catch(int e){}
-  try {
-    printf("img_buf\n"); 
-    p = utils::getElementData(p, "PHOTO_IMAGE");  //base64 encoded
-    ei->img_buf = new unsigned char[strlen(p)];
-    base64::base64d(p, (char*)(ei->img_buf), &ei->img_size);
-    printf("img_buf:%x\n", ei->img_buf); 
-    p += ei->img_size + 1;
+  if(m_bDisplayPhoto){
+    try {
+      printf("img_buf\n"); 
+      p = utils::getElementData(p, "PHOTO_IMAGE");  //base64 encoded
+      ei->img_buf = new unsigned char[strlen(p)];
+      base64::base64d(p, (char*)(ei->img_buf), &ei->img_size);
+      printf("img_buf:%x\n", ei->img_buf); 
+      p += ei->img_size + 1;
+    }
+    catch(int e){}
   }
-  catch(int e){}
   try {
     ei->ent_co_ymd = new Date(p = utils::getElementData(p, "ENT_CO_YMD"));
     p += strlen(p) + 1;

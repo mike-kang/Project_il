@@ -48,6 +48,7 @@ private:
   bool m_bUseLocalDB;
   string m_sMemcoCd; // = "MC00000003";
   string m_sSiteCd; //"ST00000005";
+  bool m_bDisplayPhoto;
   WebService* m_ws;
   Settings* m_settings;
   std::vector<EmployeeInfo*> m_vectorEmployeeInfo;

@@ -36,10 +36,11 @@ Settings::Settings(const char* filename)
      mapStrInsert(App, IN_OUT, I);
      mapStrInsert(App, REBOOT_TIME, );
      mapStrInsert(App, WORKING_DIRECTORY, /home/pi/acu);
+     mapBoolInsert(App, DISPLAY_PHOTO, true);
      
      //Action
      mapBoolInsert(Action, CAPTURE, true);
-     mapBoolInsert(Action, RELAY, true);
+     //mapBoolInsert(Action, RELAY, true);
      mapBoolInsert(Action, SOUND, true);
      
      //Rfid
@@ -50,7 +51,9 @@ Settings::Settings(const char* filename)
      
      //Camera
      mapIntInsert(Camera, DELAY_OFF_TIME, 600);  //600 sec
+     mapBoolInsert(Camera, SAVE_PICTURE_FILE, false);
      mapIntInsert(Camera, TAKEPICTURE_MAX_WAIT_TIME, 2);  // 2 sec
+     
      
      //Log
      mapStrInsert(Log, CONSOLE_PATH, /dev/pts/3);
@@ -72,10 +75,11 @@ Settings::Settings(const char* filename)
   mapStrInsertFromReader(App, IN_OUT, I);
   mapStrInsertFromReader(App, REBOOT_TIME, );
   mapStrInsertFromReader(App, WORKING_DIRECTORY, /home/pi/acu);
+  mapBoolInsertFromReader(App, DISPLAY_PHOTO, true);
   
   //Action
   mapBoolInsertFromReader(Action, CAPTURE, true);
-  mapBoolInsertFromReader(Action, RELAY, true);
+  //mapBoolInsertFromReader(Action, RELAY, true);
   mapBoolInsertFromReader(Action, SOUND, true);
 
   //Rfid
@@ -86,6 +90,7 @@ Settings::Settings(const char* filename)
 
   //Camera
   mapIntInsertFromReader(Camera, DELAY_OFF_TIME, 600);  //600 sec
+  mapBoolInsertFromReader(Camera, SAVE_PICTURE_FILE, false);
   mapIntInsertFromReader(Camera, TAKEPICTURE_MAX_WAIT_TIME, 2);  // 2 sec
 
   //Log

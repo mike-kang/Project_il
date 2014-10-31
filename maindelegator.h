@@ -110,9 +110,12 @@ private:
   CameraStill* m_cameraStill;
   int m_takePictureMaxWaitTime; //sec
   int m_cameraDelayOffTime; //sec
+  bool m_bSavePictureFile;
 #endif
   string m_sLocalIP;
   string m_sLocalMacAddr;
+  string m_sServerURL;
+
   bool m_bProcessingRfidData;
   bool m_bTimeAvailable;
   
