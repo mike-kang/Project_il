@@ -52,22 +52,30 @@ public:
     TYPE_NULL,
     TYPE_FILE,
     TYPE_CONSOLE,
+    TYPE_FILE_CONSOLE,
     TYPE_DEBUGCONSOLE
   };
-  static LogService* init(log_t type, const char* path);
+  //static LogService* init(log_t type, const char* path);
+  static LogService* init(bool bconsole, int console_level, const char* console_path, bool bfile, int file_level, const char* file_dirctory);
   static LogService* getService();
   static void setEnable(bool enable);
   void sendMessage(int prio, const char *tag, const char *msg);
   ~LogService();
 
 private:
-  LogService(){};
+  LogService();
   
   void run();
   static LogService *m_instance;
   static bool m_enabled;
   Thread<LogService> *m_thread;
   tools::Queue<Entry> m_EntryQ;
+  bool m_bConsole;
+  bool m_bFile;
+  int m_consoleLevel;
+  int m_fileLevel;
+  char m_consolePath[100];
+  char m_fileDirectory[100];
 };
 
 

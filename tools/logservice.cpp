@@ -73,18 +73,18 @@ writeFunc writefunc[4] = {
   , debugoutWrite
 };
 
-LogService* LogService::init(LogService::log_t type, const char* path)
+LogService* LogService::init(bool bconsole, int console_level, const char* console_path, bool bfile, int file_level, const char* file_dirctory)
 {
-  if(type == TYPE_NULL)
+  if(!bconsole && !bfile)
     return NULL;
 
   if(m_instance)
     return m_instance;
   
-  m_instance = new LogService;
+  m_instance = new LogService(bconsole, console_level, console_path, bfile, file_level, file_dirctory);
   m_instance->m_thread = new Thread<LogService>(&LogService::run, m_instance);
 
-  log_type = type;
+  //log_type = type;
 #ifdef _WIN32
   if(log_type == 0){ //file
     filesystem::dir_create("log");
@@ -105,15 +105,21 @@ LogService* LogService::init(LogService::log_t type, const char* path)
     hOut = GetStdHandle(STD_OUTPUT_HANDLE);
   }
 #else
-  if(log_type == TYPE_CONSOLE){ //console
-      consoleOfstream.open(path);
-      fileOfstream.open("log.txt");
-  }
 
 #endif
   return m_instance;
 }
 
+LogService::LogService(bool bconsole, int console_level, const char* console_path, bool bfile, int file_level, const char* file_dirctory)
+  :m_bConsole(bconsole), m_bFile(bfile), m_consoleLevel(console_level), m_fileLevel(file_level)
+{
+  if(m_bConsole)
+    consoleOfstream.open(path);
+  if(m_bFile)
+    filesystem::dir_create(file_dirctory);
+  
+    fileOfstream.open("log.txt");
+}
 
 LogService::~LogService()
 {

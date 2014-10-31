@@ -42,7 +42,9 @@ enum {
   TYPE_DEBUGCONSOLE
 };
 
-void log_init(int type, const char* path);
+//void log_init(int type, const char* path);
+void log_init(bool bconsole, int console_level, const char* console_path, bool bfile, int file_level, const char* 
+file_dirctory);
 
 
 #define printLog(prio, tag, ...) \
