@@ -31,7 +31,7 @@ public:
     ~EmployeeInfo(){
       if(ent_co_ymd) delete ent_co_ymd;
       if(rtr_co_ymd) delete rtr_co_ymd;
-      if(img_buf) delete img_buf;
+      //if(img_buf) delete img_buf;
     }
   };
   EmployeeInfoMgr(Settings* settings, WebService* ws);

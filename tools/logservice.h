@@ -63,7 +63,7 @@ public:
   ~LogService();
 
 private:
-  LogService();
+  LogService(bool bconsole, int console_level, const char* console_path, bool bfile, int file_level, const char* file_dirctory);
   
   void run();
   static LogService *m_instance;

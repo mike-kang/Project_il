@@ -386,7 +386,7 @@ char* WebService::request_RfidInfoSelect(const char *sMemcoCd, const char* sSite
   LOGV("request_RfidInfoSelect\n");
   char *cmd = new char[400]; 
   char* cmd_content = cmd + 200; 
-  sprintf(cmd_content,"sMemcoCd=%s&sSiteCd=%s&sUtype=&sMode=R&sSearchValue=RFID_CAR='%s", sMemcoCd, sSiteCd, serialnum);
+  sprintf(cmd_content,"sMemcoCd=%s&sSiteCd=%s&sUtype=R&sMode=&sSearchValue=RFID_CAR='%s", sMemcoCd, sSiteCd, serialnum);
   int contentlen = strlen(cmd_content);
 
   int headerlength = 137 + strlen(m_serverIP) + strlen(utils::itoa(contentlen,10));
@@ -396,7 +396,7 @@ char* WebService::request_RfidInfoSelect(const char *sMemcoCd, const char* sSite
   //LOGV("cmd_offset:%d, header length:%d\n", cmd_offset, strlen(cmd + cmd_offset));
   
   cmd[200] = 's';
-  printf("\ncmd:%s\n\n", cmd + cmd_offset);
+  //printf("\ncmd:%s\n\n", cmd + cmd_offset);
   RfidInfoSelect_WebApi* wa;
 
   if(cbfunc){

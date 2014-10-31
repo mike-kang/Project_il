@@ -426,6 +426,10 @@ bool MainDelegator::SettingInit()
   }
 
   m_sLocalMacAddr = network::GetMacAddress("eth0");
+
+  //Log
+  //m_consolePath = m_settings->get("Log::CONSOLE_PATH");
+  
   return true;
 }
 
@@ -440,8 +444,8 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   cout << "chdir:" << curdir.c_str() << endl;
   
   string console_log_path = m_settings->get("Log::CONSOLE_PATH");
-  log_init(TYPE_CONSOLE, console_log_path.c_str());
-
+  //log_init(TYPE_CONSOLE, console_log_path.c_str());
+  log_init(true, 3, console_log_path.c_str(), true, 3, "Log");
 
   //m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
   //LOGV("MainDelegator tid=%lu\n", m_thread->getId());

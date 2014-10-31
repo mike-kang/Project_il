@@ -114,11 +114,12 @@ LogService::LogService(bool bconsole, int console_level, const char* console_pat
   :m_bConsole(bconsole), m_bFile(bfile), m_consoleLevel(console_level), m_fileLevel(file_level)
 {
   if(m_bConsole)
-    consoleOfstream.open(path);
+    consoleOfstream.open(console_path);
   if(m_bFile)
     filesystem::dir_create(file_dirctory);
   
     fileOfstream.open("log.txt");
+    log_type = TYPE_CONSOLE;
 }
 
 LogService::~LogService()

@@ -4,6 +4,9 @@
 #include <QDebug>
 #include <QTimer>
 #include <QDateTime>
+#include <fstream>
+#include <QImage>
+#include <QPixmap>
 
 #define insertTable(tag)  labelTable.insert(pair<std::string, QLabel*>(#tag, ui->label##tag)) 
 
@@ -39,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     insertTable(RfidNo);
     insertTable(Result);
     insertTable(Msg);
-
+    m_img_buf = NULL;
     MainDelegator* md = MainDelegator::createInstance(this);
     //md->setEventListener(this);
 
@@ -73,7 +76,10 @@ void MainWindow::onEmployeeInfo(std::string CoName, std::string Name, std::strin
     QPixmap pix;
     pix.loadFromData(img_buf, img_sz, "JPG");
     QMetaObject::invokeMethod(ui->labelPhoto, "setPixmap", Q_ARG(QPixmap, pix));
-*/m_CoName = CoName.c_str();
+*/
+  if(m_img_buf)
+    delete m_img_buf;
+  m_CoName = CoName.c_str();
   m_Name = Name.c_str();
   m_PinNo = PinNo.c_str();
   m_img_buf = (unsigned char*)img_buf;
@@ -109,14 +115,26 @@ void MainWindow::updateTime()
 
 void MainWindow::updateEmployeeInfo()
 {
+  static QPixmap* pix = NULL;
   ui->labelCoName->setText(m_CoName);
   ui->labelName->setText(m_Name);
   //QMetaObject::invokeMethod(ui->labelPinNo, "setText", Q_ARG(QString, PinNo.c_str()));
   qDebug() << m_img_buf;
+  //ofstream oOut2("aaa.jpg", ofstream::binary);
+  //oOut2.write((const char*)m_img_buf, m_img_sz);
+  //oOut2.close();
   if(m_img_buf){
-    QPixmap pix;
-    pix.loadFromData(m_img_buf, m_img_sz, "JPG");
-    ui->labelPhoto->setPixmap(pix);
+    if(pix) delete pix;
+    pix = new QPixmap;
+    
+    bool ret = pix->loadFromData(m_img_buf, m_img_sz, "JPG");
+    qDebug() << ret;
+    if(ret){
+      ui->labelPhoto->setPixmap(*pix);
+      ui->labelPhoto->show();
+      return;
+    }
   }
+  ui->labelPhoto->clear();
 }
 
