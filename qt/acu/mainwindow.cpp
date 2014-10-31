@@ -31,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->labelCoName->setText("");
     ui->labelName->setText("");
     ui->labelPinNo->setText("");
-
+    ui->labelPhoto->setText("");
+    
     insertTable(GateLoc);
     insertTable(GateNo);
     insertTable(Server);
