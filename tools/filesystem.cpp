@@ -113,6 +113,13 @@ bool file_delete(const char* path)
     return false;
   return true;
 }
+
+bool dir_chdir(const char* path)
+{
+  if(chdir(path) < 0)
+    return false;
+  return true;
+}
 #endif
 }
 }

@@ -11,6 +11,7 @@ int file_size(const char*);
 bool file_delete(const char* path);
 void dir_create(const char*);
 char* dir_current();
+bool dir_chdir(const char* path);
 
 enum Exception {
   EXCEPTION_NO_DIRECTORY,

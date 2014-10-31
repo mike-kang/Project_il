@@ -34,7 +34,7 @@ Settings::Settings(const char* filename)
      mapStrInsert(App, DV_NO, 6);
      mapBoolInsert(App, LOCAL_DATABASE, false);
      mapStrInsert(App, IN_OUT, I);
-     mapStrInsert(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
+     mapStrInsert(App, WORKING_DIRECTORY, /home/pi/acu);
      
      //Action
      mapBoolInsert(Action, CAPTURE, true);
@@ -54,6 +54,9 @@ Settings::Settings(const char* filename)
      //Log
      mapStrInsert(Log, CONSOLE_PATH, /dev/pts/3);
 
+     //Server
+     mapStrInsert(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
+
      dump();
      return;
   }
@@ -66,6 +69,7 @@ Settings::Settings(const char* filename)
   mapStrInsertFormReader(App, DV_NO, 6);
   mapBoolInsertFormReader(App, LOCAL_DATABASE, false);
   mapStrInsertFormReader(App, IN_OUT, I);
+  mapStrInsertFormReader(App, WORKING_DIRECTORY, /home/pi/acu);
   
   //Action
   mapBoolInsertFormReader(Action, CAPTURE, true);

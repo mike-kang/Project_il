@@ -10,6 +10,7 @@
 #include "tools/timer.h"
 #include "tools/utils.h"
 #include "tools/network.h"
+#include "tools/filesystem.h"
 #include "timesheetmgr.h"
 #include <errno.h>
 
@@ -422,6 +423,8 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   cout << "start" << endl;
   el->onStatus("System Start");
   SettingInit();
+  string curdir = m_settings->get("App::WORKING_DIRECTORY");
+  filesystem::dir_chdir(curdir.c_str());
 
   string console_log_path = m_settings->get("Log::CONSOLE_PATH");
   log_init(TYPE_CONSOLE, console_log_path.c_str());
@@ -578,7 +581,7 @@ void MainDelegator::getSeverTime()
         tm.tm_sec = t[5];
         time_t tt = mktime(&tm);
         if (tt < 0){
-          LOGE("mktime error: %d %d %d %d %d %d\n", t[0], t[1], t[2], t[3], t[4], t[5]);
+          LOGE("mktime error: %d-%d-%dT%d:%d:%d\n", t[0], t[1], t[2], t[3], t[4], t[5]);
           delete time_buf;
           return;
         }
