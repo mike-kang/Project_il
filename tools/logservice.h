@@ -76,6 +76,7 @@ private:
   int m_fileLevel;
   char m_consolePath[100];
   char m_fileDirectory[100];
+  log_t m_log_type;
 };
 
 

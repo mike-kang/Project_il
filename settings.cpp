@@ -56,7 +56,12 @@ Settings::Settings(const char* filename)
      
      
      //Log
+     mapBoolInsert(Log, CONSOLE, false);
+     mapIntInsert(Log, CONSOLE_LEVEL, 1);  // 1(VERBOSE), 2(DEBUF), 3(INFO), 4(WARN), 5(ERROR), 6(FATAL)
      mapStrInsert(Log, CONSOLE_PATH, /dev/pts/3);
+     mapBoolInsert(Log, FILE, true);
+     mapIntInsert(Log, FILE_LEVEL, 3);  // 1(VERBOSE), 2(DEBUF), 3(INFO), 4(WARN), 5(ERROR), 6(FATAL)
+     mapStrInsert(Log, FILE_DIRECTORY, Log);
 
      //Server
      mapStrInsert(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
@@ -94,7 +99,12 @@ Settings::Settings(const char* filename)
   mapIntInsertFromReader(Camera, TAKEPICTURE_MAX_WAIT_TIME, 2);  // 2 sec
 
   //Log
+  mapBoolInsertFromReader(Log, CONSOLE, false);
+  mapIntInsertFromReader(Log, CONSOLE_LEVEL, 1);  // 1(VERBOSE), 2(DEBUF), 3(INFO), 4(WARN), 5(ERROR), 6(FATAL)
   mapStrInsertFromReader(Log, CONSOLE_PATH, /dev/pts/3);
+  mapBoolInsertFromReader(Log, FILE, true);
+  mapIntInsertFromReader(Log, FILE_LEVEL, 3);  // 1(VERBOSE), 2(DEBUF), 3(INFO), 4(WARN), 5(ERROR), 6(FATAL)
+  mapStrInsertFromReader(Log, FILE_DIRECTORY, Log);
 
   //Server
   mapStrInsertFromReader(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);

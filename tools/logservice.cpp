@@ -8,7 +8,7 @@
 #include "windows.h"
 #include <share.h>
 #else
-//#include <time.h>
+#include <time.h>
 #include <sys/time.h>
 #endif
 
@@ -26,7 +26,7 @@ using namespace tools;
 
 LogService *LogService::m_instance = NULL;
 //static bool log_enable = false;
-static LogService::log_t log_type = LogService::TYPE_NULL; //0: file 1:console 2:debugout(windows only)  3: null
+static LogService::log_t log_type = LogService::TYPE_NULL; //0:null 1: file 2:console 3:file+console 4:debugout(windows only)
 static bool log_file_type_flush_per_line = false; //FILE_TYPE_FLUSH_PER_LINE
 #ifdef _WIN32
 static HANDLE hOut = INVALID_HANDLE_VALUE;  //console handle
@@ -38,6 +38,12 @@ FILE* fp;
 
 typedef void (*writeFunc)(const char*);
 
+void fileWrite(const char *buf)
+{
+  fileOfstream << buf;
+  fileOfstream.flush();
+}
+
 void consoleWrite(const char *buf)
 {
 #ifdef _WIN32
@@ -46,16 +52,15 @@ void consoleWrite(const char *buf)
 #else  
   consoleOfstream << buf;
   consoleOfstream.flush();
-  fileOfstream << buf;
-  fileOfstream.flush();
 #endif
 }
 
-void fileWrite(const char *buf)
+void fileConsoleWrite(const char *buf)
 {
-  fputs(buf, fp);
-  if(log_file_type_flush_per_line)
-    fflush(fp);
+  consoleOfstream << buf;
+  consoleOfstream.flush();
+  fileOfstream << buf;
+  fileOfstream.flush();
 }
 
 void debugoutWrite(const char *buf)
@@ -66,10 +71,11 @@ void debugoutWrite(const char *buf)
 #endif
 }
 
-writeFunc writefunc[4] = {
+writeFunc writefunc[5] = {
   NULL
   , fileWrite
   , consoleWrite
+  , fileConsoleWrite
   , debugoutWrite
 };
 
@@ -113,13 +119,22 @@ LogService* LogService::init(bool bconsole, int console_level, const char* conso
 LogService::LogService(bool bconsole, int console_level, const char* console_path, bool bfile, int file_level, const char* file_dirctory)
   :m_bConsole(bconsole), m_bFile(bfile), m_consoleLevel(console_level), m_fileLevel(file_level)
 {
-  if(m_bConsole)
-    consoleOfstream.open(console_path);
-  if(m_bFile)
+  m_log_type = TYPE_NULL;
+  if(m_bFile){
+    m_log_type = TYPE_FILE;
     filesystem::dir_create(file_dirctory);
+    struct tm now;
+    time_t t = time(NULL);
+    localtime_r(&t, &now);
+    char filename[255];
+    sprintf(filename, "%s/%4d-%02d-%02dT%02d-%02d.log", file_dirctory, now.tm_year+1900, now.tm_mon+1, now.tm_mday, now.tm_hour, now.tm_min);
+    fileOfstream.open(filename);
+  }
+  if(m_bConsole){
+    (m_log_type == TYPE_FILE)? m_log_type = TYPE_FILE_CONSOLE : m_log_type = TYPE_CONSOLE;
+    consoleOfstream.open(console_path);
+  }
   
-    fileOfstream.open("log.txt");
-    log_type = TYPE_CONSOLE;
 }
 
 LogService::~LogService()
@@ -136,9 +151,11 @@ LogService::~LogService()
 //    FreeConsole();
   }
 #else
-  if(log_type == TYPE_CONSOLE){ //console
-      consoleOfstream.close();
+  if(m_bFile){
       fileOfstream.close();
+  }
+  if(m_bConsole){
+    consoleOfstream.close();
   }
 #endif
 }
@@ -152,8 +169,8 @@ void LogService::setEnable(bool enable)
 
 LogService* LogService::getService()
 {
-  if(log_type == TYPE_NULL)
-    return NULL;
+  //if(m_log_type == TYPE_NULL)
+  //  return NULL;
   return m_instance;
 }
 
@@ -166,12 +183,14 @@ void LogService::run()
     Entry *e = m_EntryQ.pop();
     if(e){
       sprintf(buf, "[%s][%lu][%s] %s", e->m_tag, e->m_threadID, e->m_t->toString(), e->m_msg);
-      writefunc[log_type](buf);
-      
+      if(m_bFile && e->m_pri >= m_fileLevel)
+        fileWrite(buf);
+      if(m_bConsole && e->m_pri >= m_consoleLevel)
+        consoleWrite(buf);
       delete e;
     }
     else{
-      writefunc[log_type]("logService Exit\n");
+      writefunc[m_log_type]("logService Exit\n");
       break;
     }
   };

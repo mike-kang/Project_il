@@ -116,7 +116,7 @@ private:
   string m_sLocalIP;
   string m_sLocalMacAddr;
   string m_sServerURL;
-  string m_consolePath;
+  //string m_consolePath;
   
   bool m_bProcessingRfidData;
   bool m_bTimeAvailable;

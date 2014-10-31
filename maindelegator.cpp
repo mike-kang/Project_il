@@ -313,7 +313,16 @@ void MainDelegator::cbTimer(void* arg)
 
   static int count = 0;
   bool ret = false;
-  
+
+  struct tm now;
+  time_t t = time(NULL);
+  localtime_r(&t, &now);
+  if(now.tm_hour == 0 && now.tm_min == 0){
+    LOGE("**********************************************************\n");
+    LOGE("*****%4d-%02d-%02dT%02d-%02d***\n", now.tm_year+1900, now.tm_mon+1, now.tm_mday, now.tm_hour, now.tm_min);
+    LOGE("**********************************************************\n");
+  }
+
   LOGV("cbTimer count=%d\n", count);
   if(md->m_bProcessingRfidData){
     LOGV("cbTimer returned by processing card\n");
@@ -448,9 +457,14 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   filesystem::dir_chdir(curdir.c_str());
   cout << "chdir:" << curdir.c_str() << endl;
   
-  string console_log_path = m_settings->get("Log::CONSOLE_PATH");
-  //log_init(TYPE_CONSOLE, console_log_path.c_str());
-  log_init(true, 3, console_log_path.c_str(), true, 3, "Log");
+  bool log_console = m_settings->getBool("Log::CONSOLE");
+  int log_console_level = m_settings->getInt("Log::CONSOLE_LEVEL");;
+  string log_console_path = m_settings->get("Log::CONSOLE_PATH");
+  bool file_log = m_settings->getBool("Log::FILE");
+  int log_file_level = m_settings->getInt("Log::FILE_LEVEL");;
+  string log_file_directory = m_settings->get("Log::FILE_DIRECTORY");
+  
+  log_init(log_console, log_console_level, log_console_path.c_str(), file_log, log_file_level, log_file_directory.c_str());
 
   //m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
   //LOGV("MainDelegator tid=%lu\n", m_thread->getId());
