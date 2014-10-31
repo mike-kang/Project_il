@@ -13,11 +13,11 @@ using namespace std;
 #define mapIntInsert(category, key, value) \
       m_mapInt.insert(pair<string, int>(#category"::"#key, value))
 
-#define mapStrInsertFormReader(category, key, value) \
+#define mapStrInsertFromReader(category, key, value) \
   m_mapStr.insert(pair<string, string>(#category"::"#key, reader.Get(#category, #key, #value)))
-#define mapBoolInsertFormReader(category, key, value) \
+#define mapBoolInsertFromReader(category, key, value) \
     m_mapBool.insert(pair<string, bool>(#category"::"#key, reader.GetBoolean(#category, #key, value)))
-#define mapIntInsertFormReader(category, key, value) \
+#define mapIntInsertFromReader(category, key, value) \
       m_mapInt.insert(pair<string, int>(#category"::"#key, reader.GetInteger(#category, #key, value)))
 
 Settings::Settings(const char* filename)
@@ -34,6 +34,7 @@ Settings::Settings(const char* filename)
      mapStrInsert(App, DV_NO, 6);
      mapBoolInsert(App, LOCAL_DATABASE, false);
      mapStrInsert(App, IN_OUT, I);
+     mapStrInsert(App, REBOOT_TIME, );
      mapStrInsert(App, WORKING_DIRECTORY, /home/pi/acu);
      
      //Action
@@ -62,35 +63,36 @@ Settings::Settings(const char* filename)
   }
 
   //App
-  mapStrInsertFormReader(App, AUTH_CD, );
-  mapStrInsertFormReader(App, MEMCO_CD, MC00000003);
-  mapStrInsertFormReader(App, SITE_CD, ST00000005);
-  mapStrInsertFormReader(App, DV_LOC, 0001);
-  mapStrInsertFormReader(App, DV_NO, 6);
-  mapBoolInsertFormReader(App, LOCAL_DATABASE, false);
-  mapStrInsertFormReader(App, IN_OUT, I);
-  mapStrInsertFormReader(App, WORKING_DIRECTORY, /home/pi/acu);
+  mapStrInsertFromReader(App, AUTH_CD, );
+  mapStrInsertFromReader(App, MEMCO_CD, MC00000003);
+  mapStrInsertFromReader(App, SITE_CD, ST00000005);
+  mapStrInsertFromReader(App, DV_LOC, 0001);
+  mapStrInsertFromReader(App, DV_NO, 6);
+  mapBoolInsertFromReader(App, LOCAL_DATABASE, false);
+  mapStrInsertFromReader(App, IN_OUT, I);
+  mapStrInsertFromReader(App, REBOOT_TIME, );
+  mapStrInsertFromReader(App, WORKING_DIRECTORY, /home/pi/acu);
   
   //Action
-  mapBoolInsertFormReader(Action, CAPTURE, true);
-  mapBoolInsertFormReader(Action, RELAY, true);
-  mapBoolInsertFormReader(Action, SOUND, true);
+  mapBoolInsertFromReader(Action, CAPTURE, true);
+  mapBoolInsertFromReader(Action, RELAY, true);
+  mapBoolInsertFromReader(Action, SOUND, true);
 
   //Rfid
-  mapStrInsertFormReader(Rfid, MODE, 1356M); 
-  mapIntInsertFormReader(Rfid, CHECK_INTERVAL, 300);  // 300 ms
-  mapStrInsertFormReader(Rfid, RFID1356_PORT, /dev/ttyAMA0); 
-  mapStrInsertFormReader(Rfid, RFID800_PORT, /dev/ttyUSB0); 
+  mapStrInsertFromReader(Rfid, MODE, 1356M); 
+  mapIntInsertFromReader(Rfid, CHECK_INTERVAL, 300);  // 300 ms
+  mapStrInsertFromReader(Rfid, RFID1356_PORT, /dev/ttyAMA0); 
+  mapStrInsertFromReader(Rfid, RFID800_PORT, /dev/ttyUSB0); 
 
   //Camera
-  mapIntInsertFormReader(Camera, DELAY_OFF_TIME, 600);  //600 sec
-  mapIntInsertFormReader(Camera, TAKEPICTURE_MAX_WAIT_TIME, 2);  // 2 sec
+  mapIntInsertFromReader(Camera, DELAY_OFF_TIME, 600);  //600 sec
+  mapIntInsertFromReader(Camera, TAKEPICTURE_MAX_WAIT_TIME, 2);  // 2 sec
 
   //Log
-  mapStrInsertFormReader(Log, CONSOLE_PATH, /dev/pts/3);
+  mapStrInsertFromReader(Log, CONSOLE_PATH, /dev/pts/3);
 
   //Server
-  mapStrInsertFormReader(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
+  mapStrInsertFromReader(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
 
   dump();
 }

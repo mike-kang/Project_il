@@ -52,8 +52,9 @@ private:
   bool checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, string& msg);
   bool checkZone(string& sAuth);
   bool checkDate(Date* start, Date* end, string& msg);
-  void checkNetwork();
-  void getSeverTime();
+  bool checkNetwork();
+  bool getSeverTime();
+  void setRebootTimer(const char* time_buf);
 #ifdef SIMULATOR  
   static void cbTestTimer(void* arg);
   static void test_signal_handler(int signo);
@@ -64,6 +65,7 @@ private:
   static void cbTimer(void* arg);
   //static void cb_ServerTimeGet(void* arg);
   //void _cb_ServerTimeGet(void* arg);
+  static void cbRebootTimer(void* arg);
 
 
   Thread<MainDelegator> *m_thread;
@@ -80,6 +82,8 @@ private:
   tools::Timer* m_timer;  //check network, upload status, download db, upload timesheet
   tools::media::WavPlayer* m_wp;
   EventListener* m_el;
+  tools::Timer* m_RebootTimer;
+
 
   bool m_bFirstDown;
   bool m_bNetworkAvailable;
@@ -110,7 +114,8 @@ private:
   string m_sLocalIP;
   string m_sLocalMacAddr;
   bool m_bProcessingRfidData;
-
+  bool m_bTimeAvailable;
+  
   //Led
   SwitchGpio m_yellowLed;
   SwitchGpio m_blueLed;

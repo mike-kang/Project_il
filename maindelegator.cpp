@@ -309,7 +309,8 @@ void MainDelegator::cbTimer(void* arg)
   }
   switch(count){
     case 3:
-      md->checkNetwork();
+      if(md->checkNetwork() && !md->m_bTimeAvailable)
+        md->m_bTimeAvailable = md->getSeverTime();
       break;
 
     case 1:
@@ -351,7 +352,7 @@ void MainDelegator::cbTimer(void* arg)
   
 }
 
-void MainDelegator::checkNetwork()
+bool MainDelegator::checkNetwork()
 {
   bool ret = false;
   try{
@@ -359,7 +360,9 @@ void MainDelegator::checkNetwork()
   }
   catch(WebService::Except e){
     LOGE("request_GetNetInfo: %s\n", WebService::dump_error(e));
+    return false;
   }
+  
   if(ret){
     LOGV("Server ON\n");
     m_el->onMessage("Server", "Server ON");
@@ -370,6 +373,7 @@ void MainDelegator::checkNetwork()
     m_el->onMessage("Server", "Server OFF");
     m_yellowLed.off();
   }
+  return ret;
 }
 
 bool MainDelegator::SettingInit()
@@ -425,7 +429,8 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   SettingInit();
   string curdir = m_settings->get("App::WORKING_DIRECTORY");
   filesystem::dir_chdir(curdir.c_str());
-
+  cout << "chdir:" << curdir.c_str() << endl;
+  
   string console_log_path = m_settings->get("Log::CONSOLE_PATH");
   log_init(TYPE_CONSOLE, console_log_path.c_str());
 
@@ -475,7 +480,7 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   m_wp->play("SoundFiles/start.wav");
   m_timer = new Timer(60, cbTimer, this, true);
   m_timer->start();
-  getSeverTime();
+  m_bTimeAvailable = getSeverTime();
   LOGV("MainDelegator ---\n");
 }
 
@@ -488,7 +493,7 @@ MainDelegator::~MainDelegator()
 void MainDelegator::cbTestTimer(void* arg)
 {
    my->onData(my->m_test_serial_number.c_str());
- }
+}
 
 void MainDelegator::test_signal_handler(int signo)
 {
@@ -554,7 +559,7 @@ void MainDelegator::cb_ServerTimeGet(void* arg)
 }
 */
 
-void MainDelegator::getSeverTime()
+bool MainDelegator::getSeverTime()
 {
   LOGV("getSeverTime\n");
   try{
@@ -571,6 +576,7 @@ void MainDelegator::getSeverTime()
         if(i > 5)
           break;
       }
+      delete time_buf;
       if(i == 6){ //ok
         struct tm tm;
         tm.tm_year = t[0] - 1900;
@@ -582,19 +588,52 @@ void MainDelegator::getSeverTime()
         time_t tt = mktime(&tm);
         if (tt < 0){
           LOGE("mktime error: %d-%d-%dT%d:%d:%d\n", t[0], t[1], t[2], t[3], t[4], t[5]);
-          delete time_buf;
-          return;
+          return false;
         }
         if(stime(&tt) < 0){
           LOGE("stime error: %s", strerror(errno));
+          return false;
         }
       }
-        
-      delete time_buf;
+      return true;  
     }
   }
   catch(WebService::Except e){
     LOGE("request_ServerTimeGet: %s\n", WebService::dump_error(e));
+    return false;
   }
 }
 
+//static
+void MainDelegator::cbRebootTimer(void* arg)
+{
+  MainDelegator* md = (MainDelegator*)arg;
+
+  LOGV("cbRebootTimer\n");
+
+  system("reboot");
+}
+
+void MainDelegator::setRebootTimer(const char* time_buf)
+{
+  LOGV("setRebootTimer %s\n", time_buf);
+  char buf[25];
+  strcpy(buf, time_buf);
+  char * tok = strtok(buf, ":");
+  int hour, min;
+  int offset = 0;
+  hour = atoi(tok);
+  tok = strtok(NULL, ":");
+  min = atoi(tok);
+  
+  struct tm now;
+  time_t t = time(NULL);
+  localtime_r(&t, &now);
+
+  int diff = (hour - now.tm_hour)*60*60 + (min - now.tm_min)*60 - now.tm_sec;
+  if(diff <= 0)
+    diff += (24*60*60);
+
+  m_RebootTimer = new Timer(diff, cbRebootTimer, this);
+
+}
