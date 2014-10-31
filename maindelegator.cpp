@@ -481,6 +481,9 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   m_timer = new Timer(60, cbTimer, this, true);
   m_timer->start();
   m_bTimeAvailable = getSeverTime();
+  string reboot_time = m_settings->get("App::REBOOT_TIME");
+  if(reboot_time != "")
+    setRebootTimer(reboot_time.c_str());
   LOGV("MainDelegator ---\n");
 }
 
