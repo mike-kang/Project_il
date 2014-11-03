@@ -381,20 +381,21 @@ bool MainDelegator::checkNetwork()
   }
   catch(WebService::Except e){
     LOGE("request_GetNetInfo: %s\n", WebService::dump_error(e));
-    return false;
+    goto error;
   }
   
   if(ret){
     LOGV("Server ON\n");
     m_el->onMessage("Server", "Server ON");
     m_yellowLed.on();
+    return true;
   }
-  else{
-    LOGV("Server OFF\n");
-    m_el->onMessage("Server", "Server OFF");
-    m_yellowLed.off();
-  }
-  return ret;
+
+error:  
+  LOGV("Server OFF\n");
+  m_el->onMessage("Server", "Server OFF");
+  m_yellowLed.off();
+  return false;
 }
 
 bool MainDelegator::SettingInit()
@@ -501,6 +502,7 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   }
   LOGV("Server IP: %s\n", ip);
   m_ws = new WebService(ip, 8080);
+  //m_ws = new WebService(ip, 17552);
   checkNetwork();
   m_employInfoMrg = new EmployeeInfoMgr(m_settings, m_ws);
   m_timeSheetMgr = new TimeSheetMgr(m_settings, m_ws);
@@ -520,7 +522,7 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   
   m_wp = media::WavPlayer::createInstance(); 
   m_wp->play("SoundFiles/start.wav");
-  m_timer = new Timer(60, cbTimer, this, true);
+  m_timer = new Timer(15, cbTimer, this, true);
   m_timer->start();
   m_bTimeAvailable = getSeverTime();
   string reboot_time = m_settings->get("App::REBOOT_TIME");
