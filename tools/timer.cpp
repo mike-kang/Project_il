@@ -24,7 +24,9 @@ void Timer::start(int sec, int msec, bool repeat)
 
 bool Timer::IsActive()
 {
+  mtx.lock();
   return m_active;
+  mtx.unlock();
 }
 
 
