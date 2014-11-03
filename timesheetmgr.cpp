@@ -90,13 +90,13 @@ bool TimeSheetMgr::upload()
     }
     catch(WebService::Except e){
       LOGE("request_SendFile: %s\n", WebService::dump_error(e));
-      for(vector<string*>::size_type i; i < filelist.size(); i++){
+      for(vector<string*>::size_type i=0; i < filelist.size(); i++){
         delete filelist[i];
       }
       return false;
     }
   }
-  for(vector<string*>::size_type i; i < filelist.size(); i++){
+  for(vector<string*>::size_type i=0; i < filelist.size(); i++){
     delete filelist[i];
   }
   
