@@ -46,7 +46,7 @@ CameraStill::CameraStill(int close_delay_time):m_delay_time(close_delay_time), m
   m_preview_component = new OMXILComponent(NULLSINK_COMPONENT_NAME);
   m_preview_component->change_state(OMX_StateIdle); //blocking
 
-  m_timer = new tools::Timer(m_delay_time, cbTimer, this);
+  m_timer = new tools::Timer(cbTimer, this);
 
   m_state = READY_S;
 
@@ -119,7 +119,7 @@ void CameraStill::cbEndOfStream(void* clientData)
   CameraStill* cs = (CameraStill*)clientData;
   cs->mtx.lock();
   cs->m_camera_component->capture(false);
-  cs->m_timer->start();
+  cs->m_timer->start(m_delay_time);
   cs->mtx.unlock();
 }
 

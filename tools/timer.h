@@ -8,15 +8,17 @@
 namespace tools {
 class Timer {
 public:
-  Timer(int count, void (*cbFunc)(void*), void* clientData, bool repeat=false);
+  Timer(void (*cbFunc)(void*), void* clientData);
   ~Timer(){};
   bool IsActive();
-  void start();
+  void start(int count, bool repeat=false);
+  void start(int sec, int msec, bool repeat=false);
   //void reset(int count);
   void stop();
 
 private:
-  int m_count; //sec
+  int m_sec; //sec
+  int m_msec;
   void (*m_cbFunc)(void*);
   pthread_t m_threadId;
   void* m_clientData;

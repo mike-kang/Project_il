@@ -3,13 +3,21 @@
 #include <errno.h>
 using namespace tools;
 
-Timer::Timer(int count, void (*cbFunc)(void*), void* clientData, bool repeat):m_count(count), m_cbFunc(cbFunc), m_clientData(clientData), m_active(false), m_repeat(repeat)
+Timer::Timer(void (*cbFunc)(void*), void* clientData):m_cbFunc(cbFunc), m_clientData(clientData), m_active(false) 
 {
 }
 
-void Timer::start()
+void Timer::start(int count, bool repeat)
+{
+  start(count, 0, repeat);
+}
+
+void Timer::start(int sec, int msec, bool repeat)
 {
   m_active = true;
+  m_sec = sec;
+  m_msec = msec;
+  m_repeat = repeat;
   pthread_create(&m_threadId, NULL, run, this);
   pthread_detach(m_threadId);
 }
@@ -39,16 +47,19 @@ void* Timer::run(void* arg)
   //std::cout <<"Timer::run\n" << std::endl;
   timer->mtx.lock();
   do {
-    ret = timer->timerCancel.timedwait(timer->mtx, timer->m_count);
+    if(timer->m_msec)
+      ret = timer->timerCancel.timedwait(timer->mtx, timer->m_sec, timer->m_msec);
+    else
+      ret = timer->timerCancel.timedwait(timer->mtx, timer->m_sec);
     if(!ret){ //cancel
     }
     else if(ret == ETIMEDOUT){ //expired
       //std::cout << "::timer count " << count << std::endl;
+      timer->m_active = false;
       timer->m_cbFunc(timer->m_clientData);
     }
   } while(timer->m_repeat);
 
-  timer->m_active = false;
   timer->mtx.unlock();
  
   return NULL;

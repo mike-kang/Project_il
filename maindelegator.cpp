@@ -514,7 +514,7 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
 #ifdef SIMULATOR
   signal(SIGUSR1, test_signal_handler);
   signal(SIGUSR2, test_signal_handler);
-  mTimerForTest = new Timer(1, cbTestTimer, this);
+  mTimerForTest = new Timer(cbTestTimer, this);
 #endif
   string locationName = getLocationName();
   m_el->onMessage("GateLoc", locationName);
@@ -522,8 +522,8 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   
   m_wp = media::WavPlayer::createInstance(); 
   m_wp->play("SoundFiles/start.wav");
-  m_timer = new Timer(15, cbTimer, this, true);
-  m_timer->start();
+  m_timer = new Timer(cbTimer, this);
+  m_timer->start(60, true);
   m_bTimeAvailable = getSeverTime();
   string reboot_time = m_settings->get("App::REBOOT_TIME");
   LOGV("reboot time= %s\n", reboot_time.c_str()); 
@@ -549,12 +549,12 @@ void MainDelegator::test_signal_handler(int signo)
     LOGI("signal_handler SIGUSR1\n");
     //my->m_test_serial_number = "253161024009"; //validate
     my->m_test_serial_number = "253178087009"; //validate + Photo image
-    my->mTimerForTest->start();
+    my->mTimerForTest->start(1);
   }
   else if(signo == SIGUSR2){
     LOGI("signal_handler SIGUSR2\n");
     my->m_test_serial_number = "253153215009"; //invalidate
-    my->mTimerForTest->start();
+    my->mTimerForTest->start(1);
   }
 }
 #endif
@@ -682,7 +682,7 @@ void MainDelegator::setRebootTimer(const char* time_buf)
   if(diff <= 0)
     diff += (24*60*60);
   LOGV("Reboot after:%d sec\n", diff);
-  m_RebootTimer = new Timer(diff, cbRebootTimer, this);
-  m_RebootTimer->start();
+  m_RebootTimer = new Timer(cbRebootTimer, this);
+  m_RebootTimer->start(diff);
 
 }

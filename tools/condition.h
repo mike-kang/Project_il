@@ -5,6 +5,7 @@
 #include "windows.h"
 #else
 #include <pthread.h>
+#include <sys/time.h>
 #endif
 
 #include <iostream>
@@ -57,6 +58,33 @@ public:
     //cout << "Consition::timedwait() -- " << m.get() <<" " << ret<< endl;
     return ret;
   }
+  
+  int timedwait(Mutex& m, int sec, int msec)
+  {
+    //cout << "Consition::timedwait() ++ " << m.get() << endl;
+    m_bWait = true;
+#ifdef _WIN32  
+#else
+    struct timespec ts_timeout;
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long usec = tv.tv_usec + msec * 1000;
+    if(usec >= 1000000){
+      ts_timeout.tv_sec = tv.tv_sec + sec + 1;
+      ts_timeout.tv_nsec = (usec - 1000000) * 1000;
+    }
+    else{
+      ts_timeout.tv_sec = tv.tv_sec + sec;
+      ts_timeout.tv_nsec = usec * 1000;
+    }
+      
+    int ret = pthread_cond_timedwait(&m_p, (pthread_mutex_t*)(m.get()), &ts_timeout);
+#endif
+    //cout << "Consition::timedwait() -- " << m.get() <<" " << ret<< endl;
+    return ret;
+  }
+
+  
   void notify_one()
   {
     //cout << "Consition::notify_one() ++ " << endl;
@@ -69,6 +97,8 @@ public:
 #endif
     }
   }
+
+  
   ~Condition()
   {
 #ifdef _WIN32  
