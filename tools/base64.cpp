@@ -142,4 +142,63 @@ int base64e2(const char *src, int length, char *result){
     *o = '\0';
     return (o - result);
 }
+
+#define CHECK_PLUS(x) \ 
+    if(*x == '+'){            \
+      *x++ = '&';*x++ = '#';*x++ = '4';*x++ = '3';      \
+    }   \
+    else{    \
+      x++;    \
+    }    
+
+// + -> &#43
+int base64e2_http(const char *src, int length, char *result){
+    int i, j = 0;
+    int sz = length / 3;
+    BF2* p = (BF2*)src;
+    char * o = result;;
+    //cout << sizeof(BF2) << endl;
+    //cout << &p->e0 << ":" << &p->e1 << endl;
+    
+    for(i = 0 ; i < sz ; i++){
+      //printf("%x: %x: %x\n", p->c1 ,p->c2, p->c3);
+      *o = MimeBase64[p->c0_6];
+      CHECK_PLUS(o);
+      //printf("%x\n", p->c0_6);
+      *o = MimeBase64[(p->_c0_2 << 4) + p->c1_4];
+      CHECK_PLUS(o);
+      //printf("%x:%x\n", p->_c0_2, p->c1_4);
+      *o = MimeBase64[(p->_c1_4 << 2) + p->c2_2];
+      CHECK_PLUS(o);
+      //printf("%x:%x\n", p->_c1_4, p->c2_2);
+      *o = MimeBase64[p->_c2_6];
+      CHECK_PLUS(o);
+      //printf("%x\n", p->_c2_6);
+
+      p++;
+    }
+
+    int mod = length % 3;
+    
+    if(mod == 1){
+      *o = MimeBase64[p->c0_6];
+      CHECK_PLUS(o);
+      *o = MimeBase64[(p->_c0_2 << 4)];
+      CHECK_PLUS(o);
+      *o++ = '=';
+      *o++ = '=';
+    }
+    else if(mod ==2){
+      *o = MimeBase64[p->c0_6];
+      CHECK_PLUS(o);
+      *o = MimeBase64[(p->_c0_2 << 4) + p->c1_4];
+      CHECK_PLUS(o);
+      *o = MimeBase64[(p->_c1_4 << 2)];
+      CHECK_PLUS(o);
+      *o++ = '=';
+    }
+    *o = '\0';
+    return (o - result);
+}
+
 }}
