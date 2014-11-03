@@ -101,7 +101,7 @@ struct BF2{
 int base64e2_get_needbufSize(int size)
 { 
   int t = size / 3 * 4; 
-  return ((size % 3)? t + 4: t) + 1; 
+  return ((size % 3)? t + 4: t) + 1 + 3000; 
 }
 int base64e2(const char *src, int length, char *result){
     int i, j = 0;

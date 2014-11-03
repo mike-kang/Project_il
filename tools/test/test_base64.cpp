@@ -22,7 +22,7 @@ int main()
   infile.close();
 
   int result_size = ((size % 3)? size/3+1: size/3) * 4;
-  char* result_buf = new char[result_size];
+  char* result_buf = new char[result_size+2000];
   clock_gettime(CLOCK_REALTIME, &ts);
   printf ("------------------------------------------------ %ld %ld\n", ts.tv_sec, ts.tv_nsec);
 
@@ -30,7 +30,7 @@ int main()
   clock_gettime(CLOCK_REALTIME, &ts);
   printf ("------------------------------------------------ %ld %ld\n", ts.tv_sec, ts.tv_nsec);
 
-  base64e2(buffer, size, result_buf);
+  base64e2_http(buffer, size, result_buf);
   
   clock_gettime(CLOCK_REALTIME, &ts);
   printf ("------------------------------------------------ %ld %ld\n", ts.tv_sec, ts.tv_nsec);

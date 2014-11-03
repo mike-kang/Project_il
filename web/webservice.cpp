@@ -486,7 +486,7 @@ bool WebService::request_TimeSheetInsertString(const char *sMemcoCd, const char*
   sprintf(cmd_content,"sMemcoCd=%s&sSiteCd=%s&sLabNo=%s&sInOut=%c&sGateNo=%s&sGateLoc=%s&sUtype=%c&sAttendGb=&sEventfunctionkey=&sInTime=%s&sPhotoImage="
     , sMemcoCd, sSiteCd, sLabNo, cInOut, sGateNo, sGateLoc, cUtype, sInTime);
   int cmd_content_prefix = strlen(cmd_content);
-  int base64_encoded_len = base64::base64e2(imageBuf, imageSz, cmd_content + cmd_content_prefix);
+  int base64_encoded_len = base64::base64e2_http(imageBuf, imageSz, cmd_content + cmd_content_prefix);
   int contentlen = cmd_content_prefix + base64_encoded_len;
   //LOGV("base64_encoded_len: %d\n", base64_encoded_len);
 
