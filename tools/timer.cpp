@@ -75,11 +75,10 @@ void* Timer::run(void* arg)
       break;
     if(ret == ETIMEDOUT){ //expired
       //std::cout << "::timer count " << count << std::endl;
-      timer->m_active = false;
       timer->m_cbFunc(timer->m_clientData);
     }
   } while(timer->m_repeat);
-
+  timer->m_active = false;
   timer->mtx.unlock();
  
   return NULL;
