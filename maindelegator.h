@@ -126,6 +126,8 @@ private:
   SwitchGpio m_blueLed;
   SwitchGpio m_greenLed;
   SwitchGpio m_redLed;
+  //Relay
+  SwitchGpio m_Relay;
 };
 
 

@@ -158,6 +158,8 @@ void MainDelegator::onData(const char* serialNumber)
   m_bProcessingRfidData = true;
   printf("onData: %s\n", serialNumber);
   m_wp->stop();
+  m_greenLed.off();
+  m_redLed.off();
   m_el->onMessage("RfidNo", serialNumber);
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
   bool ret = m_employInfoMrg->getInfo(serialNumber, ei);
@@ -167,6 +169,7 @@ void MainDelegator::onData(const char* serialNumber)
     m_el->onEmployeeInfo("", "", "", NULL, 0);
     if(m_bSound)
       m_wp->play("SoundFiles/fail.wav");
+    m_redLed.on(1500);
     m_el->onMessage("Result", "FAIL");
     m_el->onMessage("Msg", "NO DATA");
     goto error;
@@ -175,6 +178,7 @@ void MainDelegator::onData(const char* serialNumber)
   if(!checkValidate(ei, msg)){
     if(m_bSound)
       m_wp->play("SoundFiles/fail.wav");
+    m_redLed.on(1500);
     m_el->onMessage("Result", "FAIL");
     m_el->onMessage("Msg", msg);
     goto error;
@@ -182,7 +186,8 @@ void MainDelegator::onData(const char* serialNumber)
 
   if(m_bSound)
     m_wp->play("SoundFiles/ok.wav");
-  m_greenLed.on();
+  m_greenLed.on(1500);
+  m_Relay.on(1500);
   m_el->onMessage("Msg", msg);
   m_el->onMessage("Result", "OK");
 
@@ -387,14 +392,14 @@ bool MainDelegator::checkNetwork()
   if(ret){
     LOGV("Server ON\n");
     m_el->onMessage("Server", "Server ON");
-    m_yellowLed.on();
+    m_yellowLed.off();
     return true;
   }
 
 error:  
   LOGV("Server OFF\n");
   m_el->onMessage("Server", "Server OFF");
-  m_yellowLed.off();
+  m_yellowLed.on({1000,1000},true);
   return false;
 }
 
@@ -448,7 +453,7 @@ bool MainDelegator::SettingInit()
   return true;
 }
 
-MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidData(false), m_yellowLed(27), m_blueLed(22), m_greenLed(23), m_redLed(24)
+MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidData(false), m_yellowLed(27), m_blueLed(22), m_greenLed(24), m_redLed(23), m_Relay(17)
 {
   bool ret;
   cout << "start" << endl;

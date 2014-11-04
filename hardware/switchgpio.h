@@ -12,7 +12,7 @@ public:
   void on(){ write(true); }
   void on(int msec);
   void on(int*, bool repeat);
-  void off(){ write(false); }
+  void off();
 
 private:
   static void cbOnTimer(void* arg);

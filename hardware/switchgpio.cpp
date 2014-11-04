@@ -42,5 +42,11 @@ void SwitchGpio::on(int* arr, bool repeat)
   on();
 }
 
+void SwitchGpio::off()
+{ 
+  if(m_timer && m_timer->IsActive())
+    m_timer->stop();
+  write(false);
+}
 
 
