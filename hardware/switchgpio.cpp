@@ -19,15 +19,15 @@ using namespace tools;
 void SwitchGpio::cbOnTimer(void* arg)
 {
   SwitchGpio* my = (SwitchGpio*)arg;
-  my->off();
+  my->write(false);
 }
 void SwitchGpio::cbOnArrayTimer(int i, void* arg)
 {
   SwitchGpio* my = (SwitchGpio*)arg;
   if(i & 0x01)
-    my->off();
+    my->write(true);
   else
-    my->on();
+    my->write(false);
 }
 
 void SwitchGpio::on(int t) //ms

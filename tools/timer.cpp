@@ -107,13 +107,13 @@ void* Timer::run_array(void* arg)
     
     if(ret == ETIMEDOUT){ //expired
       //std::cout << "::timer count " << count << std::endl;
-      timer->m_active = false;
       timer->m_cbArrayFunc(timer->m_arr_index, timer->m_clientData);
     }
     if(!timer->m_arr_msec[++timer->m_arr_index] && timer->m_repeat)
       timer->m_arr_index = 0;
   } while(timer->m_arr_msec[timer->m_arr_index] || timer->m_repeat);
 
+  timer->m_active = false;
   timer->mtx.unlock();
  
   return NULL;
