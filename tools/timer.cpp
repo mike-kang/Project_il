@@ -7,6 +7,10 @@ Timer::Timer(void (*cbFunc)(void*), void* clientData):m_cbFunc(cbFunc), m_client
 {
 }
 
+Timer::Timer(void (*cbFunc)(int, void*), void* clientData):m_cbArrayFunc(cbFunc), m_clientData(clientData), m_active(false) 
+{
+}
+
 void Timer::start(int sec, bool repeat)
 {
   start(sec, 0, repeat);

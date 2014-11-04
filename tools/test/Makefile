@@ -1,21 +1,21 @@
 
-all : test_network  test_base64
+all : test_network  test_base64  test_timer
 
 LFLAGS = -L.. -ltool -lpthread -lrt
 
 test_network : ../network.o test_network.o
-	g++ -o $@ $^ $(LFLAGS)
+	g++ -g -o $@ $^ $(LFLAGS)
 	
-#test_media : test_media.o
-#	g++ -o $@ $^
+test_timer : test_timer.o
+	g++ -g -o $@ $^ $(LFLAGS)
 
 test_base64 : test_base64.o
-	g++ -o $@ $^ $(LFLAGS)
+	g++ -g -o $@ $^ $(LFLAGS)
 
 test_network.o : ../network.h
-#test_media.o : media.h
+test_media.o : ../timer.h
 test_base64.o : ../base64.h
 
 .PHONY : clean
 clean:
-	rm *.o test_network test_wavplayer
+	rm *.o test_network test_timer

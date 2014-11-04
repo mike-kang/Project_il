@@ -37,7 +37,7 @@ void SwitchGpio::on(int t) //ms
 
 void SwitchGpio::on(int* arr, bool repeat)
 {
-  m_timer = new Timer(cbOnTimer, this);
+  m_timer = new Timer(cbOnArrayTimer, this);
   m_timer->start(arr, repeat);
   on();
 }

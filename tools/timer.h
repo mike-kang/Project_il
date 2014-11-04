@@ -9,6 +9,7 @@ namespace tools {
 class Timer {
 public:
   Timer(void (*cbFunc)(void*), void* clientData);
+  Timer(void (*cbFunc)(int, void*), void* clientData);
   ~Timer(){};
   bool IsActive();
   void start(int sec, bool repeat=false);
