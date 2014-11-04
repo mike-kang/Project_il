@@ -2,6 +2,7 @@
 #define _SWITCHGPIO_HEADER
 
 #include "gpio.h"
+#include "../tools/timer.h"
 
 //only out direct
 class SwitchGpio : private Gpio{
@@ -14,8 +15,8 @@ public:
   void off(){ write(false); }
 
 private:
-  tools:Timer* m_timerOn;
-  tools:Timer* m_timerOff;
+  tools::Timer* m_timerOn;
+  tools::Timer* m_timerOff;
 };
 
 #endif

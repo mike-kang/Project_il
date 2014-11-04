@@ -522,8 +522,12 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   
   m_wp = media::WavPlayer::createInstance(); 
   m_wp->play("SoundFiles/start.wav");
+
   m_timer = new Timer(cbTimer, this);
-  m_timer->start(60, true);
+  int interval = m_settings->getInt("App::TIMER_INTERVAL");
+  LOGI("timer interval= %d\n", interval);
+  m_timer->start(interval, true);
+  
   m_bTimeAvailable = getSeverTime();
   string reboot_time = m_settings->get("App::REBOOT_TIME");
   LOGV("reboot time= %s\n", reboot_time.c_str()); 

@@ -37,6 +37,7 @@ Settings::Settings(const char* filename)
      mapStrInsert(App, REBOOT_TIME, );
      mapStrInsert(App, WORKING_DIRECTORY, /home/pi/acu);
      mapBoolInsert(App, DISPLAY_PHOTO, true);
+     mapIntInsert(App, TIMER_INTERVAL, 60);  //60 sec
      
      //Action
      mapBoolInsert(Action, CAPTURE, true);
@@ -81,7 +82,7 @@ Settings::Settings(const char* filename)
   mapStrInsertFromReader(App, REBOOT_TIME, );
   mapStrInsertFromReader(App, WORKING_DIRECTORY, /home/pi/acu);
   mapBoolInsertFromReader(App, DISPLAY_PHOTO, true);
-  
+  mapIntInsertFromReader(App, TIMER_INTERVAL, 60);  //60 sec
   //Action
   mapBoolInsertFromReader(Action, CAPTURE, true);
   //mapBoolInsertFromReader(Action, RELAY, true);
