@@ -122,12 +122,12 @@ private:
   bool m_bTimeAvailable;
   
   //Led
-  SwitchGpio m_yellowLed;
-  SwitchGpio m_blueLed;
-  SwitchGpio m_greenLed;
-  SwitchGpio m_redLed;
+  SwitchGpio* m_yellowLed;
+  SwitchGpio* m_blueLed;
+  SwitchGpio* m_greenLed;
+  SwitchGpio* m_redLed;
   //Relay
-  SwitchGpio m_Relay;
+  SwitchGpio* m_Relay;
 };
 
 

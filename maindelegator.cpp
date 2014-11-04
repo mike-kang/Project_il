@@ -158,8 +158,8 @@ void MainDelegator::onData(const char* serialNumber)
   m_bProcessingRfidData = true;
   printf("onData: %s\n", serialNumber);
   m_wp->stop();
-  m_greenLed.off();
-  m_redLed.off();
+  m_greenLed->off();
+  m_redLed->off();
   m_el->onMessage("RfidNo", serialNumber);
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
   bool ret = m_employInfoMrg->getInfo(serialNumber, ei);
@@ -169,7 +169,7 @@ void MainDelegator::onData(const char* serialNumber)
     m_el->onEmployeeInfo("", "", "", NULL, 0);
     if(m_bSound)
       m_wp->play("SoundFiles/fail.wav");
-    m_redLed.on(1500);
+    m_redLed->on(1500);
     m_el->onMessage("Result", "FAIL");
     m_el->onMessage("Msg", "NO DATA");
     goto error;
@@ -178,7 +178,7 @@ void MainDelegator::onData(const char* serialNumber)
   if(!checkValidate(ei, msg)){
     if(m_bSound)
       m_wp->play("SoundFiles/fail.wav");
-    m_redLed.on(1500);
+    m_redLed->on(1500);
     m_el->onMessage("Result", "FAIL");
     m_el->onMessage("Msg", msg);
     goto error;
@@ -186,8 +186,8 @@ void MainDelegator::onData(const char* serialNumber)
 
   if(m_bSound)
     m_wp->play("SoundFiles/ok.wav");
-  m_greenLed.on(1500);
-  m_Relay.on(1500);
+  m_greenLed->on(1500);
+  m_Relay->on(1500);
   m_el->onMessage("Msg", msg);
   m_el->onMessage("Result", "OK");
 
@@ -217,6 +217,7 @@ void MainDelegator::onData(const char* serialNumber)
 error:
   delete ei;
   LOGI("onData ---\n");
+  printf("onData %d\n", __LINE__);
   m_bProcessingRfidData = false;
 }
 void MainDelegator::onSameData()
@@ -392,7 +393,7 @@ bool MainDelegator::checkNetwork()
   if(ret){
     LOGV("Server ON\n");
     m_el->onMessage("Server", "Server ON");
-    m_yellowLed.off();
+    m_yellowLed->off();
     return true;
   }
 
@@ -400,7 +401,7 @@ error:
   LOGV("Server OFF\n");
   m_el->onMessage("Server", "Server OFF");
   int arr[] = {1000, 1000, 0};
-  m_yellowLed.on(arr, true);
+  m_yellowLed->on(arr, true);
   return false;
 }
 
@@ -454,7 +455,7 @@ bool MainDelegator::SettingInit()
   return true;
 }
 
-MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidData(false), m_yellowLed(27), m_blueLed(22), m_greenLed(24), m_redLed(23), m_Relay(17)
+MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidData(false)
 {
   bool ret;
   cout << "start" << endl;
@@ -473,6 +474,13 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   
   log_init(log_console, log_console_level, log_console_path.c_str(), file_log, log_file_level, log_file_directory.c_str());
 
+  //LED & RELAY
+  m_yellowLed = new SwitchGpio(m_settings->getInt("Gpio::YELLOW"));
+  m_blueLed = new SwitchGpio(m_settings->getInt("Gpio::BLUE"));
+  m_greenLed = new SwitchGpio(m_settings->getInt("Gpio::GREEN"));
+  m_redLed = new SwitchGpio(m_settings->getInt("Gpio::RED"));
+  m_Relay = new SwitchGpio(m_settings->getInt("Gpio::RELAY"));
+  
   //m_thread = new Thread<MainDelegator>(&MainDelegator::run, this, "MainDelegatorThread");
   //LOGV("MainDelegator tid=%lu\n", m_thread->getId());
 #ifndef SIMULATOR

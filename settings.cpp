@@ -67,6 +67,13 @@ Settings::Settings(const char* filename)
      //Server
      mapStrInsert(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
 
+     //Gpio
+     mapIntInsert(Gpio, YELLOW, 27);
+     mapIntInsert(Gpio, BLUE, 22);
+     mapIntInsert(Gpio, GREEN, 24);
+     mapIntInsert(Gpio, RED, 23);
+     mapIntInsert(Gpio, RELAY, 17);
+     
      dump();
      return;
   }
@@ -109,6 +116,13 @@ Settings::Settings(const char* filename)
 
   //Server
   mapStrInsertFromReader(Server, URL, http:\/\/10.9.0.2:8080/WebService/ItlogService.asmx);
+
+  //Gpio
+  mapIntInsertFromReader(Gpio, YELLOW, 27);
+  mapIntInsertFromReader(Gpio, BLUE, 22);
+  mapIntInsertFromReader(Gpio, GREEN, 24);
+  mapIntInsertFromReader(Gpio, RED, 23);
+  mapIntInsertFromReader(Gpio, RELAY, 17);
 
   dump();
 }
