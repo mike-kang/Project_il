@@ -399,7 +399,8 @@ bool MainDelegator::checkNetwork()
 error:  
   LOGV("Server OFF\n");
   m_el->onMessage("Server", "Server OFF");
-  m_yellowLed.on({1000,1000},true);
+  int arr[] = {1000, 1000, 0};
+  m_yellowLed.on(arr, true);
   return false;
 }
 
