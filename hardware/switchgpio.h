@@ -7,7 +7,7 @@
 //only out direct
 class SwitchGpio : private Gpio{
 public:
-  SwitchGpio(int num, bool init=false):Gpio(num, true, init){}
+  SwitchGpio(int num, bool init=false):Gpio(num, true, init), m_timer(NULL){}
   virtual ~SwitchGpio(){};
   void on(){ write(true); }
   void on(int msec);
@@ -15,8 +15,9 @@ public:
   void off(){ write(false); }
 
 private:
-  tools::Timer* m_timerOn;
-  tools::Timer* m_timerOff;
+  static void cbOnTimer(void* arg);
+  static void cbOnArrayTimer(int i, void* arg);
+  tools::Timer* m_timer;
 };
 
 #endif
