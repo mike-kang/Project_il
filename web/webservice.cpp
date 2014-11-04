@@ -570,9 +570,10 @@ bool WebService::request_SendFile(const char *filename, int timelimit, CCBFunc c
 
 void WebService::WebApi::run()
 {
-  int len;
+  int len = 0;
   int ret;
   int flags;
+  int send_length = 0;
   
   if((m_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0){
     LOGE("RET_CREATE_SOCKET_FAIL\n");
@@ -617,12 +618,18 @@ void WebService::WebApi::run()
   }
 
   LOGV("send command\n");
-  len = send(m_sock, m_cmd + m_cmd_offset, strlen(m_cmd + m_cmd_offset), 0);
-  if(len == -1){
-    LOGE("RET_SEND_CMD_FAIL :%s\n", strerror(errno));
-    m_status = RET_SEND_CMD_FAIL;
-    goto error;
+  send_length = strlen(m_cmd + m_cmd_offset);
+  while(send_length){
+    len = send(m_sock, m_cmd + m_cmd_offset + len, send_length, 0);
+    if(len == -1){
+      LOGE("RET_SEND_CMD_FAIL :%s\n", strerror(errno));
+      m_status = RET_SEND_CMD_FAIL;
+      goto error;
+    }
+    cout << "send size=" << len << endl;
+    send_length -= len;
   }
+  
 
   //poll
   //struct pollfd fds;

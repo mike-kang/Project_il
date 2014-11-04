@@ -119,7 +119,7 @@ void CameraStill::cbEndOfStream(void* clientData)
   CameraStill* cs = (CameraStill*)clientData;
   cs->mtx.lock();
   cs->m_camera_component->capture(false);
-  cs->m_timer->start(m_delay_time);
+  cs->m_timer->start(cs->m_delay_time);
   cs->mtx.unlock();
 }
 
