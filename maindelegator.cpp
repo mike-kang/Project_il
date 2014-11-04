@@ -440,9 +440,12 @@ bool MainDelegator::SettingInit()
   //Local IP.Mac Address
   try{
     char* p = network::GetIpAddress("eth0");  // or lo
-    m_sLocalIP = p;
+    if(!p)
+      m_sLocalIP = "";
+    else
+      m_sLocalIP = p;
   }
-  catch(Exception e)
+  catch(network::Exception e)
   {
     m_sLocalIP = "";
   }
