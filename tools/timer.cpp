@@ -43,9 +43,7 @@ void Timer::start(int* arr_msec, bool repeat) //ex)arr_msec = {1500, 1500, 0};
 
 bool Timer::IsActive()
 {
-  mtx.lock();
   return m_active;
-  mtx.unlock();
 }
 
 

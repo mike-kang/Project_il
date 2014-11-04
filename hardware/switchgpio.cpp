@@ -9,9 +9,11 @@
 #include "switchgpio.h"
 #include "tools/log.h"
 #include "tools/utils.h"
+#include <iostream>
 
 #define LOG_TAG "SwitchGpio"
 
+using namespace std;
 using namespace tools;
 
 void SwitchGpio::cbOnTimer(void* arg)
