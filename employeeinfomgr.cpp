@@ -66,12 +66,12 @@ bool EmployeeInfoMgr::createLocalDB()
 
 bool EmployeeInfoMgr::getInfo(const char* serialNumber, EmployeeInfo* ei)
 {
-  bool bNetAvailable = false;
+  //bool bNetAvailable = false;
   //cout << "getInfo" << endl;
   if(m_bUseLocalDB){
     goto localDB;
   }
-
+/*
   try{
     bNetAvailable = m_ws->request_GetNetInfo(1000);
   }
@@ -82,7 +82,7 @@ bool EmployeeInfoMgr::getInfo(const char* serialNumber, EmployeeInfo* ei)
     LOGE("nwtwork not available\n");
     goto localDB;
   }
-  
+*/  
   try{
     char* xml_buf = m_ws->request_RfidInfoSelect(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), serialNumber, 3000);
     if(xml_buf){
