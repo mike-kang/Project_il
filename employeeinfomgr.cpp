@@ -174,7 +174,7 @@ int EmployeeInfoMgr::fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& el
     }
     catch(int e){}
     try {
-      ei->ent_co_ymd = new Date(p = utils::getElementData(p, "RTR_CO_YMD"));
+      ei->rtr_co_ymd = new Date(p = utils::getElementData(p, "RTR_CO_YMD"));
       p += strlen(p) + 1;
     }
     catch(int e){}
@@ -243,10 +243,11 @@ bool EmployeeInfoMgr::fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei)
     try {
       printf("img_buf\n"); 
       p = utils::getElementData(p, "PHOTO_IMAGE");  //base64 encoded
-      ei->img_buf = new unsigned char[strlen(p)];
+      int length = strlen(p);
+      ei->img_buf = new unsigned char[length];
       base64::base64d(p, (char*)(ei->img_buf), &ei->img_size);
       printf("img_buf:%x\n", ei->img_buf); 
-      p += ei->img_size + 1;
+      p += length + 1;
     }
     catch(int e){}
   }
@@ -256,7 +257,7 @@ bool EmployeeInfoMgr::fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei)
   }
   catch(int e){}
   try {
-    ei->ent_co_ymd = new Date(p = utils::getElementData(p, "RTR_CO_YMD"));
+    ei->rtr_co_ymd = new Date(p = utils::getElementData(p, "RTR_CO_YMD"));
     p += strlen(p) + 1;
   }
   catch(int e){}
