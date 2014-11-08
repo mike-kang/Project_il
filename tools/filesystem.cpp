@@ -87,6 +87,9 @@ void getList(const char* directory, vector<string*>& arr)
   DIR* dir;
   struct dirent *entry;
   dir = opendir(directory);
+  if(!dir){
+    throw EXCEPTION_OPEN_DIR;
+  }
   errno = 0;
 
   while((entry = readdir(dir)) != NULL){

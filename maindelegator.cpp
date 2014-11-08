@@ -394,13 +394,11 @@ bool MainDelegator::checkNetwork()
   }
   
   if(ret){
-    LOGV("Server ON\n");
     displayNetworkStatus(true);
     return true;
   }
 
 error:  
-  LOGV("Server OFF\n");
   displayNetworkStatus(false);
   return false;
 }
@@ -411,10 +409,12 @@ void MainDelegator::displayNetworkStatus(bool val)
   
   if(!bInitialized || val != m_bNetworkAvailable){
     if(val){
+      LOGV("Server ON\n");
       m_el->onMessage("Server", "Server ON");
       m_yellowLed->off();
     }
     else{
+      LOGV("Server OFF\n");
       m_el->onMessage("Server", "Server OFF");
       int arr[] = {1000, 1000, 0};
       m_yellowLed->on(arr, true);
