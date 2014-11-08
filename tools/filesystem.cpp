@@ -95,6 +95,7 @@ void getList(const char* directory, vector<string*>& arr)
       arr.push_back(s);
     }
   }
+  closedir(dir);
   
   for(vector<string*>::size_type i; i < arr.size(); i++){
     cout << "list:" << *arr[i] << endl;
