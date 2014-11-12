@@ -605,7 +605,7 @@ void WebService::WebApi::run()
   
   fds.fd = m_sock;
   fds.events = POLLOUT;
-  ret = poll(&fds, 1, 1000);
+  ret = poll(&fds, 1, 500);
   if(ret == -1){
     LOGE("RET_POLL_FAIL\n");
     m_status = RET_POLL_FAIL;

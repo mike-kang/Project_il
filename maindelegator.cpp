@@ -162,8 +162,9 @@ void MainDelegator::onData(const char* serialNumber)
   m_redLed->off();
   m_el->onMessage("RfidNo", serialNumber);
   EmployeeInfoMgr::EmployeeInfo* ei = new EmployeeInfoMgr::EmployeeInfo;
-  checkNetwork();
-  bool ret = m_employInfoMrg->getInfo(serialNumber, ei);
+  //checkNetwork();
+  int bServerActive = -1; //-1:unknown, 0:dead 1:alive
+  bool ret = m_employInfoMrg->getInfo(serialNumber, ei, bServerActive);
 
   if(!ret){
     LOGE("get employee info fail!\n");
@@ -217,6 +218,8 @@ void MainDelegator::onData(const char* serialNumber)
 
 error:
   delete ei;
+  if(bServerActive <= 0)
+    displayNetworkStatus((bool)bServerActive);
   LOGI("onData ---\n");
   printf("onData %d\n", __LINE__);
   m_bProcessingRfidData = false;

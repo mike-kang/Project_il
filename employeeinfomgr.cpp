@@ -64,7 +64,7 @@ bool EmployeeInfoMgr::createLocalDB()
   return true;
 }
 
-bool EmployeeInfoMgr::getInfo(const char* serialNumber, EmployeeInfo* ei)
+bool EmployeeInfoMgr::getInfo(const char* serialNumber, EmployeeInfo* ei, int& bServerActive)
 {
   //bool bNetAvailable = false;
   //cout << "getInfo" << endl;
@@ -84,8 +84,10 @@ bool EmployeeInfoMgr::getInfo(const char* serialNumber, EmployeeInfo* ei)
   }
 */  
   try{
+    bServerActive = 0;
     char* xml_buf = m_ws->request_RfidInfoSelect(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), serialNumber, 3000);
     if(xml_buf){
+      bServerActive = 1;
       //cout << xml_buf << endl;
       bool ret = fillEmployeeInfo(xml_buf, ei);
       delete xml_buf;

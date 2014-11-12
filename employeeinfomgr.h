@@ -38,7 +38,7 @@ public:
   virtual ~EmployeeInfoMgr(){}
 
   bool createLocalDB();
-  bool getInfo(const char* serialNumber, EmployeeInfo* ei);
+  bool getInfo(const char* serialNumber, EmployeeInfo* ei, int& bServerActive);
   
 private:  
   int fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& elems);
