@@ -48,7 +48,7 @@ OMXILComponent::OMXILComponent(const char* name, FillBufferDoneType fillbufferdo
   //Get the handle
   if ((error = OMX_GetHandle (&m_handle, (char*)name, this,
       &callbacks_st))){
-    LOGE("error: OMX_GetHandle: %d\n", error);
+    LOGE("error: OMX_GetHandle: %x\n", error);
     throw EXCEPTION_CONSTRUCT;
   }
   sem_init(&sem_EventComplete, 0, 0);

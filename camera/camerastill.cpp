@@ -88,6 +88,7 @@ bool CameraStill::takePicture(char** buf, int* len, int maxWaitTime)
     m_timer->stop();
   if(!takePictureReady()){
     LOGE("takePictureReady fail!\n");
+    mtx.unlock();
     return false;
   }
   m_camera_component->capture(true);
