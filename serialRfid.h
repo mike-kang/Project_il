@@ -1,7 +1,7 @@
 #ifndef _SERIALR_RFID_HEADER
 #define _SERIALR_RFID_HEADER
 
-#include "tools/serial.h"
+#include "tools/asyncserial.h"
 
 using namespace tools;
 
@@ -34,8 +34,8 @@ public:
   void registerDataNoti(SerialRfidDataNoti* dn);
 
 protected:
-  Serial m_serial;
-  char* m_reciveBuf;
+  AsyncSerial m_serial;
+  byte* m_reciveBuf;
   char* m_serialnumberBuf;
   
 private:  

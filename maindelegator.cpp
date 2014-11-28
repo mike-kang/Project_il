@@ -333,6 +333,17 @@ void MainDelegator::cbTimer(void* arg)
     LOGE("**********************************************************\n");
   }
 
+  if(!md->m_serialRfidRuning){
+    md->m_serialRfidRuning = md->m_serialRfid->open();
+    if(md->m_serialRfidRuning){
+      md->m_serialRfid->start(md->m_rfidCheckInterval, md); //interval=300ms  
+    }
+    else{
+      md->m_el->onMessage("Rfid", md->m_sRfidMode + " OFF");
+      LOGE("SerialRfid open fail!\n");
+    }
+  }
+  
   LOGV("cbTimer count=%d\n", count);
   if(md->m_bProcessingRfidData){
     LOGV("cbTimer returned by processing card\n");
@@ -518,16 +529,15 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   else if(m_sRfidMode == "900M")
     m_serialRfid = new SerialRfid900(m_sRfid1356Port.c_str());
   
-  ret = m_serialRfid->open();
-  if(!ret){
-    LOGE("SerialRfid open fail!\n");
-    delete m_serialRfid;
-    delete m_settings;
-    throw EXCEPTION_RFID_OPEN_FAIL;
+  m_serialRfidRuning = m_serialRfid->open();
+  if(m_serialRfidRuning){
+    m_serialRfid->start(m_rfidCheckInterval, this); //interval=300ms  
   }
-  m_serialRfid->start(m_rfidCheckInterval, this); //interval=300ms  
+  else{
+    m_el->onMessage("Rfid", m_sRfidMode + " OFF");
+    LOGE("SerialRfid open fail!\n");
+  }
 #endif  
-  m_el->onMessage("Rfid", m_sRfidMode + " ON");
 
   m_el->onStatus("WebService Url:" + m_sUrl);
   //m_ws = new WebService("192.168.0.7", 8080);

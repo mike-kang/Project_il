@@ -7,26 +7,33 @@
 #define CMD_OPEN 
 bool SerialRfid900::open()
 {
+  bool ret = false;
   LOGI("open +++\n");
   SerialRfid::open();
-  static const char cmd[] = {0x7E,0x01,0x00,0x00,0x03,0x01,0x10,0x00,0x11,0x7F};
+  static const byte cmd[] = {0x7E,0x01,0x00,0x00,0x03,0x01,0x10,0x00,0x11,0x7F};
   m_serial.write(cmd, sizeof(cmd));
 
-  
-  char buf[5];
-  int len = m_serial.read(buf,5);
+  byte buf[5];
+  try{
+    int len = m_serial.read(buf, 5, 3000);
+    ret = true;
+  }
+  catch(AsyncSerial::Exception e){
+    LOGE("AsyncSerial::Exception %d\n", e);
+  }
   LOGI("open ---\n");
+  return ret;
 } 
 
 //-1:fail 0:same 1:success
 int SerialRfid900::requestData()
 {
-  static const char buf[] = {0x7E,0x01,0x00,0x00,0x03,0x01,0x10,0x01,0x10,0x7F};
+  static const byte buf[] = {0x7E,0x01,0x00,0x00,0x03,0x01,0x10,0x01,0x10,0x7F};
   static time_t shadowTime = 0;
 
   m_serial.write(buf, sizeof(buf));
 
-  int len = m_serial.read(m_reciveBuf, RECEIVE_BUF_SIZE);
+  int len = m_serial.read(m_reciveBuf, RECEIVE_BUF_SIZE, 2000);
   if(len < 27)
     return -1;
   if(m_reciveBuf[0] == 0x7E && m_reciveBuf[26] == 0xFF && m_reciveBuf[5] == 0xA0){

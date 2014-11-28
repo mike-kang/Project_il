@@ -7,27 +7,34 @@
 #define CMD_OPEN 
 bool SerialRfid1356::open()
 {
+  bool ret = false;
   LOGI("open +++\n");
-  static const char cmd[] = {0x04,0x00,0x8A,0xFF};
+  static const byte cmd[] = {0x04,0x00,0x8A,0xFF};
   SerialRfid::open();
   m_serial.write(cmd, sizeof(cmd));
 
   LOGI("open write---\n");
-  char buf[5];
-  int len = m_serial.read(buf,5);
+  byte buf[5];
+  try{
+    int len = m_serial.read(buf, 5, 3000);
+    ret = true;
+  }
+  catch(AsyncSerial::Exception e){
+    LOGE("AsyncSerial::Exception %d\n", e);
+  }
   LOGI("open ---\n");
-  return true;
+  return ret;
 } 
 
 //-1:fail 0:same 1:success
 int SerialRfid1356::requestData()
 {
-  static const char cmd[] = {0x04,0x00,0x60,0xFF};
+  static const byte cmd[] = {0x04,0x00,0x60,0xFF};
   static time_t shadowTime = 0;
 
   m_serial.write(cmd, sizeof(cmd));
 
-  int len = m_serial.read(m_reciveBuf, RECEIVE_BUF_SIZE);
+  int len = m_serial.read(m_reciveBuf, RECEIVE_BUF_SIZE, 2000);
   if(len != 6)
     return -1;
   if(m_reciveBuf[0] == 0x06 && m_reciveBuf[5] == 0xFF){
@@ -60,19 +67,22 @@ int SerialRfid1356::requestData()
 #define BTEND 0xBB
 bool SerialRfid1356_::open()
 {
-  bool ret;
+  bool ret = false;
   LOGI("open +++\n");
-  static const char cmd[] = {BTSTART,0x09,0xC1,BTFIRSTBLOCK,BTNUMBERBLOCK,BTUIDONOFF,BTMODE,BTBUZZER,BTEND};
-  static const char ret_val[] = {BTSTART, 0x05, 0x1C, 0x01, BTEND};
+  static const byte cmd[] = {BTSTART,0x09,0xC1,BTFIRSTBLOCK,BTNUMBERBLOCK,BTUIDONOFF,BTMODE,BTBUZZER,BTEND};
+  static const byte ret_val[] = {BTSTART, 0x05, 0x1C, 0x01, BTEND};
   SerialRfid::open();
   m_serial.write(cmd, sizeof(cmd));
   
-  char buf[5];
-  int len = m_serial.read(buf,5);
-  if(!memcmp(buf, ret_val, 5))
-    ret = true;
-  else
-    ret = false;
+  byte buf[5];
+  try{
+    int len = m_serial.read(buf,5, 3000);
+    if(!memcmp(buf, ret_val, 5))
+      ret = true;
+  }
+  catch(AsyncSerial::Exception e){
+    LOGE("AsyncSerial::Exception %d\n", e);
+  }
   LOGI("open ---\n");
   return ret;
 } 

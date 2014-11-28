@@ -89,7 +89,7 @@ private:
 
   bool m_bFirstDown;
   bool m_bNetworkAvailable;
-
+  bool m_serialRfidRuning;
   //settings
   //string sLog = "Y";
   bool m_bCapture;
