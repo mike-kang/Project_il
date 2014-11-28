@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sys/poll.h> 
+#include <errno.h>
 
 using namespace std;
 using namespace tools;
@@ -22,10 +23,12 @@ int AsyncSerial::read(byte* buf, int len, int timeout)
 
   fds.fd = m_fd;
   fds.events = POLLIN;
+loop:  
   ret = poll(&fds, 1, timeout);
   if(ret == -1){
-    printf("EXCEPTION_POLL\n");
-    throw EXCEPTION_POLL;
+    printf("EXCEPTION_POLL: %s\n", strerror(errno));
+    //throw EXCEPTION_POLL;
+    goto loop;
   }
   else if(ret == 0){
     printf("EXCEPTION_TIMEOUT\n");

@@ -38,7 +38,7 @@ install:
 	cp qt/acu/acu $(INSTALL_DIR)
 	cp qt/acu/start.sh $(INSTALL_DIR)
 	cp qt/acu/start_sa.sh $(INSTALL_DIR)
-	cp config/FID.ini /etc/acu/ 
+	#cp config/FID.ini /etc/acu/ 
 	
 -include depend
 

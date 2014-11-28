@@ -336,6 +336,7 @@ void MainDelegator::cbTimer(void* arg)
   if(!md->m_serialRfidRuning){
     md->m_serialRfidRuning = md->m_serialRfid->open();
     if(md->m_serialRfidRuning){
+      md->m_el->onMessage("Rfid", md->m_sRfidMode + " ON");
       md->m_serialRfid->start(md->m_rfidCheckInterval, md); //interval=300ms  
     }
     else{
@@ -532,6 +533,7 @@ MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidDat
   m_serialRfidRuning = m_serialRfid->open();
   if(m_serialRfidRuning){
     m_serialRfid->start(m_rfidCheckInterval, this); //interval=300ms  
+    m_el->onMessage("Rfid", m_sRfidMode + " ON");
   }
   else{
     m_el->onMessage("Rfid", m_sRfidMode + " OFF");

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "serialRfid1356.h"
 #include "tools/log.h"
+#include "tools/utils.h"
 
 #define LOG_TAG "SerialRfid1356"
 
@@ -67,24 +68,34 @@ int SerialRfid1356::requestData()
 #define BTEND 0xBB
 bool SerialRfid1356_::open()
 {
-  bool ret = false;
   LOGI("open +++\n");
-  static const byte cmd[] = {BTSTART,0x09,0xC1,BTFIRSTBLOCK,BTNUMBERBLOCK,BTUIDONOFF,BTMODE,BTBUZZER,BTEND};
-  static const byte ret_val[] = {BTSTART, 0x05, 0x1C, 0x01, BTEND};
   SerialRfid::open();
-  m_serial.write(cmd, sizeof(cmd));
-  
-  byte buf[5];
-  try{
-    int len = m_serial.read(buf,5, 3000);
-    if(!memcmp(buf, ret_val, 5))
-      ret = true;
-  }
-  catch(AsyncSerial::Exception e){
-    LOGE("AsyncSerial::Exception %d\n", e);
-  }
-  LOGI("open ---\n");
-  return ret;
+  return true;
 } 
+
+//-1:fail 0:same 1:success
+int SerialRfid1356_::requestData()
+{
+  static time_t shadowTime = 0;
+  //printf("requestData\n");
+  int len = m_serial.read(m_reciveBuf, RECEIVE_BUF_SIZE, -1);
+  //printf("requestData %d\n", len);
+  //tools::utils::hexdump("rece", m_reciveBuf, len);
+  if(len != 5)
+    return -1;
+  if(m_reciveBuf[0] ^ m_reciveBuf[1] ^ m_reciveBuf[2] ^ m_reciveBuf[3] == m_reciveBuf[4]){
+    time_t t = time(NULL);
+    sprintf(m_serialnumberBuf, "%03d%03d%03d%03d", m_reciveBuf[3],m_reciveBuf[2],m_reciveBuf[1],m_reciveBuf[0]);
+    if((t - shadowTime < 6) && !strncmp(m_serialnumberBuf, m_serialnumberShadowBuf, SERIALNUMBER_BUF_SIZE-1)){
+      LOGV("same serial number\n");
+      return 0;
+    }
+    strcpy(m_serialnumberShadowBuf, m_serialnumberBuf);
+    shadowTime = t;
+    return 1;
+  }
+  
+  return -1;
+}
 
 

@@ -43,6 +43,8 @@ bool Serial::open()
     //case 9600 : newtio.c_cflag |= B9600; break; 
     //case 4800 : newtio.c_cflag |= B4800; break; 
     //case 2400 : newtio.c_cflag |= B2400; break; 
+    case SB9600: 
+      newtio.c_cflag |= B9600; break; 
     default: 
       newtio.c_cflag |= B115200; break; 
   } 

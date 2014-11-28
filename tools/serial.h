@@ -9,6 +9,7 @@ namespace tools {
 class Serial {
 public:
   enum Baud {
+    SB9600,
     SB38400,
     SB115200,
   };

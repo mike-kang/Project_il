@@ -24,11 +24,22 @@ private:
   char* m_serialnumberShadowBuf;
 };
 
-class SerialRfid1356_ : public SerialRfid1356{
+class SerialRfid1356_ : public SerialRfid{
 public:
-  SerialRfid1356_(const char* path):SerialRfid1356(path){}
+  static const int SERIALNUMBER_BUF_SIZE = 13; //3*4 +1
+  SerialRfid1356_(const char* path):SerialRfid(path, Serial::SB9600)
+  {
+    m_reciveBuf = new byte[RECEIVE_BUF_SIZE];
+    m_serialnumberBuf = new char[SERIALNUMBER_BUF_SIZE];
+    m_serialnumberShadowBuf = new char[SERIALNUMBER_BUF_SIZE];
+    m_serialnumberShadowBuf[0] = '\0';
+  }
 
   virtual bool open();
+  virtual int requestData();
+  
+  private:
+    char* m_serialnumberShadowBuf;
 };
 
 
