@@ -21,12 +21,12 @@ using namespace std;
 
 MainDelegator* MainDelegator::my = NULL;
 
-MainDelegator* MainDelegator::createInstance(EventListener* el)
+MainDelegator* MainDelegator::createInstance(EventListener* el, const char* config)
 {
   if(my){
     return my;
   }
-  my = new MainDelegator(el);
+  my = new MainDelegator(el, config);
   return my;
 }   
 
@@ -441,9 +441,12 @@ void MainDelegator::displayNetworkStatus(bool val)
     bInitialized = true;
 }
 
-bool MainDelegator::SettingInit()
+bool MainDelegator::SettingInit(const char* configPath)
 {
-  m_settings = new Settings("/etc/acu/FID.ini");
+  if(configPath)
+    m_settings = new Settings(configPath);
+  else
+    m_settings = new Settings("/etc/acu/FID.ini");
 
 #ifdef CAMERA  
   m_cameraDelayOffTime = m_settings->getInt("Camera::DELAY_OFF_TIME"); //600 sec
@@ -494,12 +497,12 @@ bool MainDelegator::SettingInit()
   return true;
 }
 
-MainDelegator::MainDelegator(EventListener* el) : m_el(el), m_bProcessingRfidData(false)
+MainDelegator::MainDelegator(EventListener* el, const char* configPath) : m_el(el), m_bProcessingRfidData(false)
 {
   bool ret;
   cout << "start" << endl;
   el->onStatus("System Start");
-  SettingInit();
+  SettingInit(configPath);
   string curdir = m_settings->get("App::WORKING_DIRECTORY");
   filesystem::dir_chdir(curdir.c_str());
   cout << "chdir:" << curdir.c_str() << endl;

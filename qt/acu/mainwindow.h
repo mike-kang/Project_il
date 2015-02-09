@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "maindelegator.h"
 #include <QtGui/QLabel>
+#include <QTextCodec>
 namespace Ui {
 class MainWindow;
 }

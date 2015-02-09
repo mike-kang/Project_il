@@ -31,6 +31,7 @@ public:
   int write(const byte* buf, int len);
   int read(byte* buf, int len);
   //int getFD() const {return m_fd;}
+  bool setTimeout(int timeout); //ms
 
 protected:
   int m_fd;

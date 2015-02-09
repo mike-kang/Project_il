@@ -3,9 +3,12 @@
 #include <iostream>
 #include <sys/poll.h> 
 #include <errno.h>
+#include "log.h"
 
 using namespace std;
 using namespace tools;
+
+#define LOG_TAG "AsyncSerial"
 
 AsyncSerial::AsyncSerial(const char* path, Serial::Baud baud):Serial(path, baud, 0, 0)
 {
@@ -21,21 +24,24 @@ int AsyncSerial::read(byte* buf, int len, int timeout)
   struct pollfd fds;
   int ret;
 
+  //cout << "read: "<< timeout << endl;
+  //LOGV("read: time %d\n", timeout);
   fds.fd = m_fd;
   fds.events = POLLIN;
-loop:  
+  
   ret = poll(&fds, 1, timeout);
+  if(ret > 0)
+    return Serial::read(buf, len);
+  
   if(ret == -1){
-    printf("EXCEPTION_POLL: %s\n", strerror(errno));
-    //throw EXCEPTION_POLL;
-    goto loop;
+    LOGE("EXCEPTION_POLL\n");
+    throw EXCEPTION_POLL;
   }
   else if(ret == 0){
-    printf("EXCEPTION_TIMEOUT\n");
+    LOGE("EXCEPTION_TIMEOUT\n");
     throw EXCEPTION_TIMEOUT;
   }
   
-  return Serial::read(buf, len);
 }
 
 bool AsyncSerial::open()

@@ -93,5 +93,16 @@ int Serial::read(byte* buf, int len)
   return ::read(m_fd, buf, len);
 }
 
+bool Serial::setTimeout(int timeout) //ms
+{
+  struct termios tp; 
+  if(tcgetattr(m_fd, &tp) == -1)
+    return false;
+  tp.c_cc[VTIME] = timeout/100;
+  if(tcsetattr(m_fd, TCSANOW, &tp) == -1)
+    return false;
+  return true;
+}
+
 };
 

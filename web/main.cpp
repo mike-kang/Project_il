@@ -76,7 +76,7 @@ void cbTimeSheetInsertString(void *client_data, int status, void* ret)
 
 int main()
 {
-  log_init(TYPE_CONSOLE, "/dev/pts/3");
+  log_init(true, 1, "/dev/pts/3", false, 3, "Log");
 
   
   m_ws = new WebService("112.216.243.146", 8080);

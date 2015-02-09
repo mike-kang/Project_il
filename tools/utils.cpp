@@ -12,22 +12,27 @@ namespace tools {
 namespace utils {
 char* itoa(int val, int base){
 	
-	static char buf[32] = {0};
-	
-	int i = 30;
-	
-	for(; val && i ; --i, val /= base)
-	
-		buf[i] = "0123456789abcdef"[val % base];
-	
-	return &buf[i+1];
+  static char buf[32];
+  buf[31] = '\0';
+
+  int i = 30;
+
+  if(!val){
+    buf[i] = '0';
+    return &buf[i];
+  }
+
+  for(; val && i ; --i, val /= base)
+    buf[i] = "0123456789abcdef"[val % base];
+  
+  return &buf[i+1];
 	
 }  
 
 
 void hexdump(const char* title, unsigned char* buf, int length)
 {
-  printf("[%s]\n", title);
+  printf("[%s - %lu]\n", title, pthread_self());
   if(!length){
     printf("size = 0\n");
     return;

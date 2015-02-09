@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     ui->setupUi(this);
     statusLabel = new QLabel;
     statusBar()->addWidget(statusLabel);
@@ -44,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     insertTable(Result);
     insertTable(Msg);
     m_img_buf = NULL;
-    MainDelegator* md = MainDelegator::createInstance(this);
+    //MainDelegator* md = MainDelegator::createInstance(this);
     //md->setEventListener(this);
 
     //QDate* date = new QDate();

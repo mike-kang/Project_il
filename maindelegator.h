@@ -34,7 +34,7 @@ public:
   };
   virtual void onData(const char* buf);
   virtual void onSameData();
-  static MainDelegator* createInstance(EventListener* el);
+  static MainDelegator* createInstance(EventListener* el, const char* config);
   ~MainDelegator(); 
 
 
@@ -44,12 +44,12 @@ public:
 
 private:
   static MainDelegator* my;
-  MainDelegator(EventListener* el);
+  MainDelegator(EventListener* el, const char* configPath);
   void run(); 
 
   //void _processRfidSerialData(void* arg);
   string getLocationName();
-  bool SettingInit();
+  bool SettingInit(const char* configPath);
   bool checkValidate(EmployeeInfoMgr::EmployeeInfo* ei, string& msg);
   bool checkZone(string& sAuth);
   bool checkDate(Date* start, Date* end, string& msg);
