@@ -131,22 +131,28 @@ bool MainDelegator::checkDate(Date* start, Date* end, string& msg)
     msg = "Access Deny: No Date information";
     return false;
   }
+
+  bool ret = false;
   
   Date* today = Date::now();
   if(*start > *today){ 
     msg = "Access Deny start date:" + start->toString();
     LOGE((msg+"\n").c_str());
-    return false;
+    //return false;
   }
-  if(end && *end < *today){ 
+  else if(end && *end < *today){ 
     msg = "Access Deny work Until:" + end->toString();
     LOGE((msg+"\n").c_str());
-    return false;
+    //return false;
   }
-  msg = "Checked Success ";
-  if(end)
-    msg += "at Work Until " + end->toString();
-  return true;
+  else{
+    msg = "Checked Success ";
+    if(end)
+      msg += "at Work Until " + end->toString();
+    ret = true;
+  }
+  delete today;
+  return ret;
 }
 
 void MainDelegator::onData(const char* serialNumber)
@@ -629,6 +635,7 @@ string MainDelegator::getLocationName()
       try{
         char* name = utils::getElementData(xml_buf, "EN_CODE_NM");
         locationName = name;
+		delete xml_buf;	//memory leak
         return locationName;
       }
       catch(int e){}

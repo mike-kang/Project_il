@@ -20,6 +20,7 @@ void SwitchGpio::cbOnTimer(void* arg)
 {
   SwitchGpio* my = (SwitchGpio*)arg;
   my->write(false);
+  delete my->m_timer;
 }
 void SwitchGpio::cbOnArrayTimer(int i, void* arg)
 {
