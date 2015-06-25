@@ -47,6 +47,7 @@ TimeSheetMgr::TimeSheet::TimeSheet(string lab_no, char utype, char* img, int img
 
 TimeSheetMgr::TimeSheet::~TimeSheet()
 {
+  LOGV("~TimeSheet %x\n", m_photo_img);
   if(m_photo_img)
     delete m_photo_img;
 }
@@ -61,7 +62,7 @@ void TimeSheetMgr::insert(string lab_no, char utype, char* img, int img_sz)
 
 bool TimeSheetMgr::upload()
 {
-  vector<list<TimeSheet*>::iterator> vector_erase;
+  vector<TimeSheet*> vector_erase;
   // 1. send file
   vector<string*> filelist;
   try{
@@ -106,17 +107,19 @@ bool TimeSheetMgr::upload()
     try{
       ret = m_ws->request_TimeSheetInsertString(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), (*itr)->m_lab_no.c_str(), m_cInOut, m_sDvNo.c_str(), m_sDvLoc.c_str(), (*itr)->m_utype, (*itr)->m_time.c_str(), 
         (*itr)->m_photo_img, (*itr)->m_imgSz, 3000, STORE_DIRECTORY);
+
+      if(ret)
+        vector_erase.push_back(*itr);
     }
     catch(WebService::Except e){
       LOGE("request_TimeSheetInsertString: %s\n", WebService::dump_error(e));
     }
-    vector_erase.push_back(itr);
   }
 
   mtx.lock();
-  for(vector<list<TimeSheet*>::iterator>::size_type i=0; i< vector_erase.size(); i++){
-    delete *vector_erase[i];
-    m_listTS.erase(vector_erase[i]);
+  for(vector<TimeSheet*>::size_type i=0; i< vector_erase.size(); i++){
+    delete vector_erase[i];
+    m_listTS.remove(vector_erase[i]);
   }
   mtx.unlock();
   return true;
