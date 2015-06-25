@@ -21,6 +21,7 @@ void SwitchGpio::cbOnTimer(void* arg)
   SwitchGpio* my = (SwitchGpio*)arg;
   my->write(false);
   delete my->m_timer;
+  my->m_timer = NULL;
 }
 void SwitchGpio::cbOnArrayTimer(int i, void* arg)
 {

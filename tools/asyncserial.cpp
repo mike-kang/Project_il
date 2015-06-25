@@ -35,7 +35,7 @@ int AsyncSerial::read(byte* buf, int len, int timeout)
   
   if(ret == -1){
     LOGE("EXCEPTION_POLL\n");
-    throw EXCEPTION_POLL;
+    //throw EXCEPTION_POLL;
   }
   else if(ret == 0){
     LOGE("EXCEPTION_TIMEOUT\n");
