@@ -7,6 +7,7 @@
 #include <fstream>
 #include <QImage>
 #include <QPixmap>
+#include <QSound>
 
 #define insertTable(tag)  labelTable.insert(pair<std::string, QLabel*>(#tag, ui->label##tag)) 
 
@@ -61,8 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
     
     m_timerEmployeeInfo = new QTimer(this);
     connect(m_timerEmployeeInfo, SIGNAL(timeout()), this, SLOT(cleanEmployeeInfo()));
-
-
+    //QSound::play("/home/mikekang/Project_il/SoundFiles/start.wav");
+ 
 }
 
 MainWindow::~MainWindow()

@@ -27,7 +27,7 @@ public:
   
   Mutex(const Mutex& m):m_p(m.m_p)
   {
-    cout << "Mutex copy " << (int)m_p << endl;
+    cout << "Mutex copy " << (int*)m_p << endl;
   };
 
   void lock()

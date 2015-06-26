@@ -156,7 +156,7 @@ int EmployeeInfoMgr::fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& el
     catch(int e){}
     try {
       p = utils::getElementData(p, "RFID_CAR");
-      strcpy(ei->serial_number, p); 
+      strncpy(ei->serial_number, p, 15); 
       p += strlen(p) + 1;
     }
     catch(int e){}

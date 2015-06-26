@@ -17,11 +17,11 @@ HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
-#DEFINES = SIMULATOR
-DEFINES += CAMERA
+DEFINES = SIMULATOR
+#DEFINES += CAMERA
 INCLUDEPATH += ../../
 LIBS = -L../.. -L../../tools -L../../inih_r29 -lfid -ltool -linih -lpthread -lrt
-LIBS += -L../../camera -lcamera -lopenmaxil -lbcm_host -L.. -L/opt/vc/lib 
+#LIBS += -L../../camera -lcamera -lopenmaxil -lbcm_host -L.. -L/opt/vc/lib 
 Release:DESTDIR = release
 Release:OBJECTS_DIR = release/.obj
 Release:MOC_DIR = release/.moc
@@ -33,3 +33,6 @@ Debug:OBJECTS_DIR = debug/.obj
 Debug:MOC_DIR = debug/.moc
 Debug:RCC_DIR = debug/.rcc
 Debug:UI_DIR = debug/.ui
+
+RESOURCES += \
+    acu.qrc
