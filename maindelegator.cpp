@@ -13,6 +13,9 @@
 #include "tools/filesystem.h"
 #include "timesheetmgr.h"
 #include <errno.h>
+#ifdef DEBUG_SERVICE
+#include "fifoservice.h"
+#endif
 
 using namespace tools;
 using namespace std;
@@ -339,6 +342,7 @@ void MainDelegator::cbTimer(void* arg)
     LOGE("**********************************************************\n");
   }
 
+#ifndef SIMULATOR
   if(!md->m_serialRfidRuning){
     md->m_serialRfidRuning = md->m_serialRfid->open();
     if(md->m_serialRfidRuning){
@@ -350,7 +354,8 @@ void MainDelegator::cbTimer(void* arg)
       LOGE("SerialRfid open fail!\n");
     }
   }
-  
+#endif
+
   LOGV("cbTimer count=%d\n", count);
   if(md->m_bProcessingRfidData){
     LOGV("cbTimer returned by processing card\n");
@@ -549,6 +554,12 @@ MainDelegator::MainDelegator(EventListener* el, const char* configPath) : m_el(e
     LOGE("SerialRfid open fail!\n");
   }
 #endif  
+#ifdef DEBUG_SERVICE
+  LOGV("DEBUG_SERVICE\n");
+  if(m_settings->getBool("Debug::DEBUG_SERVICE")){
+    m_FifoService = new FifoService();
+  }
+#endif
 
   m_el->onStatus("WebService Url:" + m_sUrl);
   //m_ws = new WebService("192.168.0.7", 8080);

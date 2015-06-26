@@ -17,6 +17,8 @@
 #include "employeeinfomgr.h"
 
 class TimeSheetMgr;
+class FifoService;
+
 class MainDelegator : public SerialRfid::SerialRfidDataNoti {
 public:
   enum Exception {
@@ -129,6 +131,9 @@ private:
   SwitchGpio* m_redLed;
   //Relay
   SwitchGpio* m_Relay;
+
+  //debug
+  FifoService* m_FifoService;
 };
 
 

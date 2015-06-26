@@ -73,6 +73,9 @@ Settings::Settings(const char* filename)
      mapIntInsert(Gpio, GREEN, 24);
      mapIntInsert(Gpio, RED, 23);
      mapIntInsert(Gpio, RELAY, 17);
+
+     //Debug
+     mapBoolInsert(Debug, DEBUG_SERVICE, false);
      
      dump();
      return;
@@ -123,6 +126,9 @@ Settings::Settings(const char* filename)
   mapIntInsertFromReader(Gpio, GREEN, 24);
   mapIntInsertFromReader(Gpio, RED, 23);
   mapIntInsertFromReader(Gpio, RELAY, 17);
+
+  //Debug
+  mapBoolInsertFromReader(Debug, DEBUG_SERVICE, false);
 
   dump();
 }
