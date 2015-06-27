@@ -1,5 +1,7 @@
 #include <QtGui/QApplication>
 #include "mainwindow.h"
+#include <unistd.h>
+
 using namespace std;
 
 int main(int argc, char *argv[])

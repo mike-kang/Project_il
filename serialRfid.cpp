@@ -1,6 +1,7 @@
 #include "serialRfid.h"
 #include "tools/log.h"
 #include <iostream>
+#include <unistd.h>
 
 using namespace std;
 

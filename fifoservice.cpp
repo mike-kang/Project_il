@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "tools/log.h"
 #include <malloc.h>
+#include <mcheck.h>
 
 
 
@@ -17,7 +18,7 @@
 
 using namespace std;
 
-FifoService::FifoService()
+FifoService::FifoService(): m_bRunningMtrace(false)
 {
   LOGV("FifoService+++\n");
   umask(0);                           /* So we get the permissions we want */
@@ -58,9 +59,9 @@ void FifoService::run()
 
   while(1){
     
-    LOGV("readLine+++\n");
+    //LOGV("readLine+++\n");
     int n = readLine(m_cmdFd, buf, 100);
-    LOGV("readLine %d---\n", n);
+    //LOGV("readLine %d---\n", n);
     if(n > 0){
       LOGV("cmd:%s\n", buf);
  
@@ -74,7 +75,19 @@ void FifoService::run()
         sprintf(buf, "%d\n", _meminfo.hblkhd + _meminfo.uordblks);
         write(m_responseFd, buf, strlen(buf) + 1);
       }
+      else if(!strncmp("mtrace", buf, 6)){
+        if(m_bRunningMtrace){
+          write(m_responseFd, "***** stop mtrace *****\n", strlen("***** stop mtrace *****\n"));
+          muntrace();
+          m_bRunningMtrace = false;
+        }
+        else{
+          write(m_responseFd, "***** start mtrace *****\n", strlen("***** start mtrace *****\n"));
+          mtrace();
+          m_bRunningMtrace = true;
+        }
 
+      }
       close(m_responseFd);
         
     }

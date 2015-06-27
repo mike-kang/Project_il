@@ -7,6 +7,7 @@
 #include "tools/utils.h"
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 
 using namespace tools;
 

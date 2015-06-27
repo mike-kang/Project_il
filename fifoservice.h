@@ -18,7 +18,7 @@ private:
   Thread<FifoService>* m_thread;
   int m_cmdFd;
   int m_responseFd;
-
+  bool m_bRunningMtrace;
 
 
 };
