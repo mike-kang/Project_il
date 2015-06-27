@@ -23,12 +23,12 @@ FifoService::FifoService(): m_bRunningMtrace(false)
   LOGV("FifoService+++\n");
   umask(0);                           /* So we get the permissions we want */
   
-  if (mkfifo(CMD_FIFO, S_IRUSR | S_IWUSR | S_IWGRP) == -1 && errno != EEXIST){
+  if (mkfifo(CMD_FIFO, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1 && errno != EEXIST){
     LOGE("mkfifo %s", CMD_FIFO);
     throw 0;
   }
   
-  if (mkfifo(RES_FIFO, S_IRUSR | S_IWUSR | S_IWGRP) == -1 && errno != EEXIST){
+  if (mkfifo(RES_FIFO, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1 && errno != EEXIST){
     LOGE("mkfifo %s", RES_FIFO);
     throw 0;
   }
