@@ -1,10 +1,11 @@
 $(warning os: $(shell uname -s))
 $(info current dir is ${CURDIR})
 
-#TEST = true
+TEST = true
 
 OBJS = omxilComponent.o dump.o camerastill.o  
 LIB = libcamera.so
+
 ifeq ($(TEST), true)
   EXE = camera
   all : ${LIB}  ${EXE}
@@ -20,7 +21,7 @@ ${LIB} : ${OBJS}
 	g++ -shared -o ${LIB} ${OBJS} 
 
 ${EXE} : ${OBJS} main.o
-	g++  -o ${EXE} ${OBJS} main.o -L../tools -ltool -lpthread ${CAMERA_LFLAGS} -lcamera
+	g++  -o ${EXE} ${OBJS} main.o -L../tools -ltool -lpthread ${CAMERA_LFLAGS} -lcamera -g
 	
 camerastill.o : ../tools/log.h ../tools/logservice.h camerastill.h omxilComponent.h ../tools/Semaphore.h
 omxilComponent.o : ../tools/log.h ../tools/logservice.h omxilComponent.h dump.h

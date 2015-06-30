@@ -60,7 +60,7 @@ private:
   Semaphore m_takePictureSem;
   static void cbTimer(void*);
   void returnResources();
-  
+  bool m_bReturingResource;
 };
 
 

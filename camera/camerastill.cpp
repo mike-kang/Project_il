@@ -55,7 +55,8 @@ CameraStill::CameraStill(int close_delay_time):m_delay_time(close_delay_time), m
 
 CameraStill::~CameraStill()
 {
-  m_encoder_component->disable_port(OMXILEncoderComponent::OUTPUT_PORT_NUM);
+  returnResources();
+  //m_encoder_component->disable_port(OMXILEncoderComponent::OUTPUT_PORT_NUM);
   m_preview_component->change_state(OMX_StateLoaded); //blocking
   m_encoder_component->change_state(OMX_StateLoaded); //blocking
 
@@ -66,7 +67,7 @@ CameraStill::~CameraStill()
   if ((error = OMX_Deinit ())){
     LOGE("error: OMX_Deinit: %s\n", dump_OMX_ERRORTYPE (error));
   }
-  
+  delete m_timer;
   //Deinitialize Broadcom's VideoCore APIs
   bcm_host_deinit ();
 
@@ -130,6 +131,7 @@ void CameraStill::cbEndOfStream(void* clientData)
 
 bool CameraStill::takePictureReady()
 {
+  LOGV("takePictureReady %d\n", m_state); 
   if(m_state == IREADY_S) return true;
 
   try{
@@ -176,7 +178,11 @@ void CameraStill::returnResources()
 {
   LOGV("returnResources\n");
   mtx.lock();
-  m_camera_component->change_state(OMX_StateIdle); //blocking
+  if(m_state == READY_S){
+    mtx.unlock();
+    return;
+  }
+  m_camera_component->change_state(OMX_StateIdle); //blocking : OMX_StateExecuting -> OMX_StateIdle
   m_encoder_component->change_state(OMX_StateIdle); //blocking
   m_preview_component->change_state(OMX_StateIdle); //blocking
 
