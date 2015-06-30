@@ -1,5 +1,6 @@
 #include <iostream>
 #include "maindelegator.h"
+#include <unistd.h>
 
 using namespace std;
 
