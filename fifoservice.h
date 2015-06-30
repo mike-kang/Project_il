@@ -4,10 +4,10 @@
 #include "tools/thread.h"
 
 //#include <iostream>
-
+class MainDelegator;
 class FifoService {
 public:
-  FifoService();
+  FifoService(MainDelegator* md);
   ~FifoService();
   
   
@@ -19,7 +19,7 @@ private:
   int m_cmdFd;
   int m_responseFd;
   bool m_bRunningMtrace;
-
+  MainDelegator* m_md;
 
 };
 

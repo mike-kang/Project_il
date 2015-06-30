@@ -16,6 +16,7 @@
 #ifdef DEBUG_SERVICE
 #include "fifoservice.h"
 #endif
+#include "tools/memory.h"
 
 using namespace tools;
 using namespace std;
@@ -557,7 +558,7 @@ MainDelegator::MainDelegator(EventListener* el, const char* configPath) : m_el(e
 #ifdef DEBUG_SERVICE
   LOGV("DEBUG_SERVICE\n");
   if(m_settings->getBool("Debug::DEBUG_SERVICE")){
-    m_FifoService = new FifoService();
+    m_FifoService = new FifoService(this);
   }
 #endif
 

@@ -6,8 +6,9 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "tools/log.h"
-#include <malloc.h>
+#include "tools/memory.h"
 #include <mcheck.h>
+#include "maindelegator.h"
 
 
 
@@ -18,7 +19,7 @@
 
 using namespace std;
 
-FifoService::FifoService(): m_bRunningMtrace(false)
+FifoService::FifoService(MainDelegator* md): m_bRunningMtrace(false), m_md(md)
 {
   LOGV("FifoService+++\n");
   umask(0);                           /* So we get the permissions we want */
@@ -63,16 +64,13 @@ void FifoService::run()
     int n = readLine(m_cmdFd, buf, 100);
     //LOGV("readLine %d---\n", n);
     if(n > 0){
-      LOGV("cmd:%s\n", buf);
- 
       m_responseFd = open(RES_FIFO, O_WRONLY);
       if (m_responseFd == -1)
         LOGE("open %s", RES_FIFO);
 
       if(!strncmp("memory", buf, 6)){
-        struct mallinfo _meminfo = mallinfo();
-
-        sprintf(buf, "%d\n", _meminfo.hblkhd + _meminfo.uordblks);
+        sprintf(buf, "%d\n", tools::memory::getHeapSize());
+        LOGV("cmd:memory %s\n", buf);
         write(m_responseFd, buf, strlen(buf) + 1);
       }
       else if(!strncmp("mtrace", buf, 6)){
@@ -87,6 +85,11 @@ void FifoService::run()
           m_bRunningMtrace = true;
         }
 
+      }
+      else if(!strncmp("sn", buf, 2)){
+        buf[n-1] = '\0';
+        m_md->onData(&buf[3]);
+        write(m_responseFd, "ok", 2);
       }
       close(m_responseFd);
         
