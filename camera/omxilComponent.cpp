@@ -783,7 +783,13 @@ bool OMXILEncoderComponent::set_jpeg_settings()
 bool OMXILEncoderComponent::capture()
 {
   LOGV("capture\n");
-  pthread_create(&m_captureThreadId, NULL, capturing, this); 
+  if(pthread_create(&m_captureThreadId, NULL, capturing, this) != 0){
+    LOGE("pthread_create failed with errno = %d, %s\n",
+      errno, strerror(errno));
+    return false;
+  } 
+  
+  pthread_detach(m_captureThreadId);
   return true;
 }
 
