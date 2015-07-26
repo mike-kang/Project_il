@@ -22,6 +22,7 @@ DEFINES += CAMERA
 INCLUDEPATH += ../../
 LIBS = -L../.. -L../../tools -L../../inih_r29 -lfid -ltool -linih -lpthread -lrt
 LIBS += -L../../camera -lcamera -lopenmaxil -lbcm_host -L.. -L/opt/vc/lib 
+QMAKE_CXXFLAGS += -g
 Release:DESTDIR = release
 Release:OBJECTS_DIR = release/.obj
 Release:MOC_DIR = release/.moc

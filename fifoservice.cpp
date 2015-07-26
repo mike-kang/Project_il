@@ -37,6 +37,7 @@ FifoService::FifoService(MainDelegator* md): m_bRunningMtrace(false), m_md(md)
 
 
   m_thread = new Thread<FifoService>(&FifoService::run, this, "FifoService");
+  printf("FifoService: this %p\n", this);
   LOGV("FifoService---\n");
     
 }

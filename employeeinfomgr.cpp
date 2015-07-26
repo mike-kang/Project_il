@@ -13,8 +13,9 @@ using namespace tools;
 using namespace std;
 
 #define DB_FILE "employee.xml"
+#define TEMP_DB_FILE "employee_temp.xml"
 
-EmployeeInfoMgr::EmployeeInfoMgr(Settings* settings, WebService* ws): m_settings(settings), m_ws(ws)
+EmployeeInfoMgr::EmployeeInfoMgr(Settings* settings, WebService* ws): m_settings(settings), m_ws(ws), m_bUpdated(false)
 {
   try{
     m_bUseLocalDB = settings->getBool("App::LOCAL_DATABASE");
@@ -28,9 +29,10 @@ EmployeeInfoMgr::EmployeeInfoMgr(Settings* settings, WebService* ws): m_settings
     m_sMemcoCd = "MC00000003";
     m_sSiteCd = "ST00000005";
   }
-  createLocalDB();
+  updateLocalDB(true);
 }
 
+/*
 bool EmployeeInfoMgr::createLocalDB()
 {
   if(m_vectorEmployeeInfo.size() > 0)
@@ -62,6 +64,59 @@ bool EmployeeInfoMgr::createLocalDB()
   cout << "members = " << num << endl;
   delete xml_buf;
   return true;
+}
+*/
+
+void EmployeeInfoMgr::updateLocalDB(bool bForce)
+{
+  LOGV("updateLocalDB +++\n");
+  if(m_bUpdated && !bForce)
+    return;
+  
+  if(!filesystem::file_exist(DB_FILE)){
+    LOGV("download %s\n", DB_FILE);
+    try{
+      m_ws->request_RfidInfoSelectAll(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), 8000, DB_FILE);
+      LOGV("downloaded %s\n", DB_FILE);
+    }
+    catch(WebService::Except e){
+      LOGE("download %s fail\n", DB_FILE);
+      m_bUpdated = false;
+      return;
+    }
+  }
+  else{
+    LOGV("download %s\n", TEMP_DB_FILE);
+    try{
+      m_ws->request_RfidInfoSelectAll(m_sMemcoCd.c_str(), m_sSiteCd.c_str(), 8000, TEMP_DB_FILE);
+      LOGV("downloaded %s\n", TEMP_DB_FILE);
+    }
+    catch(WebService::Except e){
+      LOGE("download %s fail\n", TEMP_DB_FILE);
+      m_bUpdated = false;
+      return;
+    }
+    filesystem::file_delete(DB_FILE);
+    rename(TEMP_DB_FILE, DB_FILE);
+  }
+
+  ifstream infile (DB_FILE, ofstream::binary);
+  // get size of file
+  infile.seekg (0,infile.end);
+  long size = infile.tellg();
+  infile.seekg (0);
+  // allocate memory for file content
+  char* xml_buf = new char[size];
+  // read content of infile
+  infile.read (xml_buf,size);
+  infile.close();
+  deleteCache();
+  int num = fillEmployeeInfoes(xml_buf, m_vectorEmployeeInfo);
+  cout << "members = " << num << endl;
+  delete xml_buf;
+  LOGV("updateLocalDB ---\n");
+  m_bUpdated = true;
+  return;
 }
 
 bool EmployeeInfoMgr::getInfo(const char* serialNumber, EmployeeInfo* ei, int& bServerActive)
@@ -286,5 +341,17 @@ EmployeeInfoMgr::EmployeeInfo* EmployeeInfoMgr::searchDB(const char* serialNumbe
   }
   mtx.unlock();
   return NULL;
+} 
+
+void EmployeeInfoMgr::deleteCache()
+{
+  mtx.lock();
+
+  for(vector<EmployeeInfo*>::size_type i=0; i< m_vectorEmployeeInfo.size(); i++)
+  {
+    delete m_vectorEmployeeInfo[i];
+  }
+  m_vectorEmployeeInfo.clear();
+  mtx.unlock();
 } 
 

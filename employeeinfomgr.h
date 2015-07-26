@@ -37,13 +37,14 @@ public:
   EmployeeInfoMgr(Settings* settings, WebService* ws);
   virtual ~EmployeeInfoMgr(){}
 
-  bool createLocalDB();
+  void updateLocalDB(bool bForce);
   bool getInfo(const char* serialNumber, EmployeeInfo* ei, int& bServerActive);
   
 private:  
   int fillEmployeeInfoes(char *xml_buf, vector<EmployeeInfo*>& elems);
   bool fillEmployeeInfo(char *xml_buf, EmployeeInfo* ei);
   EmployeeInfo* searchDB(const char* serialNumber);
+  void deleteCache();
 
   bool m_bUseLocalDB;
   string m_sMemcoCd; // = "MC00000003";
@@ -52,6 +53,7 @@ private:
   WebService* m_ws;
   Settings* m_settings;
   std::vector<EmployeeInfo*> m_vectorEmployeeInfo;
+  bool m_bUpdated;
   Mutex mtx;
 };
 

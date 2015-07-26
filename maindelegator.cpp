@@ -167,6 +167,7 @@ void MainDelegator::onData(const char* serialNumber)
   string msg;
   m_bProcessingRfidData = true;
   printf("onData: %s\n", serialNumber);
+
   m_wp->stop();
   m_greenLed->off();
   m_redLed->off();
@@ -186,6 +187,7 @@ void MainDelegator::onData(const char* serialNumber)
     m_el->onMessage("Msg", "NO DATA");
     goto error;
   }
+  //printf("ei->img_buf: %p\n", ei->img_buf);
   m_el->onEmployeeInfo(ei->company_name, ei->lab_name, ei->pin_no, ei->img_buf, ei->img_size);
   if(!checkValidate(ei, msg)){
     if(m_bSound)
@@ -342,6 +344,10 @@ void MainDelegator::cbTimer(void* arg)
     LOGE("*****%4d-%02d-%02dT%02d-%02d***\n", now.tm_year+1900, now.tm_mon+1, now.tm_mday, now.tm_hour, now.tm_min);
     LOGE("**********************************************************\n");
   }
+  else if(now.tm_hour == 3 && now.tm_min == 0){
+    md->m_employInfoMrg->updateLocalDB(true);
+  }
+    
 
 #ifndef SIMULATOR
   if(!md->m_serialRfidRuning){
@@ -394,7 +400,7 @@ void MainDelegator::cbTimer(void* arg)
       break;
 
     case 8:
-      md->m_employInfoMrg->createLocalDB();
+      md->m_employInfoMrg->updateLocalDB(false);
       break;
       
     case 9:
